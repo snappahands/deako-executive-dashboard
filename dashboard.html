@@ -428,7 +428,7 @@
   <div class="header-right">
     <div class="header-date" id="headerDate"></div>
     <div class="header-period" id="headerPeriod"></div>
-    <div style="font-size:11px;color:var(--text-dim);margin-top:4px;letter-spacing:.04em">v1.7</div>
+    <div style="font-size:11px;color:var(--text-dim);margin-top:4px;letter-spacing:.04em">v1.8</div>
   </div>
 </header>
 
@@ -560,6 +560,10 @@ const DEFAULTS = {
     aopRevenue:        2616.5,  // 2026 AOP — BM row 59
     bookings2025Full:  2418.6,  // 2025 full-year actual — AQ row 59
     revenue2025Full:   2418.6,  // 2025 full-year actual — AQ row 59
+    // Monthly AOP 2026 (row 59, individual month columns)
+    monthlyAOP2026: [202.401, 208.235, 219.454, 221.783, 229.603, 233.766, 235.989, 236.944, 236.674, 217.579, 186.706, 187.414],
+    // Quarterly AOP 2026 (row 59 quarter total columns)
+    qtrAOP2026: [630.090, 685.152, 709.607, 591.699],
   },
   modelHome: {
     total:          85,
@@ -876,12 +880,16 @@ function renderMetrics() {
         ${extra}
       </div>`;
   }
-  function cardCompact(label, val, valCls, sub) {
+  function cardCompact(label, val, valCls, sub, delta=null) {
+    const deltaHtml = delta !== null
+      ? `<div class="metric-sub xs" style="color:${delta>=0?'var(--teal)':'var(--pink)'};font-weight:700;margin-top:2px">${delta>=0?'+':''}${fcr(delta)}</div>`
+      : '';
     return `
       <div class="metric-card compact">
         <div class="metric-label sm">${label}</div>
         <div class="metric-value xs ${valCls}">${val}</div>
         <div class="metric-sub xs">${sub}</div>
+        ${deltaHtml}
       </div>`;
   }
 
@@ -906,39 +914,36 @@ function renderMetrics() {
 
   // ── BOOKINGS: quarterly row ──
   const QNAMES = ['Q1 26','Q2 26','Q3 26','Q4 26'];
-  const QSTART_MONTHS = [0,3,6,9]; // Jan, Apr, Jul, Oct
   let bookingsQtrly = '';
   for (let q = 0; q < 4; q++) {
-    const qm0 = q * 3; // first month of quarter (0-based)
-    const qSum  = D.monthly.bookings2026.slice(qm0, qm0+3).reduce((a,b)=>a+b, 0);
-    const lastDayOfQtr = new Date(di.year, qm0+3, 0).getDate(); // last day of last month of qtr
-    const daysLeft = daysTo(di.year, qm0+3, 0); // last day of quarter
+    const qm0     = q * 3;
+    const qSum    = D.monthly.bookings2026.slice(qm0, qm0+3).reduce((a,b)=>a+b, 0);
+    const qAOP    = g.qtrAOP2026[q];
+    const daysLeft = daysTo(di.year, qm0+3, 0);
     const isPast    = q < di.qIdx;
     const isCurrent = q === di.qIdx;
     const isFuture  = q > di.qIdx;
     const val   = qSum > 0 ? fc(qSum) : '—';
     const cls   = isPast ? 'pos' : isCurrent ? 'sm' : 'dim';
-    const sub   = isPast    ? `Completed ✓` :
-                  isCurrent ? `${daysLeft} days to Q end` :
-                              `${daysLeft} days to Q end`;
-    bookingsQtrly += cardCompact(QNAMES[q], val, cls, sub);
+    const sub   = isPast ? `Completed ✓` : `${daysLeft} days to Q end`;
+    const delta = (isPast || isCurrent) && qAOP > 0 ? qSum - qAOP : null;
+    bookingsQtrly += cardCompact(QNAMES[q], val, cls, sub, delta);
   }
 
   // ── BOOKINGS: monthly row ──
   const MONTH_LABELS = ['Jan 26','Feb 26','Mar 26','Apr 26','May 26','Jun 26','Jul 26','Aug 26','Sep 26','Oct 26','Nov 26','Dec 26'];
   let bookingsMonthly = '';
   for (let m = 0; m < 12; m++) {
-    const val26 = D.monthly.bookings2026[m];
+    const val26    = D.monthly.bookings2026[m];
+    const mAOP     = g.monthlyAOP2026[m];
     const isPast    = m < di.month;
     const isCurrent = m === di.month;
-    const isFuture  = m > di.month;
     const daysLeft  = isCurrent ? (di.daysInMonth - di.day) : 0;
-    const val = (isPast || isCurrent) && val26 > 0 ? fc(val26) : '—';
-    const cls = isPast ? 'pos' : isCurrent ? 'sm' : 'dim';
-    const sub = isPast    ? 'Completed' :
-                isCurrent ? `${daysLeft} days left` :
-                            '—';
-    bookingsMonthly += cardCompact(MONTH_LABELS[m], val, cls, sub);
+    const val   = (isPast || isCurrent) && val26 > 0 ? fc(val26) : '—';
+    const cls   = isPast ? 'pos' : isCurrent ? 'sm' : 'dim';
+    const sub   = isPast ? 'Completed' : isCurrent ? `${daysLeft} days left` : '—';
+    const delta = (isPast || isCurrent) && val26 > 0 ? val26 - mAOP : null;
+    bookingsMonthly += cardCompact(MONTH_LABELS[m], val, cls, sub, delta);
   }
 
   // ── REVENUE: main row only ──
