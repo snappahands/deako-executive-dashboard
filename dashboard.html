@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Executive Dashboard – Account Dev.</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
   <style>
     /* ── DEAKO DARK THEME ── */
     :root {
@@ -414,7 +415,7 @@
   <div class="header-right">
     <div class="header-date" id="headerDate"></div>
     <div class="header-period" id="headerPeriod"></div>
-    <div style="font-size:11px;color:var(--text-dim);margin-top:4px;letter-spacing:.04em">v1.2</div>
+    <div style="font-size:11px;color:var(--text-dim);margin-top:4px;letter-spacing:.04em">v1.3</div>
   </div>
 </header>
 
@@ -572,6 +573,7 @@ const DEFAULTS = {
 let D = loadData();
 let currentModal = null;
 let editCustomIdx = null;
+Chart.register(ChartDataLabels);
 const charts = {};
 
 function deepMerge(target, source) {
@@ -713,15 +715,44 @@ function renderHeader() {
 // ═══════════════════════════════════════════════════════════
 //  CHARTS
 // ═══════════════════════════════════════════════════════════
-function makeBar(id, labels, ds, fmt) {
+function makeBar(id, labels, ds, fmt, deltas) {
   const ctx = document.getElementById(id).getContext('2d');
   if (charts[id]) charts[id].destroy();
+
+  // Attach datalabels config to each dataset
+  ds.forEach((d, i) => {
+    const is2026 = i === ds.length - 1;
+    if (is2026 && deltas) {
+      d.datalabels = {
+        display: (ctx) => {
+          const v = ds[ds.length-1].data[ctx.dataIndex];
+          return v > 0;
+        },
+        formatter: (_val, ctx) => {
+          const delta = deltas[ctx.dataIndex];
+          if (delta === null || delta === undefined) return '';
+          const sign = delta >= 0 ? '+' : '';
+          return sign + (fmt === '$' ? fc(delta) : fn(delta));
+        },
+        color: (_val, ctx) => deltas[ctx.dataIndex] >= 0 ? '#3ecfc6' : '#e8728a',
+        anchor: 'end',
+        align: 'top',
+        font: { size: 9, weight: '700' },
+        padding: { bottom: 2 },
+        clamp: true
+      };
+    } else {
+      d.datalabels = { display: false };
+    }
+  });
+
   charts[id] = new Chart(ctx, {
     type: 'bar',
     data: { labels, datasets: ds },
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      layout: { padding: { top: 22 } },
       plugins: {
         legend: {
           position:'top',
@@ -736,7 +767,8 @@ function makeBar(id, labels, ds, fmt) {
           callbacks: {
             label: c => ` ${c.dataset.label}: ${fmt==='$' ? fc(c.raw) : fn(c.raw)}`
           }
-        }
+        },
+        datalabels: {}  // per-dataset config above takes precedence
       },
       scales: {
         x: {
@@ -766,25 +798,30 @@ function renderCharts() {
   const r25c = 'rgba(232,114,138,0.45)';
   const r26c = 'rgba(62,207,198,0.88)';
 
+  const deltaMonthB = m.bookings2026.map((v,i) => v > 0 ? v - m.bookings2025[i] : null);
+  const deltaMonthR = m.revenue2026.map((v,i)  => v > 0 ? v - m.revenue2025[i]  : null);
+  const deltaQtrB   = qB26.map((v,i) => v > 0 ? v - qB25[i] : null);
+  const deltaQtrR   = qR26.map((v,i) => v > 0 ? v - qR25[i] : null);
+
   makeBar('chartMonthlyBookings', MONTHS, [
     { label:'2025', data: m.bookings2025, backgroundColor: b25c, borderRadius:4 },
     { label:'2026', data: m.bookings2026, backgroundColor: b26c, borderRadius:4 },
-  ], '$');
+  ], '$', deltaMonthB);
 
   makeBar('chartMonthlyRevenue', MONTHS, [
     { label:'2025', data: m.revenue2025, backgroundColor: r25c, borderRadius:4 },
     { label:'2026', data: m.revenue2026, backgroundColor: r26c, borderRadius:4 },
-  ], '$');
+  ], '$', deltaMonthR);
 
   makeBar('chartQtrBookings', QUARTERS, [
     { label:'2025', data: qB25, backgroundColor: b25c, borderRadius:5 },
     { label:'2026', data: qB26, backgroundColor: b26c, borderRadius:5 },
-  ], '$');
+  ], '$', deltaQtrB);
 
   makeBar('chartQtrRevenue', QUARTERS, [
     { label:'2025', data: qR25, backgroundColor: r25c, borderRadius:5 },
     { label:'2026', data: qR26, backgroundColor: r26c, borderRadius:5 },
-  ], '$');
+  ], '$', deltaQtrR);
 
   // note about current month
   const di = getDateInfo();
