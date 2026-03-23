@@ -415,7 +415,7 @@
   <div class="header-right">
     <div class="header-date" id="headerDate"></div>
     <div class="header-period" id="headerPeriod"></div>
-    <div style="font-size:11px;color:var(--text-dim);margin-top:4px;letter-spacing:.04em">v1.4</div>
+    <div style="font-size:11px;color:var(--text-dim);margin-top:4px;letter-spacing:.04em">v1.5</div>
   </div>
 </header>
 
@@ -536,7 +536,7 @@
 const DEFAULTS = {
   monthly: {
     // Bookings: full-year actuals from Justin Bookings Table row 58
-    bookings2026: [218.9, 206.7, 157.8, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    bookings2026: [218.909, 206.701, 157.798, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     bookings2025: [88.1, 117.5, 148.4, 187.6, 211.8, 227.6, 240.8, 244.3, 188.8, 224.0, 162.8, 159.5],
     // Revenue: full-year actuals from Justin Bookings Table row 58
     revenue2026:  [218.9, 206.7, 157.8, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -859,7 +859,7 @@ function renderMetrics() {
   const pctColorR = pctR >= 100 ? '#3ecfc6' : pctR >= 75 ? '#3ecfc6' : '#f4a843';
 
   const bookingsCards =
-    card('2026 YTD Bookings', fn(ytdB), 'sm', `of ${fn(g.aopBookings)} AOP`, pctBar(pctB, pctColorB)) +
+    card('2026 YTD Bookings', '$' + Math.round(ytdB * 1000).toLocaleString(), 'sm', `of ${fn(g.aopBookings)} AOP`, pctBar(pctB, pctColorB)) +
     card('% to AOP', fp(pctB), pctB>=100?'pos':pctB>=75?'':'warn', `AOP Target: ${fn(g.aopBookings)}`) +
     card('YoY vs 2025', (yoyB>=0?'+':'')+fp(yoyB), signCls(yoyB), `2025 Full Year: ${fn(g.bookings2025Full)}`) +
     card(`Est. Month End`, fn(est.bookings.monthEnd), 'sm', `${di.day} / ${di.daysInMonth} days elapsed`) +
