@@ -1,0 +1,1305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Executive Dashboard – Account Dev.</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    /* ── DEAKO DARK THEME ── */
+    :root {
+      --bg:        #111827;
+      --card:      #1a2535;
+      --card-alt:  #152030;
+      --border:    #1e3048;
+      --border-lt: #253d58;
+      --text:      #e2edf7;
+      --text-muted:#6b8299;
+      --text-dim:  #4a6278;
+      --teal:      #3ecfc6;
+      --teal-dim:  rgba(62,207,198,0.15);
+      --teal-mid:  rgba(62,207,198,0.55);
+      --pink:      #e8728a;
+      --pink-dim:  rgba(232,114,138,0.15);
+      --pink-mid:  rgba(232,114,138,0.5);
+      --amber:     #f4a843;
+      --amber-dim: rgba(244,168,67,0.15);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      background: var(--card-alt);
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+      padding: 22px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .header h1 { font-size: 22px; font-weight: 800; letter-spacing: -0.3px; color: #fff; }
+    .header h1 span { color: var(--teal); }
+    .header-sub { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+    .header-right { text-align: right; }
+    .header-date { font-size: 15px; font-weight: 700; color: var(--text); }
+    .header-period { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+
+    /* ── LAYOUT ── */
+    .container { max-width: 1440px; margin: 0 auto; padding: 28px 24px; }
+
+    /* ── SECTION CARD ── */
+    .section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      background: var(--card-alt);
+    }
+    .section-title {
+      font-size: 19px;
+      font-weight: 800;
+      color: #ffffff;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-shadow: 0 0 20px rgba(62,207,198,0.3);
+    }
+    .section-title::before {
+      content: '';
+      display: inline-block;
+      width: 3px;
+      height: 14px;
+      background: var(--teal);
+      border-radius: 2px;
+    }
+    .section-sub { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+    .section-body { padding: 24px; }
+
+    /* ── BUTTONS ── */
+    .btn {
+      padding: 7px 14px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+      transition: all 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      letter-spacing: 0.2px;
+    }
+    .btn-primary { background: var(--teal); color: #0d1f2d; }
+    .btn-primary:hover { background: #4fe8df; }
+    .btn-outline { background: transparent; color: var(--teal); border: 1.5px solid var(--teal); }
+    .btn-outline:hover { background: var(--teal-dim); }
+    .btn-ghost { background: transparent; color: var(--text-muted); border: 1.5px solid var(--border-lt); }
+    .btn-ghost:hover { background: var(--card-alt); color: var(--text); }
+
+    /* ── CHARTS 2×2 GRID ── */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+    .chart-card {
+      background: var(--card-alt);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 20px;
+    }
+    .chart-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: #ffffff;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 14px;
+    }
+    .chart-note {
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-top: 8px;
+    }
+    .chart-wrap { position: relative; height: 210px; }
+
+    /* ── METRICS ── */
+    .metrics-block { margin-bottom: 24px; }
+    .metrics-block:last-child { margin-bottom: 0; }
+    .metrics-block-label {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border);
+    }
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
+      gap: 12px;
+    }
+    .metric-card {
+      background: var(--card-alt);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 14px;
+      text-align: center;
+    }
+    .metric-label { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 7px; }
+    .metric-value { font-size: 28px; font-weight: 800; color: #fff; line-height: 1; }
+    .metric-value.sm { font-size: 22px; }
+    .metric-value.pos { color: var(--teal); }
+    .metric-value.neg { color: var(--pink); }
+    .metric-value.warn { color: var(--amber); }
+    .metric-sub { font-size: 11px; color: var(--text-dim); margin-top: 4px; }
+    .prog-wrap { background: var(--border); border-radius: 6px; height: 5px; margin-top: 10px; overflow: hidden; }
+    .prog-fill { height: 100%; border-radius: 6px; transition: width 0.5s ease; }
+
+    /* ── STAT CARDS (model home / training) ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 16px;
+    }
+    .stat-card {
+      background: var(--card-alt);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px 20px;
+      text-align: center;
+    }
+    .stat-icon { font-size: 28px; display: block; margin-bottom: 8px; }
+    .stat-value { font-size: 40px; font-weight: 800; color: #fff; line-height: 1; margin-bottom: 6px; }
+    .stat-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; }
+    .stat-note { font-size: 11px; color: var(--text-dim); margin-top: 5px; }
+    .stat-card.blue  .stat-value { color: var(--teal); }
+    .stat-card.green .stat-value { color: var(--teal); }
+    .stat-card.amber .stat-value { color: var(--amber); }
+    .stat-card.red   .stat-value { color: var(--pink); }
+    .stat-card.full  { grid-column: 1 / -1; background: rgba(62,207,198,0.07); border-color: rgba(62,207,198,0.25); padding: 18px 24px; text-align: left; }
+    .stat-card.full-amber { grid-column: 1 / -1; background: rgba(244,168,67,0.07); border-color: rgba(244,168,67,0.25); padding: 18px 24px; text-align: left; }
+    .prog-label { display: flex; align-items: center; gap: 16px; }
+    .prog-label-text { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+    .prog-big { flex: 1; background: var(--border); border-radius: 8px; height: 10px; overflow: hidden; }
+    .prog-big-fill { height: 100%; border-radius: 8px; transition: width 0.5s; }
+    .prog-pct { font-size: 20px; font-weight: 800; min-width: 50px; text-align: right; }
+
+    /* ── CUSTOM DATA POINTS ── */
+    .custom-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 14px;
+    }
+    .custom-card {
+      background: var(--card-alt);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      position: relative;
+    }
+    .custom-card-label { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+    .custom-card-value { font-size: 26px; font-weight: 800; color: #fff; }
+    .custom-card-unit { font-size: 14px; color: var(--text-dim); }
+    .custom-card-note { font-size: 11px; color: var(--text-dim); margin-top: 5px; }
+    .custom-card-actions { position: absolute; top: 8px; right: 8px; display: flex; gap: 4px; }
+    .icon-btn {
+      width: 24px; height: 24px; border-radius: 5px; border: none;
+      cursor: pointer; font-size: 11px;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s;
+    }
+    .icon-btn.edit  { background: var(--teal-dim); color: var(--teal); }
+    .icon-btn.edit:hover  { background: rgba(62,207,198,0.25); }
+    .icon-btn.del   { background: var(--pink-dim); color: var(--pink); }
+    .icon-btn.del:hover   { background: rgba(232,114,138,0.25); }
+    .add-card {
+      background: transparent;
+      border: 2px dashed var(--border-lt);
+      border-radius: 10px;
+      padding: 16px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 700;
+      transition: all 0.15s;
+      min-height: 90px;
+    }
+    .add-card:hover { border-color: var(--teal); color: var(--teal); background: var(--teal-dim); }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--card);
+      border: 1px solid var(--border-lt);
+      border-radius: 14px;
+      width: 90%;
+      max-width: 740px;
+      max-height: 88vh;
+      overflow-y: auto;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+    }
+    .modal-head {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      background: var(--card);
+      z-index: 2;
+    }
+    .modal-head h2 { font-size: 17px; font-weight: 800; color: #fff; }
+    .modal-close {
+      width: 32px; height: 32px; border-radius: 8px;
+      border: none; background: var(--card-alt);
+      cursor: pointer; font-size: 18px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-muted);
+    }
+    .modal-close:hover { background: var(--border); color: var(--text); }
+    .modal-body { padding: 22px 24px; }
+    .modal-foot {
+      padding: 14px 24px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      position: sticky;
+      bottom: 0;
+      background: var(--card);
+    }
+
+    /* ── FORMS ── */
+    .form-group { margin-bottom: 14px; }
+    .form-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      margin-bottom: 6px;
+      display: block;
+    }
+    .form-input {
+      width: 100%;
+      padding: 9px 13px;
+      border: 1.5px solid var(--border-lt);
+      border-radius: 8px;
+      font-size: 14px;
+      color: var(--text);
+      background: var(--card-alt);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .form-input:focus { border-color: var(--teal); box-shadow: 0 0 0 3px var(--teal-dim); }
+    .form-input[readonly] { background: var(--bg); color: var(--text-muted); }
+    .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .form-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    .form-note { font-size: 12px; color: var(--text-muted); margin-bottom: 18px; line-height: 1.5; }
+    .form-section-label {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--text-dim);
+      margin-bottom: 10px;
+      margin-top: 20px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border);
+    }
+    .form-section-label:first-child { margin-top: 0; }
+
+    .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .data-table th {
+      background: var(--bg);
+      padding: 8px 10px;
+      text-align: left;
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--border-lt);
+    }
+    .data-table td { padding: 5px 6px; border-bottom: 1px solid var(--border); }
+    .data-table td:first-child { font-weight: 700; padding-left: 10px; color: var(--text-muted); font-size: 12px; }
+    .data-table input {
+      width: 100%;
+      padding: 5px 8px;
+      border: 1.5px solid var(--border-lt);
+      border-radius: 6px;
+      font-size: 13px;
+      outline: none;
+      text-align: right;
+      background: var(--card-alt);
+      color: var(--text);
+    }
+    .data-table input:focus { border-color: var(--teal); }
+    .data-table tr:hover td { background: rgba(255,255,255,0.03); }
+    .data-table tr.current-row td { background: rgba(244,168,67,0.08); }
+
+    .divider { height: 1px; background: var(--border); margin: 22px 0; }
+
+    /* scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border-lt); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+
+    @media (max-width: 860px) {
+      .charts-grid { grid-template-columns: 1fr; }
+      .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .container { padding: 14px; }
+      .form-grid-2 { grid-template-columns: 1fr; }
+      .header { padding: 16px 20px; flex-direction: column; gap: 8px; text-align: center; }
+      .header-right { text-align: center; }
+    }
+    /* ── SAVE TOAST ── */
+    #saveToast {
+      position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(80px);
+      background: #1a3a2a; border: 1px solid #2ecc71; color: #2ecc71;
+      padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 700;
+      opacity: 0; transition: all 0.35s ease; z-index: 9999; white-space: nowrap;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    }
+    #saveToast.show {
+      opacity: 1; transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <div>
+    <h1><span>DEAKO</span> — Executive Dashboard</h1>
+    <div class="header-sub">Account Dev. · Performance Overview &amp; Key Metrics</div>
+  </div>
+  <div class="header-right">
+    <div class="header-date" id="headerDate"></div>
+    <div class="header-period" id="headerPeriod"></div>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- ── SECTION 1: CHARTS ── -->
+  <div class="section">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Bookings &amp; Revenue Performance</div>
+        <div class="section-sub">Monthly &amp; quarterly comparison — 2025 vs 2026</div>
+      </div>
+      <button class="btn btn-outline" onclick="openModal('chartData')">&#9998; Edit Chart Data</button>
+    </div>
+    <div class="section-body">
+      <div class="charts-grid">
+        <div class="chart-card">
+          <div class="chart-title">Monthly Bookings ($K)</div>
+          <div class="chart-wrap"><canvas id="chartMonthlyBookings"></canvas></div>
+          <div class="chart-note" id="chartNoteMonthly"></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Monthly Revenue ($K)</div>
+          <div class="chart-wrap"><canvas id="chartMonthlyRevenue"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Quarterly Bookings ($K)</div>
+          <div class="chart-wrap"><canvas id="chartQtrBookings"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Quarterly Revenue ($K)</div>
+          <div class="chart-wrap"><canvas id="chartQtrRevenue"></canvas></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 2: KEY METRICS ── -->
+  <div class="section">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Key Performance Metrics</div>
+        <div class="section-sub">YTD actuals vs AOP · YoY comparison · Forward estimates</div>
+      </div>
+      <button class="btn btn-outline" onclick="openModal('goals')">&#9998; Edit Goals &amp; AOP</button>
+    </div>
+    <div class="section-body">
+      <div id="metricsContainer"></div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 3: MODEL HOME EXPERIENCE ── -->
+  <div class="section">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Model Home Experience</div>
+        <div class="section-sub">Setup status across all model home locations</div>
+      </div>
+      <button class="btn btn-outline" onclick="openModal('modelHome')">&#9998; Edit</button>
+    </div>
+    <div class="section-body">
+      <div class="stats-grid" id="modelHomeContainer" style="grid-template-columns: repeat(7, 1fr);"></div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 4: SALES AGENT TRAINING ── -->
+  <div class="section">
+    <div class="section-header">
+      <div>
+        <div class="section-title">DRH Sales Agent Training Program</div>
+        <div class="section-sub">Enrollment, training activity &amp; certification status</div>
+      </div>
+      <button class="btn btn-outline" onclick="openModal('training')">&#9998; Edit</button>
+    </div>
+    <div class="section-body">
+      <div class="stats-grid" id="trainingContainer"></div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 5: CUSTOM DATA POINTS ── -->
+  <div class="section">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Additional Data Points</div>
+        <div class="section-sub">Manually tracked metrics &amp; supplemental reporting data</div>
+      </div>
+      <button class="btn btn-primary" onclick="openModal('addCustom')">+ Add Data Point</button>
+    </div>
+    <div class="section-body">
+      <div class="custom-grid" id="customContainer"></div>
+    </div>
+  </div>
+
+</div><!-- end .container -->
+
+<!-- ── MODAL ── -->
+<div id="saveToast">&#10003; Data saved — replace your dashboard.html with the downloaded file</div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="modalTitle">Edit</h2>
+      <button class="modal-close" onclick="closeModal()">&#215;</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveModal()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+//  DEFAULT DATA
+// ═══════════════════════════════════════════════════════════
+// __DATA_START__
+const DEFAULTS = {
+  monthly: {
+    // Bookings: full-year actuals from Justin Bookings Table row 58
+    bookings2026: [218.9, 206.7, 157.8, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    bookings2025: [88.1, 117.5, 148.4, 187.6, 211.8, 227.6, 240.8, 244.3, 188.8, 224.0, 162.8, 159.5],
+    // Revenue: full-year actuals from Justin Bookings Table row 58
+    revenue2026:  [218.9, 206.7, 157.8, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    revenue2025:  [88.1, 117.5, 148.4, 187.6, 211.8, 227.6, 240.8, 244.3, 188.8, 224.0, 162.8, 159.5],
+  },
+  goals: {
+    aopBookings:       2616.5,  // 2026 AOP from Justin Bookings Table row 59
+    aopRevenue:        2616.5,  // 2026 AOP from Justin Bookings Table row 59
+    bookings2025Full:  2181.1,  // 2025 full-year actuals total (row 58)
+    revenue2025Full:   2181.1,  // 2025 full-year actuals total (row 58)
+  },
+  modelHome: {
+    total:          85,
+    withExperience: 45,
+    remotely:       20,
+    packsSold:       0,
+    itm:             0,
+    itmConversion:   0,
+  },
+  training: {
+    totalAgents:          150,
+    totalTrainings:        25,
+    availableTrainings:    28,
+    totalTrained:          95,
+    totalCertified:        62,
+  },
+  customPoints: [],
+};
+// __DATA_END__
+
+// ═══════════════════════════════════════════════════════════
+//  STATE & PERSISTENCE
+// ═══════════════════════════════════════════════════════════
+let D = loadData();
+let currentModal = null;
+let editCustomIdx = null;
+const charts = {};
+
+function deepMerge(target, source) {
+  for (const key of Object.keys(source)) {
+    if (source[key] !== null && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+      if (!target[key] || typeof target[key] !== 'object') target[key] = {};
+      deepMerge(target[key], source[key]);
+    } else {
+      target[key] = source[key];
+    }
+  }
+  return target;
+}
+function loadData() {
+  try {
+    const s = localStorage.getItem('srDashboard');
+    if (s) return deepMerge(JSON.parse(JSON.stringify(DEFAULTS)), JSON.parse(s));
+  } catch(e) {}
+  return JSON.parse(JSON.stringify(DEFAULTS));
+}
+function saveData() {
+  localStorage.setItem('srDashboard', JSON.stringify(D));
+}
+function saveToFile() {
+  const newDefaults = 'const DEFAULTS = ' + JSON.stringify(D, null, 2) + ';';
+  const html = document.documentElement.outerHTML;
+  const start = html.indexOf('// __DATA_START__');
+  const end   = html.indexOf('// __DATA_END__');
+  if (start === -1 || end === -1) return;
+  const before = html.slice(0, start) + '// __DATA_START__\n';
+  const after  = '\n' + html.slice(end);
+  const updated = before + newDefaults + after;
+  const blob = new Blob([updated], { type: 'text/html' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'dashboard.html';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  // Show toast
+  const toast = document.getElementById('saveToast');
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 4000);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  DATE UTILITIES
+// ═══════════════════════════════════════════════════════════
+const MONTHS  = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const MONTHS_FULL = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const QUARTERS = ['Q1','Q2','Q3','Q4'];
+
+function getDateInfo() {
+  const now  = new Date();
+  const month = now.getMonth();
+  const year  = now.getFullYear();
+  const day   = now.getDate();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const qIdx  = Math.floor(month / 3);
+  const qStart = qIdx * 3;
+
+  let daysElapsedQ = 0, totalDaysQ = 0;
+  for (let m = qStart; m < qStart + 3; m++) {
+    const d = new Date(year, m + 1, 0).getDate();
+    totalDaysQ += d;
+    if (m < month) daysElapsedQ += d;
+    else if (m === month) daysElapsedQ += day;
+  }
+
+  let dayOfYear = 0;
+  for (let m = 0; m < month; m++) dayOfYear += new Date(year, m + 1, 0).getDate();
+  dayOfYear += day;
+
+  const isLeap = (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
+  const daysInYear = isLeap ? 366 : 365;
+
+  return { month, year, day, daysInMonth, qIdx, qStart, daysElapsedQ, totalDaysQ, dayOfYear, daysInYear };
+}
+
+function qtrlySums(arr) {
+  return [0,1,2,3].map(q => arr.slice(q*3, q*3+3).reduce((a,b)=>a+b,0));
+}
+function ytd(arr, thruMonth) {
+  return arr.slice(0, thruMonth + 1).reduce((a,b)=>a+b,0);
+}
+function extrapolate(val, elapsed, total) {
+  return elapsed > 0 ? Math.round(val / elapsed * total) : 0;
+}
+
+function calcEstimates(di) {
+  const { month, day, daysInMonth, qStart, daysElapsedQ, totalDaysQ, dayOfYear, daysInYear } = di;
+  const b26 = D.monthly.bookings2026;
+  const r26 = D.monthly.revenue2026;
+
+  const qB = b26.slice(qStart, month + 1).reduce((a,b)=>a+b, 0);
+  const qR = r26.slice(qStart, month + 1).reduce((a,b)=>a+b, 0);
+  const yB = ytd(b26, month);
+  const yR = ytd(r26, month);
+
+  return {
+    bookings: {
+      monthEnd: extrapolate(b26[month] || 0, day, daysInMonth),
+      qEnd:     extrapolate(qB, daysElapsedQ, totalDaysQ),
+      yearEnd:  extrapolate(yB, dayOfYear, daysInYear),
+    },
+    revenue: {
+      monthEnd: extrapolate(r26[month] || 0, day, daysInMonth),
+      qEnd:     extrapolate(qR, daysElapsedQ, totalDaysQ),
+      yearEnd:  extrapolate(yR, dayOfYear, daysInYear),
+    },
+  };
+}
+
+// ═══════════════════════════════════════════════════════════
+//  FORMATTERS
+// ═══════════════════════════════════════════════════════════
+function fn(n)  { return Number(n).toLocaleString(); }
+function fc(n)  {
+  if (n >= 1000) return '$' + (n/1000).toFixed(1) + 'M';
+  return '$' + Number(n).toLocaleString() + 'K';
+}
+function fp(n, dec=1) { return n.toFixed(dec) + '%'; }
+function signCls(n) { return n > 0 ? 'pos' : n < 0 ? 'neg' : ''; }
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ═══════════════════════════════════════════════════════════
+//  HEADER
+// ═══════════════════════════════════════════════════════════
+function renderHeader() {
+  const now = new Date();
+  document.getElementById('headerDate').textContent =
+    now.toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  const di = getDateInfo();
+  document.getElementById('headerPeriod').textContent =
+    `${QUARTERS[di.qIdx]} ${di.year}  ·  Day ${di.dayOfYear} of ${di.daysInYear}`;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  CHARTS
+// ═══════════════════════════════════════════════════════════
+function makeBar(id, labels, ds, fmt) {
+  const ctx = document.getElementById(id).getContext('2d');
+  if (charts[id]) charts[id].destroy();
+  charts[id] = new Chart(ctx, {
+    type: 'bar',
+    data: { labels, datasets: ds },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position:'top',
+          labels: { font:{size:11}, boxWidth:12, padding:8, color:'#6b8299' }
+        },
+        tooltip: {
+          backgroundColor: '#1a2535',
+          borderColor: '#1e3048',
+          borderWidth: 1,
+          titleColor: '#e2edf7',
+          bodyColor: '#6b8299',
+          callbacks: {
+            label: c => ` ${c.dataset.label}: ${fmt==='$' ? fc(c.raw) : fn(c.raw)}`
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { display:false },
+          ticks: { font:{size:11}, color:'#4a6278' },
+          border: { color:'#1e3048' }
+        },
+        y: {
+          grid: { color:'rgba(30,48,72,0.8)' },
+          ticks: { font:{size:11}, color:'#4a6278', callback: v => fmt==='$' ? fc(v) : fn(v) },
+          border: { color:'#1e3048' }
+        }
+      }
+    }
+  });
+}
+
+function renderCharts() {
+  const m = D.monthly;
+  const qB26 = qtrlySums(m.bookings2026);
+  const qB25 = qtrlySums(m.bookings2025);
+  const qR26 = qtrlySums(m.revenue2026);
+  const qR25 = qtrlySums(m.revenue2025);
+
+  const b25c = 'rgba(232,114,138,0.45)';  // 2025 = muted pink
+  const b26c = 'rgba(62,207,198,0.88)';   // 2026 = teal
+  const r25c = 'rgba(232,114,138,0.45)';
+  const r26c = 'rgba(62,207,198,0.88)';
+
+  makeBar('chartMonthlyBookings', MONTHS, [
+    { label:'2025', data: m.bookings2025, backgroundColor: b25c, borderRadius:4 },
+    { label:'2026', data: m.bookings2026, backgroundColor: b26c, borderRadius:4 },
+  ], '$');
+
+  makeBar('chartMonthlyRevenue', MONTHS, [
+    { label:'2025', data: m.revenue2025, backgroundColor: r25c, borderRadius:4 },
+    { label:'2026', data: m.revenue2026, backgroundColor: r26c, borderRadius:4 },
+  ], '$');
+
+  makeBar('chartQtrBookings', QUARTERS, [
+    { label:'2025', data: qB25, backgroundColor: b25c, borderRadius:5 },
+    { label:'2026', data: qB26, backgroundColor: b26c, borderRadius:5 },
+  ], '$');
+
+  makeBar('chartQtrRevenue', QUARTERS, [
+    { label:'2025', data: qR25, backgroundColor: r25c, borderRadius:5 },
+    { label:'2026', data: qR26, backgroundColor: r26c, borderRadius:5 },
+  ], '$');
+
+  // note about current month
+  const di = getDateInfo();
+  const el = document.getElementById('chartNoteMonthly');
+  if (el) el.textContent = `* ${MONTHS_FULL[di.month]} ${di.year} is partial — ${di.day} of ${di.daysInMonth} days`;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  KEY METRICS
+// ═══════════════════════════════════════════════════════════
+function renderMetrics() {
+  const di  = getDateInfo();
+  const g   = D.goals;
+  const ytdB = ytd(D.monthly.bookings2026, di.month);
+  const ytdR = ytd(D.monthly.revenue2026,  di.month);
+  const ytdB25 = ytd(D.monthly.bookings2025, di.month);
+  const ytdR25 = ytd(D.monthly.revenue2025,  di.month);
+
+  const pctB = g.aopBookings > 0 ? (ytdB / g.aopBookings * 100) : 0;
+  const pctR = g.aopRevenue  > 0 ? (ytdR / g.aopRevenue  * 100) : 0;
+  const yoyB = ytdB25 > 0 ? ((ytdB - ytdB25) / ytdB25 * 100) : 0;
+  const yoyR = ytdR25 > 0 ? ((ytdR - ytdR25) / ytdR25 * 100) : 0;
+
+  const est = calcEstimates(di);
+  const qName = QUARTERS[di.qIdx];
+
+  function pctBar(pct, color) {
+    return `<div class="prog-wrap"><div class="prog-fill" style="width:${Math.min(pct,100)}%;background:${color}"></div></div>`;
+  }
+
+  function metricBlock(label, cards) {
+    return `
+      <div class="metrics-block">
+        <div class="metrics-block-label">${label}</div>
+        <div class="metrics-grid">${cards}</div>
+      </div>`;
+  }
+
+  function card(label, val, valCls, sub, extra='') {
+    return `
+      <div class="metric-card">
+        <div class="metric-label">${label}</div>
+        <div class="metric-value ${valCls}">${val}</div>
+        <div class="metric-sub">${sub}</div>
+        ${extra}
+      </div>`;
+  }
+
+  const pctColorB = pctB >= 100 ? '#3ecfc6' : pctB >= 75 ? '#3ecfc6' : '#f4a843';
+  const pctColorR = pctR >= 100 ? '#3ecfc6' : pctR >= 75 ? '#3ecfc6' : '#f4a843';
+
+  const bookingsCards =
+    card('2026 YTD Bookings', fn(ytdB), 'sm', `of ${fn(g.aopBookings)} AOP`, pctBar(pctB, pctColorB)) +
+    card('% to AOP', fp(pctB), pctB>=100?'pos':pctB>=75?'':'warn', `AOP Target: ${fn(g.aopBookings)}`) +
+    card('YoY vs 2025', (yoyB>=0?'+':'')+fp(yoyB), signCls(yoyB), `2025 YTD: ${fn(ytdB25)}`) +
+    card(`Est. Month End`, fn(est.bookings.monthEnd), 'sm', `${di.day} / ${di.daysInMonth} days elapsed`) +
+    card(`Est. ${qName} End`, fn(est.bookings.qEnd),  'sm', `${di.daysElapsedQ} / ${di.totalDaysQ} days elapsed`) +
+    card('Est. Year End',     fn(est.bookings.yearEnd), 'sm', `Day ${di.dayOfYear} of ${di.daysInYear}`);
+
+  const revenueCards =
+    card('2026 YTD Revenue', fc(ytdR), 'sm', `of ${fc(g.aopRevenue)} AOP`, pctBar(pctR, pctColorR)) +
+    card('% to AOP', fp(pctR), pctR>=100?'pos':pctR>=75?'':'warn', `AOP Target: ${fc(g.aopRevenue)}`) +
+    card('YoY vs 2025', (yoyR>=0?'+':'')+fp(yoyR), signCls(yoyR), `2025 YTD: ${fc(ytdR25)}`) +
+    card(`Est. Month End`, fc(est.revenue.monthEnd), 'sm', `${di.day} / ${di.daysInMonth} days elapsed`) +
+    card(`Est. ${qName} End`, fc(est.revenue.qEnd),  'sm', `${di.daysElapsedQ} / ${di.totalDaysQ} days elapsed`) +
+    card('Est. Year End',     fc(est.revenue.yearEnd), 'sm', `Day ${di.dayOfYear} of ${di.daysInYear}`);
+
+  document.getElementById('metricsContainer').innerHTML =
+    metricBlock('Bookings', bookingsCards) +
+    '<div class="divider"></div>' +
+    metricBlock('Revenue', revenueCards);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  MODEL HOME EXPERIENCE
+// ═══════════════════════════════════════════════════════════
+function renderModelHome() {
+  const m = D.modelHome;
+  const remaining = Math.max(0, m.total - m.withExperience - m.remotely);
+  const pct = m.total > 0 ? ((m.withExperience + m.remotely) / m.total * 100) : 0;
+
+  const remotePct = m.total > 0 ? (m.remotely / m.total * 100) : 0;
+  const expPct    = m.total > 0 ? (m.withExperience / m.total * 100) : 0;
+
+  document.getElementById('modelHomeContainer').innerHTML = `
+    <div class="stat-card blue">
+      <span class="stat-icon">🏠</span>
+      <div class="stat-value">${fn(m.total)}</div>
+      <div class="stat-label">Total Model Homes</div>
+    </div>
+    <div class="stat-card green">
+      <span class="stat-icon">✅</span>
+      <div class="stat-value">${fn(m.withExperience)}</div>
+      <div class="stat-label">Set Up w/ Experience</div>
+      <div class="stat-note">${fp(expPct,0)} of total</div>
+    </div>
+    <div class="stat-card">
+      <span class="stat-icon">📡</span>
+      <div class="stat-value">${fn(m.remotely)}</div>
+      <div class="stat-label">Set Up Remotely</div>
+      <div class="stat-note">${fp(remotePct,0)} of total</div>
+    </div>
+    <div class="stat-card ${remaining > 0 ? 'amber' : 'green'}">
+      <span class="stat-icon">${remaining > 0 ? '⏳' : '🎉'}</span>
+      <div class="stat-value">${fn(remaining)}</div>
+      <div class="stat-label">Remaining to Set Up</div>
+      <div class="stat-note">${remaining > 0 ? fp(remaining/m.total*100,0)+' of total' : 'All complete!'}</div>
+    </div>
+    <div class="stat-card">
+      <span class="stat-icon">📦</span>
+      <div class="stat-value">${fn(m.packsSold)}</div>
+      <div class="stat-label">Total Packs Sold</div>
+    </div>
+    <div class="stat-card blue">
+      <span class="stat-icon">🏡</span>
+      <div class="stat-value">${fn(m.itm)}</div>
+      <div class="stat-label">ITM Total Revenue</div>
+    </div>
+    <div class="stat-card amber">
+      <span class="stat-icon">📊</span>
+      <div class="stat-value">${m.itmConversion}%</div>
+      <div class="stat-label">ITM Conversion Rate</div>
+    </div>
+    <div class="stat-card full">
+      <div class="prog-label-text">Total Set Up Remotely</div>
+      <div class="prog-label">
+        <div class="prog-big">
+          <div class="prog-big-fill" style="width:${Math.min(remotePct,100)}%;background:#3ecfc6;"></div>
+        </div>
+        <div class="prog-pct" style="color:#3ecfc6;">${fp(remotePct,0)}</div>
+      </div>
+    </div>
+    <div class="stat-card full">
+      <div class="prog-label-text">Set Up w/ Experience</div>
+      <div class="prog-label">
+        <div class="prog-big">
+          <div class="prog-big-fill" style="width:${Math.min(expPct,100)}%;background:#f4a843;"></div>
+        </div>
+        <div class="prog-pct" style="color:#f4a843;">${fp(expPct,0)}</div>
+      </div>
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  SALES AGENT TRAINING
+// ═══════════════════════════════════════════════════════════
+function renderTraining() {
+  const t = D.training;
+  const certPct      = t.totalTrained       > 0 ? (t.totalCertified  / t.totalTrained       * 100) : 0;
+  const trainedPct   = t.totalAgents       > 0 ? (t.totalTrained    / t.totalAgents       * 100) : 0;
+  const trainingsPct = t.availableTrainings > 0 ? (t.totalTrainings  / t.availableTrainings * 100) : 0;
+
+  document.getElementById('trainingContainer').innerHTML = `
+    <div class="stat-card">
+      <span class="stat-icon">📚</span>
+      <div class="stat-value">${fn(t.totalTrainings)}</div>
+      <div class="stat-label">Total Trainings</div>
+      <div class="stat-note">${fp(trainingsPct,0)} of ${fn(t.availableTrainings)} available</div>
+    </div>
+    <div class="stat-card blue">
+      <span class="stat-icon">👥</span>
+      <div class="stat-value">${fn(t.totalAgents)}</div>
+      <div class="stat-label">Total Agents</div>
+    </div>
+    <div class="stat-card green">
+      <span class="stat-icon">🎓</span>
+      <div class="stat-value">${fn(t.totalTrained)}</div>
+      <div class="stat-label">Agents Trained</div>
+      <div class="stat-note">${fp(trainedPct,0)} of total agents</div>
+    </div>
+    <div class="stat-card amber">
+      <span class="stat-icon">🏆</span>
+      <div class="stat-value">${fn(t.totalCertified)}</div>
+      <div class="stat-label">Agents Certified</div>
+      <div class="stat-note">${fp(certPct,0)} of trained agents</div>
+    </div>
+    <div class="stat-card full">
+      <div class="prog-label-text">Q1/Q2 Training Completion</div>
+      <div class="prog-label">
+        <div class="prog-big">
+          <div class="prog-big-fill" style="width:${Math.min(trainedPct,100)}%;background:#3ecfc6;"></div>
+        </div>
+        <div class="prog-pct" style="color:#3ecfc6;">${fp(trainedPct,0)}</div>
+      </div>
+    </div>
+    <div class="stat-card full-amber">
+      <div class="prog-label-text">Certification Progress</div>
+      <div class="prog-label">
+        <div class="prog-big">
+          <div class="prog-big-fill" style="width:${Math.min(certPct,100)}%;background:#f4a843;"></div>
+        </div>
+        <div class="prog-pct" style="color:#f4a843;">${fp(certPct,0)}</div>
+      </div>
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  CUSTOM DATA POINTS
+// ═══════════════════════════════════════════════════════════
+function renderCustom() {
+  const pts = D.customPoints;
+  let html = '';
+
+  pts.forEach((p, i) => {
+    html += `
+      <div class="custom-card">
+        <div class="custom-card-actions">
+          <button class="icon-btn edit" onclick="openModal('editCustom',${i})" title="Edit">✏️</button>
+          <button class="icon-btn del"  onclick="deleteCustom(${i})"           title="Delete">🗑</button>
+        </div>
+        <div class="custom-card-label">${esc(p.label)}</div>
+        <div class="custom-card-value">
+          ${p.prefix ? `<span class="custom-card-unit">${esc(p.prefix)}</span>` : ''}${esc(String(p.value))}${p.suffix ? `<span class="custom-card-unit">${esc(p.suffix)}</span>` : ''}
+        </div>
+        ${p.note ? `<div class="custom-card-note">${esc(p.note)}</div>` : ''}
+      </div>`;
+  });
+
+  html += `<div class="add-card" onclick="openModal('addCustom')"><span style="font-size:26px;">+</span><span>Add Data Point</span></div>`;
+  document.getElementById('customContainer').innerHTML = html;
+}
+
+function deleteCustom(i) {
+  if (confirm('Delete this data point?')) {
+    D.customPoints.splice(i, 1);
+    saveData();
+    renderCustom();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  MODAL SYSTEM
+// ═══════════════════════════════════════════════════════════
+function openModal(type, param) {
+  currentModal = type;
+  editCustomIdx = (param !== undefined) ? param : null;
+
+  const title = document.getElementById('modalTitle');
+  const body  = document.getElementById('modalBody');
+
+  if (type === 'chartData') {
+    title.textContent = 'Edit Bookings & Revenue Data';
+    body.innerHTML = buildChartDataForm();
+  } else if (type === 'goals') {
+    title.textContent = 'Edit Goals & AOP Targets';
+    body.innerHTML = buildGoalsForm();
+  } else if (type === 'modelHome') {
+    title.textContent = 'Edit Model Home Experience';
+    body.innerHTML = buildModelHomeForm();
+    setTimeout(syncMHRemaining, 0);
+  } else if (type === 'training') {
+    title.textContent = 'Edit Sales Agent Training';
+    body.innerHTML = buildTrainingForm();
+  } else if (type === 'addCustom') {
+    title.textContent = 'Add Custom Data Point';
+    body.innerHTML = buildCustomForm(null);
+  } else if (type === 'editCustom') {
+    title.textContent = 'Edit Custom Data Point';
+    body.innerHTML = buildCustomForm(D.customPoints[param]);
+  }
+
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+  currentModal = null;
+}
+
+function saveModal() {
+  if      (currentModal === 'chartData')  saveChartData();
+  else if (currentModal === 'goals')      saveGoals();
+  else if (currentModal === 'modelHome')  saveModelHome();
+  else if (currentModal === 'training')   saveTraining();
+  else if (currentModal === 'addCustom')  saveCustomPoint(false);
+  else if (currentModal === 'editCustom') saveCustomPoint(true);
+  closeModal();
+  renderAll();
+  saveToFile();
+}
+
+// close on backdrop click
+document.getElementById('modalOverlay').addEventListener('click', e => {
+  if (e.target.id === 'modalOverlay') closeModal();
+});
+
+// ═══════════════════════════════════════════════════════════
+//  FORM BUILDERS
+// ═══════════════════════════════════════════════════════════
+function buildChartDataForm() {
+  const m  = D.monthly;
+  const di = getDateInfo();
+  let rows = '';
+  MONTHS.forEach((mon, i) => {
+    const isCurrent = (i === di.month);
+    rows += `<tr class="${isCurrent ? 'current-row' : ''}">
+      <td>${mon}${isCurrent ? ' *' : ''}</td>
+      <td><input type="number" min="0" id="b25_${i}" value="${m.bookings2025[i]}"></td>
+      <td><input type="number" min="0" id="b26_${i}" value="${m.bookings2026[i]}"></td>
+      <td><input type="number" min="0" id="r25_${i}" value="${m.revenue2025[i]}"></td>
+      <td><input type="number" min="0" id="r26_${i}" value="${m.revenue2026[i]}"></td>
+    </tr>`;
+  });
+  return `
+    <p class="form-note">Enter monthly actuals for 2025 and 2026. Revenue values are in <strong>$K</strong>. Highlighted row (*) is the current partial month — enter bookings/revenue to date and estimates will extrapolate automatically.</p>
+    <div style="overflow-x:auto;">
+    <table class="data-table">
+      <thead><tr>
+        <th>Month</th>
+        <th>Bookings 2025</th>
+        <th>Bookings 2026</th>
+        <th>Revenue 2025 ($K)</th>
+        <th>Revenue 2026 ($K)</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    </div>`;
+}
+
+function saveChartData() {
+  MONTHS.forEach((_, i) => {
+    D.monthly.bookings2025[i] = +document.getElementById(`b25_${i}`).value || 0;
+    D.monthly.bookings2026[i] = +document.getElementById(`b26_${i}`).value || 0;
+    D.monthly.revenue2025[i]  = +document.getElementById(`r25_${i}`).value || 0;
+    D.monthly.revenue2026[i]  = +document.getElementById(`r26_${i}`).value || 0;
+  });
+  saveData();
+}
+
+function buildGoalsForm() {
+  const g = D.goals;
+  return `
+    <p class="form-note">Set your Annual Operating Plan (AOP) targets and 2025 full-year actuals. These drive the % to AOP and YoY comparison metrics.</p>
+    <div class="form-section-label">2026 AOP Targets</div>
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">AOP Bookings (units)</label>
+        <input class="form-input" type="number" id="aopB" value="${g.aopBookings}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">AOP Revenue ($K)</label>
+        <input class="form-input" type="number" id="aopR" value="${g.aopRevenue}">
+      </div>
+    </div>
+    <div class="form-section-label">2025 Full Year Actuals (for YoY)</div>
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">2025 Total Bookings</label>
+        <input class="form-input" type="number" id="fy25B" value="${g.bookings2025Full}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">2025 Total Revenue ($K)</label>
+        <input class="form-input" type="number" id="fy25R" value="${g.revenue2025Full}">
+      </div>
+    </div>`;
+}
+
+function saveGoals() {
+  D.goals.aopBookings      = +document.getElementById('aopB').value  || 0;
+  D.goals.aopRevenue       = +document.getElementById('aopR').value  || 0;
+  D.goals.bookings2025Full = +document.getElementById('fy25B').value || 0;
+  D.goals.revenue2025Full  = +document.getElementById('fy25R').value || 0;
+  saveData();
+}
+
+function buildModelHomeForm() {
+  const m = D.modelHome;
+  const rem = Math.max(0, m.total - m.withExperience - m.remotely);
+  return `
+    <p class="form-note">Update model home setup counts. <strong>Remaining</strong> is auto-calculated as Total − With Experience − Remotely.</p>
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Total Model Homes</label>
+        <input class="form-input" type="number" id="mhTotal"  value="${m.total}"          oninput="syncMHRemaining()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Set Up w/ Experience</label>
+        <input class="form-input" type="number" id="mhWithExp" value="${m.withExperience}" oninput="syncMHRemaining()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Set Up Remotely</label>
+        <input class="form-input" type="number" id="mhRemote" value="${m.remotely}"        oninput="syncMHRemaining()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Remaining (auto-calculated)</label>
+        <input class="form-input" type="number" id="mhRemaining" value="${rem}" readonly>
+      </div>
+    </div>
+    <div class="form-section-label">Additional Metrics</div>
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Total Packs Sold</label>
+        <input class="form-input" type="number" id="mhPacksSold" value="${m.packsSold}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">ITM Total Revenue</label>
+        <input class="form-input" type="number" id="mhItm" value="${m.itm}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">ITM Conversion Rate (%)</label>
+        <input class="form-input" type="number" step="0.1" id="mhItmConversion" value="${m.itmConversion}">
+      </div>
+    </div>`;
+}
+
+function syncMHRemaining() {
+  const t = +document.getElementById('mhTotal')?.value  || 0;
+  const w = +document.getElementById('mhWithExp')?.value || 0;
+  const r = +document.getElementById('mhRemote')?.value || 0;
+  const el = document.getElementById('mhRemaining');
+  if (el) el.value = Math.max(0, t - w - r);
+}
+
+function saveModelHome() {
+  D.modelHome.total          = +document.getElementById('mhTotal').value         || 0;
+  D.modelHome.withExperience = +document.getElementById('mhWithExp').value        || 0;
+  D.modelHome.remotely       = +document.getElementById('mhRemote').value         || 0;
+  D.modelHome.packsSold      = +document.getElementById('mhPacksSold').value      || 0;
+  D.modelHome.itm            = +document.getElementById('mhItm').value            || 0;
+  D.modelHome.itmConversion  = +document.getElementById('mhItmConversion').value  || 0;
+  saveData();
+}
+
+function buildTrainingForm() {
+  const t = D.training;
+  return `
+    <p class="form-note">Update sales agent training program metrics. All fields are independent — enter the values as-is.</p>
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Total Agents</label>
+        <input class="form-input" type="number" id="trAgents"    value="${t.totalAgents}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Total Trainings Held</label>
+        <input class="form-input" type="number" id="trTrainings" value="${t.totalTrainings}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Total Available Trainings</label>
+        <input class="form-input" type="number" id="trAvailable" value="${t.availableTrainings}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Agents Trained</label>
+        <input class="form-input" type="number" id="trTrained"   value="${t.totalTrained}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Agents Certified</label>
+        <input class="form-input" type="number" id="trCertified" value="${t.totalCertified}">
+      </div>
+    </div>`;
+}
+
+function saveTraining() {
+  D.training.totalAgents          = +document.getElementById('trAgents').value    || 0;
+  D.training.totalTrainings       = +document.getElementById('trTrainings').value || 0;
+  D.training.availableTrainings   = +document.getElementById('trAvailable').value || 0;
+  D.training.totalTrained   = +document.getElementById('trTrained').value   || 0;
+  D.training.totalCertified = +document.getElementById('trCertified').value || 0;
+  saveData();
+}
+
+function buildCustomForm(existing) {
+  const p = existing || { label:'', value:'', prefix:'', suffix:'', note:'' };
+  return `
+    <p class="form-note">Add any metric you want to display. Use <strong>Prefix</strong> and <strong>Suffix</strong> for symbols like $, %, or units.<br>Examples: Label "Conversion Rate" · Value "24.5" · Suffix "%"</p>
+    <div class="form-group">
+      <label class="form-label">Label / Metric Name *</label>
+      <input class="form-input" type="text" id="cpLabel"  value="${esc(p.label)}"         placeholder="e.g. Conversion Rate">
+    </div>
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Value *</label>
+        <input class="form-input" type="text" id="cpValue"  value="${esc(String(p.value))}" placeholder="e.g. 24.5">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Prefix (optional)</label>
+        <input class="form-input" type="text" id="cpPrefix" value="${esc(p.prefix||'')}"    placeholder="e.g. $">
+      </div>
+    </div>
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Suffix (optional)</label>
+        <input class="form-input" type="text" id="cpSuffix" value="${esc(p.suffix||'')}"    placeholder="e.g. %">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Sub-note (optional)</label>
+        <input class="form-input" type="text" id="cpNote"   value="${esc(p.note||'')}"      placeholder="e.g. vs 22% last month">
+      </div>
+    </div>`;
+}
+
+function saveCustomPoint(isEdit) {
+  const label  = document.getElementById('cpLabel').value.trim();
+  const value  = document.getElementById('cpValue').value.trim();
+  const prefix = document.getElementById('cpPrefix').value.trim();
+  const suffix = document.getElementById('cpSuffix').value.trim();
+  const note   = document.getElementById('cpNote').value.trim();
+  if (!label || !value) { alert('Label and Value are required.'); return; }
+  const pt = { label, value, prefix, suffix, note };
+  if (isEdit && editCustomIdx !== null) D.customPoints[editCustomIdx] = pt;
+  else D.customPoints.push(pt);
+  saveData();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  RENDER ALL
+// ═══════════════════════════════════════════════════════════
+function renderAll() {
+  renderHeader();
+  renderCharts();
+  renderMetrics();
+  renderModelHome();
+  renderTraining();
+  renderCustom();
+}
+
+renderAll();
+</script>
+</body>
+</html>
