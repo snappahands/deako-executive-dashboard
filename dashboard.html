@@ -414,7 +414,7 @@
   <div class="header-right">
     <div class="header-date" id="headerDate"></div>
     <div class="header-period" id="headerPeriod"></div>
-    <div style="font-size:11px;color:var(--text-dim);margin-top:4px;letter-spacing:.04em">v1.1</div>
+    <div style="font-size:11px;color:var(--text-dim);margin-top:4px;letter-spacing:.04em">v1.2</div>
   </div>
 </header>
 
@@ -542,10 +542,10 @@ const DEFAULTS = {
     revenue2025:  [88.1, 117.5, 148.4, 187.6, 211.8, 227.6, 240.8, 244.3, 188.8, 224.0, 162.8, 159.5],
   },
   goals: {
-    aopBookings:       2616.5,  // 2026 AOP from Justin Bookings Table row 59
-    aopRevenue:        2616.5,  // 2026 AOP from Justin Bookings Table row 59
-    bookings2025Full:  2181.1,  // 2025 full-year actuals total (row 58)
-    revenue2025Full:   2181.1,  // 2025 full-year actuals total (row 58)
+    aopBookings:       2616.5,  // 2026 AOP — BM row 59
+    aopRevenue:        2616.5,  // 2026 AOP — BM row 59
+    bookings2025Full:  2418.6,  // 2025 full-year actual — AQ row 59
+    revenue2025Full:   2418.6,  // 2025 full-year actual — AQ row 59
   },
   modelHome: {
     total:          85,
@@ -805,8 +805,8 @@ function renderMetrics() {
 
   const pctB = g.aopBookings > 0 ? (ytdB / g.aopBookings * 100) : 0;
   const pctR = g.aopRevenue  > 0 ? (ytdR / g.aopRevenue  * 100) : 0;
-  const yoyB = ytdB25 > 0 ? ((ytdB - ytdB25) / ytdB25 * 100) : 0;
-  const yoyR = ytdR25 > 0 ? ((ytdR - ytdR25) / ytdR25 * 100) : 0;
+  const yoyB = g.bookings2025Full > 0 ? ((ytdB - g.bookings2025Full) / g.bookings2025Full * 100) : 0;
+  const yoyR = g.revenue2025Full  > 0 ? ((ytdR - g.revenue2025Full)  / g.revenue2025Full  * 100) : 0;
 
   const est = calcEstimates(di);
   const qName = QUARTERS[di.qIdx];
@@ -839,7 +839,7 @@ function renderMetrics() {
   const bookingsCards =
     card('2026 YTD Bookings', fn(ytdB), 'sm', `of ${fn(g.aopBookings)} AOP`, pctBar(pctB, pctColorB)) +
     card('% to AOP', fp(pctB), pctB>=100?'pos':pctB>=75?'':'warn', `AOP Target: ${fn(g.aopBookings)}`) +
-    card('YoY vs 2025', (yoyB>=0?'+':'')+fp(yoyB), signCls(yoyB), `2025 YTD: ${fn(ytdB25)}`) +
+    card('YoY vs 2025', (yoyB>=0?'+':'')+fp(yoyB), signCls(yoyB), `2025 Full Year: ${fn(g.bookings2025Full)}`) +
     card(`Est. Month End`, fn(est.bookings.monthEnd), 'sm', `${di.day} / ${di.daysInMonth} days elapsed`) +
     card(`Est. ${qName} End`, fn(est.bookings.qEnd),  'sm', `${di.daysElapsedQ} / ${di.totalDaysQ} days elapsed`) +
     card('Est. Year End',     fn(est.bookings.yearEnd), 'sm', `Day ${di.dayOfYear} of ${di.daysInYear}`);
@@ -847,7 +847,7 @@ function renderMetrics() {
   const revenueCards =
     card('2026 YTD Revenue', fc(ytdR), 'sm', `of ${fc(g.aopRevenue)} AOP`, pctBar(pctR, pctColorR)) +
     card('% to AOP', fp(pctR), pctR>=100?'pos':pctR>=75?'':'warn', `AOP Target: ${fc(g.aopRevenue)}`) +
-    card('YoY vs 2025', (yoyR>=0?'+':'')+fp(yoyR), signCls(yoyR), `2025 YTD: ${fc(ytdR25)}`) +
+    card('YoY vs 2025', (yoyR>=0?'+':'')+fp(yoyR), signCls(yoyR), `2025 Full Year: ${fc(g.revenue2025Full)}`) +
     card(`Est. Month End`, fc(est.revenue.monthEnd), 'sm', `${di.day} / ${di.daysInMonth} days elapsed`) +
     card(`Est. ${qName} End`, fc(est.revenue.qEnd),  'sm', `${di.daysElapsedQ} / ${di.totalDaysQ} days elapsed`) +
     card('Est. Year End',     fc(est.revenue.yearEnd), 'sm', `Day ${di.dayOfYear} of ${di.daysInYear}`);
