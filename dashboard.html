@@ -155,11 +155,19 @@
       padding-bottom: 6px;
       border-bottom: 1px solid var(--border);
     }
+    .metrics-sub-label {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.6px; color: var(--text-dim);
+      margin: 16px 0 8px; padding-bottom: 4px;
+      border-bottom: 1px solid var(--border-lt);
+    }
     .metrics-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
       gap: 12px;
     }
+    .metrics-grid-4  { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .metrics-grid-12 { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 6px; }
     .metric-card {
       background: var(--card-alt);
       border: 1px solid var(--border);
@@ -167,13 +175,18 @@
       padding: 18px 14px;
       text-align: center;
     }
+    .metric-card.compact { padding: 10px 8px; border-radius: 8px; }
     .metric-label { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 7px; }
+    .metric-label.sm { font-size: 9px; margin-bottom: 5px; }
     .metric-value { font-size: 28px; font-weight: 800; color: #fff; line-height: 1; }
-    .metric-value.sm { font-size: 22px; }
+    .metric-value.sm  { font-size: 22px; }
+    .metric-value.xs  { font-size: 14px; font-weight: 700; }
     .metric-value.pos { color: var(--teal); }
     .metric-value.neg { color: var(--pink); }
     .metric-value.warn { color: var(--amber); }
+    .metric-value.dim  { color: var(--text-dim); }
     .metric-sub { font-size: 11px; color: var(--text-dim); margin-top: 4px; }
+    .metric-sub.xs { font-size: 9px; margin-top: 3px; }
     .prog-wrap { background: var(--border); border-radius: 6px; height: 5px; margin-top: 10px; overflow: hidden; }
     .prog-fill { height: 100%; border-radius: 6px; transition: width 0.5s ease; }
 
@@ -415,7 +428,7 @@
   <div class="header-right">
     <div class="header-date" id="headerDate"></div>
     <div class="header-period" id="headerPeriod"></div>
-    <div style="font-size:11px;color:var(--text-dim);margin-top:4px;letter-spacing:.04em">v1.6</div>
+    <div style="font-size:11px;color:var(--text-dim);margin-top:4px;letter-spacing:.04em">v1.7</div>
   </div>
 </header>
 
@@ -841,14 +854,19 @@ function renderMetrics() {
     return `<div class="prog-wrap"><div class="prog-fill" style="width:${Math.min(pct,100)}%;background:${color}"></div></div>`;
   }
 
-  function metricBlock(label, cards) {
+  function metricBlock(label, content) {
     return `
       <div class="metrics-block">
         <div class="metrics-block-label">${label}</div>
-        <div class="metrics-grid">${cards}</div>
+        ${content}
       </div>`;
   }
-
+  function cardRow(cards, cls='') {
+    return `<div class="metrics-grid ${cls}">${cards}</div>`;
+  }
+  function subLabel(text) {
+    return `<div class="metrics-sub-label">${text}</div>`;
+  }
   function card(label, val, valCls, sub, extra='') {
     return `
       <div class="metric-card">
@@ -858,11 +876,27 @@ function renderMetrics() {
         ${extra}
       </div>`;
   }
+  function cardCompact(label, val, valCls, sub) {
+    return `
+      <div class="metric-card compact">
+        <div class="metric-label sm">${label}</div>
+        <div class="metric-value xs ${valCls}">${val}</div>
+        <div class="metric-sub xs">${sub}</div>
+      </div>`;
+  }
+
+  // Days from today to a given date
+  function daysTo(y, m, d) {
+    const today = new Date(); today.setHours(0,0,0,0);
+    const target = new Date(y, m, d); target.setHours(0,0,0,0);
+    return Math.max(0, Math.ceil((target - today) / 86400000));
+  }
 
   const pctColorB = pctB >= 100 ? '#3ecfc6' : pctB >= 75 ? '#3ecfc6' : '#f4a843';
   const pctColorR = pctR >= 100 ? '#3ecfc6' : pctR >= 75 ? '#3ecfc6' : '#f4a843';
 
-  const bookingsCards =
+  // ── BOOKINGS: main row ──
+  const bookingsMain =
     card('2026 YTD Bookings', '$' + Math.round(ytdB * 1000).toLocaleString(), 'sm', `of ${fn(g.aopBookings)} AOP`, pctBar(pctB, pctColorB)) +
     card('% to AOP', fp(pctB), pctB>=100?'pos':pctB>=75?'':'warn', `AOP Target: ${fn(g.aopBookings)}`) +
     card('YoY vs 2025', (yoyB>=0?'+':'')+fp(yoyB), signCls(yoyB), `2025 Full Year: ${fn(g.bookings2025Full)}`) +
@@ -870,6 +904,44 @@ function renderMetrics() {
     card(`Est. ${qName} End`, fn(est.bookings.qEnd),  'sm', `${di.daysElapsedQ} / ${di.totalDaysQ} days elapsed`) +
     card('Est. Year End',     fn(est.bookings.yearEnd), 'sm', `Day ${di.dayOfYear} of ${di.daysInYear}`);
 
+  // ── BOOKINGS: quarterly row ──
+  const QNAMES = ['Q1 26','Q2 26','Q3 26','Q4 26'];
+  const QSTART_MONTHS = [0,3,6,9]; // Jan, Apr, Jul, Oct
+  let bookingsQtrly = '';
+  for (let q = 0; q < 4; q++) {
+    const qm0 = q * 3; // first month of quarter (0-based)
+    const qSum  = D.monthly.bookings2026.slice(qm0, qm0+3).reduce((a,b)=>a+b, 0);
+    const lastDayOfQtr = new Date(di.year, qm0+3, 0).getDate(); // last day of last month of qtr
+    const daysLeft = daysTo(di.year, qm0+3, 0); // last day of quarter
+    const isPast    = q < di.qIdx;
+    const isCurrent = q === di.qIdx;
+    const isFuture  = q > di.qIdx;
+    const val   = qSum > 0 ? fc(qSum) : '—';
+    const cls   = isPast ? 'pos' : isCurrent ? 'sm' : 'dim';
+    const sub   = isPast    ? `Completed ✓` :
+                  isCurrent ? `${daysLeft} days to Q end` :
+                              `${daysLeft} days to Q end`;
+    bookingsQtrly += cardCompact(QNAMES[q], val, cls, sub);
+  }
+
+  // ── BOOKINGS: monthly row ──
+  const MONTH_LABELS = ['Jan 26','Feb 26','Mar 26','Apr 26','May 26','Jun 26','Jul 26','Aug 26','Sep 26','Oct 26','Nov 26','Dec 26'];
+  let bookingsMonthly = '';
+  for (let m = 0; m < 12; m++) {
+    const val26 = D.monthly.bookings2026[m];
+    const isPast    = m < di.month;
+    const isCurrent = m === di.month;
+    const isFuture  = m > di.month;
+    const daysLeft  = isCurrent ? (di.daysInMonth - di.day) : 0;
+    const val = (isPast || isCurrent) && val26 > 0 ? fc(val26) : '—';
+    const cls = isPast ? 'pos' : isCurrent ? 'sm' : 'dim';
+    const sub = isPast    ? 'Completed' :
+                isCurrent ? `${daysLeft} days left` :
+                            '—';
+    bookingsMonthly += cardCompact(MONTH_LABELS[m], val, cls, sub);
+  }
+
+  // ── REVENUE: main row only ──
   const revenueCards =
     card('2026 YTD Revenue', fc(ytdR), 'sm', `of ${fc(g.aopRevenue)} AOP`, pctBar(pctR, pctColorR)) +
     card('% to AOP', fp(pctR), pctR>=100?'pos':pctR>=75?'':'warn', `AOP Target: ${fc(g.aopRevenue)}`) +
@@ -879,9 +951,15 @@ function renderMetrics() {
     card('Est. Year End',     fc(est.revenue.yearEnd), 'sm', `Day ${di.dayOfYear} of ${di.daysInYear}`);
 
   document.getElementById('metricsContainer').innerHTML =
-    metricBlock('Bookings', bookingsCards) +
+    metricBlock('Bookings',
+      cardRow(bookingsMain) +
+      subLabel('Quarterly YTD') +
+      cardRow(bookingsQtrly, 'metrics-grid-4') +
+      subLabel('Monthly') +
+      cardRow(bookingsMonthly, 'metrics-grid-12')
+    ) +
     '<div class="divider"></div>' +
-    metricBlock('Revenue', revenueCards);
+    metricBlock('Revenue', cardRow(revenueCards));
 }
 
 // ═══════════════════════════════════════════════════════════
