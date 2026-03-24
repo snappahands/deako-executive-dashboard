@@ -247,6 +247,14 @@
     .icon-btn.edit:hover  { background: rgba(62,207,198,0.25); }
     .icon-btn.del   { background: var(--pink-dim); color: var(--pink); }
     .icon-btn.del:hover   { background: rgba(232,114,138,0.25); }
+
+    /* ── BUILDER FILTER ── */
+    .builder-filter-wrap { display:flex; align-items:center; gap:8px; }
+    .builder-filter-label { font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; white-space:nowrap; }
+    .builder-filter-select { background:var(--card); color:var(--text); border:1.5px solid var(--border-lt); border-radius:7px; padding:6px 10px; font-size:12px; font-weight:600; cursor:pointer; outline:none; min-width:210px; }
+    .builder-filter-select:hover { border-color:var(--teal); }
+    .builder-filter-select:focus { border-color:var(--teal); box-shadow:0 0 0 2px rgba(62,207,198,0.15); }
+    .builder-filter-select option { background:var(--card); }
     .add-card {
       background: transparent;
       border: 2px dashed var(--border-lt);
@@ -428,7 +436,7 @@
   <div class="header-right">
     <div class="header-date" id="headerDate"></div>
     <div class="header-period" id="headerPeriod"></div>
-    <div style="font-size:11px;color:var(--text-dim);margin-top:4px;letter-spacing:.04em">v2.0</div>
+    <div style="font-size:11px;color:var(--text-dim);margin-top:4px;letter-spacing:.04em">v2.1</div>
   </div>
 </header>
 
@@ -441,7 +449,15 @@
         <div class="section-title">Bookings &amp; Revenue Performance</div>
         <div class="section-sub">Monthly &amp; quarterly comparison — 2025 vs 2026</div>
       </div>
-      <button class="btn btn-outline" onclick="openModal('chartData')">&#9998; Edit Chart Data</button>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <div class="builder-filter-wrap">
+          <label class="builder-filter-label">Builder:</label>
+          <select id="builderFilter" class="builder-filter-select" onchange="setBuilderFilter(this.value)">
+            <option value="all">All Builders</option>
+          </select>
+        </div>
+        <button class="btn btn-outline" onclick="openModal('chartData')">&#9998; Edit Chart Data</button>
+      </div>
     </div>
     <div class="section-body">
       <div class="charts-grid">
@@ -545,6 +561,76 @@
 // ═══════════════════════════════════════════════════════════
 //  DEFAULT DATA
 // ═══════════════════════════════════════════════════════════
+// Builder monthly data — 2025 & 2026 actuals from Justin NetSuite CSV (col A order)
+const BUILDERS = [
+  { key:'risewell_sac',  name:'Risewell - Sacramento',
+    b25:[0,0,0,5.226,0.875,0.875,0.875,0,0,0,0,0],
+    b26:[0,0,0,0,0,0,0,0,0,0,0,0] },
+  { key:'risewell_or',   name:'Risewell - Oregon',
+    b25:[0,0,0,0,0,0,0,0,0,0,0,0],
+    b26:[0,0,0,0,0,0,0,0,0,0,0,0] },
+  { key:'nhc_co',        name:'New Home Co. - Colorado',
+    b25:[0,0,0,0,0,0,0,0,0,0,0,0],
+    b26:[0,0,0,0,0,0,0,0,0,0,0,0] },
+  { key:'maronda',       name:'Maronda Homes',
+    b25:[14.961,27.474,59.284,72.374,114.938,100.662,96.734,104.300,75.401,97.734,69.060,76.887],
+    b26:[125.192,84.621,76.416,0,0,0,0,0,0,0,0,0] },
+  { key:'stonemartin',   name:'Stone Martin Builders',
+    b25:[63.719,76.387,64.622,73.992,50.473,69.293,71.561,49.168,58.903,53.400,46.328,29.848],
+    b26:[56.486,86.723,57.702,0,0,0,0,0,0,0,0,0] },
+  { key:'hc_okc',        name:'Home Creations - OKC',
+    b25:[0.321,0,1.764,5.144,9.184,11.082,14.477,11.515,10.812,11.208,18.342,9.170],
+    b26:[7.016,5.585,7.627,0,0,0,0,0,0,0,0,0] },
+  { key:'candlelight',   name:'Candlelight Homes',
+    b25:[0.950,3.325,3.984,1.992,5.478,1.701,14.442,21.858,9.900,12.650,4.400,2.750],
+    b26:[7.150,4.950,0.550,0,0,0,0,0,0,0,0,0] },
+  { key:'hc_houston',    name:'Home Creations - Houston',
+    b25:[1.938,4.132,7.894,3.705,6.886,7.043,3.282,3.542,8.110,4.878,6.034,0.948],
+    b26:[1.620,0.669,0.530,0,0,0,0,0,0,0,0,0] },
+  { key:'risewell',      name:'Risewell Homes (Total)',
+    b25:[0,2.129,4.648,7.058,4.947,0.875,3.830,6.859,1.726,4.233,6.337,10.570],
+    b26:[5.083,3.464,8.379,0,0,0,0,0,0,0,0,0] },
+  { key:'schumacher',    name:'Schumacher (Electrician)',
+    b25:[0,0,0,1.554,0,3.440,1.426,7.214,4.323,8.437,5.999,2.139],
+    b26:[1.426,1.160,0,0,0,0,0,0,0,0,0,0] },
+  { key:'kdh',           name:'KDH Builders',
+    b25:[0,0,0,0,0,0,0,0,0,16.467,0,5.399],
+    b26:[0,5.399,0,0,0,0,0,0,0,0,0,0] },
+  { key:'toa',           name:'TOA via Denney Electric',
+    b25:[1.650,0,0,1.275,2.375,11.370,1.375,1.350,0.825,2.750,0.203,1.450],
+    b26:[0,0,0.550,0,0,0,0,0,0,0,0,0] },
+  { key:'conner',        name:'Conner Homes',
+    b25:[0,0,0,0,0,4.471,2.235,12.958,2.235,0,0,2.235],
+    b26:[0,0,0,0,0,0,0,0,0,0,0,0] },
+  { key:'tollraleigh',   name:'Toll Brothers - Raleigh',
+    b25:[0.652,1.956,0.217,0.652,0.870,1.211,14.030,2.809,0,1.060,0,0],
+    b26:[0.746,0,0,0,0,0,0,0,0,0,0,0] },
+  { key:'meritage',      name:'Meritage Homes',
+    b25:[3.555,1.575,3.735,1.935,3.195,2.070,2.610,1.125,0.450,0.630,0.270,0.090],
+    b26:[0.045,0,0,0,0,0,0,0,0,0,0,0] },
+  { key:'hc_glenwood',   name:'Home Creations - Glenwood',
+    b25:[0,0,0,0,0,0,6.095,3.080,9.175,2.739,2.788,2.387],
+    b26:[1.753,0.660,0,0,0,0,0,0,0,0,0,0] },
+  { key:'adams',         name:'Adams Homes',
+    b25:[0.358,0.563,0.180,0.270,0.924,1.362,0.758,1.516,1.516,1.895,0,8.351],
+    b26:[0,2.653,0,0,0,0,0,0,0,0,0,0] },
+  { key:'drees',         name:'Drees Homes',
+    b25:[0,0,0,0,1.968,1.192,1.345,1.476,3.348,1.806,0,4.491],
+    b26:[3.384,2.232,2.232,0,0,0,0,0,0,0,0,0] },
+  { key:'rolwes',        name:'Rolwes Company',
+    b25:[0,0,0,0,0,0,2.948,1.900,0.809,0.745,0,0.745],
+    b26:[0,2.711,2.380,0,0,0,0,0,0,0,0,0] },
+  { key:'apple',         name:'Apple / 1st Oklahoma',
+    b25:[0,0,2.058,0,0,3.201,1.292,0,0,0,0,0.414],
+    b26:[0.414,0,0,0,0,0,0,0,0,0,0,0] },
+  { key:'gentry',        name:'Gentry Homes',
+    b25:[0,0,0,0,0,0,0,1.668,0,0,0,0],
+    b26:[0,0,0,0,0,0,0,0,0,0,0,0] },
+  { key:'cambridge',     name:'Cambridge Homes',
+    b25:[0,0,0,0,0,0,0,0,0,0,0,0],
+    b26:[0,0,0,0,0,0,0,0,0,0,0,0] },
+];
+
 // __DATA_START__
 const DEFAULTS = {
   dataVersion: 2,  // bump this whenever monthly/goals data changes to bust localStorage cache
@@ -591,6 +677,23 @@ const DEFAULTS = {
 let D = loadData();
 let currentModal = null;
 let editCustomIdx = null;
+let activeBuilder = 'all';
+
+function populateBuilderSelect() {
+  const sel = document.getElementById('builderFilter');
+  if (!sel) return;
+  BUILDERS.forEach(b => {
+    const opt = document.createElement('option');
+    opt.value = b.key;
+    opt.textContent = b.name;
+    sel.appendChild(opt);
+  });
+}
+
+function setBuilderFilter(val) {
+  activeBuilder = val;
+  renderCharts();
+}
 Chart.register(ChartDataLabels);
 const charts = {};
 
@@ -801,30 +904,42 @@ function makeBar(id, labels, ds, fmt, deltas) {
 }
 
 function renderCharts() {
-  const m = D.monthly;
-  const qB26 = qtrlySums(m.bookings2026);
-  const qB25 = qtrlySums(m.bookings2025);
-  const qR26 = qtrlySums(m.revenue2026);
-  const qR25 = qtrlySums(m.revenue2025);
+  let b25, b26, r25, r26;
+  if (activeBuilder === 'all') {
+    b25 = D.monthly.bookings2025;
+    b26 = D.monthly.bookings2026;
+    r25 = D.monthly.revenue2025;
+    r26 = D.monthly.revenue2026;
+  } else {
+    const bd = BUILDERS.find(x => x.key === activeBuilder);
+    b25 = bd ? bd.b25 : D.monthly.bookings2025;
+    b26 = bd ? bd.b26 : D.monthly.bookings2026;
+    r25 = b25; r26 = b26;
+  }
 
-  const b25c = 'rgba(232,114,138,0.45)';  // 2025 = muted pink
-  const b26c = 'rgba(62,207,198,0.88)';   // 2026 = teal
+  const qB26 = qtrlySums(b26);
+  const qB25 = qtrlySums(b25);
+  const qR26 = qtrlySums(r26);
+  const qR25 = qtrlySums(r25);
+
+  const b25c = 'rgba(232,114,138,0.45)';
+  const b26c = 'rgba(62,207,198,0.88)';
   const r25c = 'rgba(232,114,138,0.45)';
   const r26c = 'rgba(62,207,198,0.88)';
 
-  const deltaMonthB = m.bookings2026.map((v,i) => v > 0 ? v - m.bookings2025[i] : null);
-  const deltaMonthR = m.revenue2026.map((v,i)  => v > 0 ? v - m.revenue2025[i]  : null);
+  const deltaMonthB = b26.map((v,i) => v > 0 ? v - b25[i] : null);
+  const deltaMonthR = r26.map((v,i) => v > 0 ? v - r25[i] : null);
   const deltaQtrB   = qB26.map((v,i) => v > 0 ? v - qB25[i] : null);
   const deltaQtrR   = qR26.map((v,i) => v > 0 ? v - qR25[i] : null);
 
   makeBar('chartMonthlyBookings', MONTHS, [
-    { label:'2025', data: m.bookings2025, backgroundColor: b25c, borderRadius:4 },
-    { label:'2026', data: m.bookings2026, backgroundColor: b26c, borderRadius:4 },
+    { label:'2025', data: b25, backgroundColor: b25c, borderRadius:4 },
+    { label:'2026', data: b26, backgroundColor: b26c, borderRadius:4 },
   ], '$', deltaMonthB);
 
   makeBar('chartMonthlyRevenue', MONTHS, [
-    { label:'2025', data: m.revenue2025, backgroundColor: r25c, borderRadius:4 },
-    { label:'2026', data: m.revenue2026, backgroundColor: r26c, borderRadius:4 },
+    { label:'2025', data: r25, backgroundColor: r25c, borderRadius:4 },
+    { label:'2026', data: r26, backgroundColor: r26c, borderRadius:4 },
   ], '$', deltaMonthR);
 
   makeBar('chartQtrBookings', QUARTERS, [
@@ -1410,6 +1525,7 @@ function saveCustomPoint(isEdit) {
 // ═══════════════════════════════════════════════════════════
 function renderAll() {
   renderHeader();
+  populateBuilderSelect();
   renderCharts();
   renderMetrics();
   renderModelHome();
