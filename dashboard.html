@@ -436,7 +436,7 @@
   <div class="header-right">
     <div class="header-date" id="headerDate"></div>
     <div class="header-period" id="headerPeriod"></div>
-    <div style="font-size:11px;color:var(--text-dim);margin-top:4px;letter-spacing:.04em">v2.1</div>
+    <div style="font-size:11px;color:var(--text-dim);margin-top:4px;letter-spacing:.04em">v2.2</div>
   </div>
 </header>
 
@@ -693,6 +693,18 @@ function populateBuilderSelect() {
 function setBuilderFilter(val) {
   activeBuilder = val;
   renderCharts();
+  renderMetrics();
+}
+
+function getActiveData() {
+  if (activeBuilder === 'all') {
+    return { b25: D.monthly.bookings2025, b26: D.monthly.bookings2026,
+             r25: D.monthly.revenue2025,  r26: D.monthly.revenue2026 };
+  }
+  const bd = BUILDERS.find(x => x.key === activeBuilder);
+  const b25 = bd ? bd.b25 : D.monthly.bookings2025;
+  const b26 = bd ? bd.b26 : D.monthly.bookings2026;
+  return { b25, b26, r25: b25, r26: b26 };
 }
 Chart.register(ChartDataLabels);
 const charts = {};
@@ -964,17 +976,37 @@ function renderCharts() {
 function renderMetrics() {
   const di  = getDateInfo();
   const g   = D.goals;
-  const ytdB = ytd(D.monthly.bookings2026, di.month);
-  const ytdR = ytd(D.monthly.revenue2026,  di.month);
-  const ytdB25 = ytd(D.monthly.bookings2025, di.month);
-  const ytdR25 = ytd(D.monthly.revenue2025,  di.month);
+  const { b25, b26, r25, r26 } = getActiveData();
+  const isFiltered = activeBuilder !== 'all';
 
-  const pctB = g.aopBookings > 0 ? (ytdB / g.aopBookings * 100) : 0;
-  const pctR = g.aopRevenue  > 0 ? (ytdR / g.aopRevenue  * 100) : 0;
-  const yoyB = g.bookings2025Full > 0 ? ((ytdB - g.bookings2025Full) / g.bookings2025Full * 100) : 0;
-  const yoyR = g.revenue2025Full  > 0 ? ((ytdR - g.revenue2025Full)  / g.revenue2025Full  * 100) : 0;
+  const ytdB   = ytd(b26, di.month);
+  const ytdR   = ytd(r26, di.month);
+  const ytdB25 = ytd(b25, di.month);
+  const ytdR25 = ytd(r25, di.month);
 
-  const est = calcEstimates(di);
+  // AOP % only meaningful for all-builders view
+  const pctB = !isFiltered && g.aopBookings > 0 ? (ytdB / g.aopBookings * 100) : 0;
+  const pctR = !isFiltered && g.aopRevenue  > 0 ? (ytdR / g.aopRevenue  * 100) : 0;
+  // YoY: vs same-period 2025 for the selected scope
+  const yoyB = ytdB25 > 0 ? ((ytdB - ytdB25) / ytdB25 * 100) : 0;
+  const yoyR = ytdR25 > 0 ? ((ytdR - ytdR25) / ytdR25 * 100) : 0;
+
+  // Estimates based on active data
+  const { month, day, daysInMonth, qStart, daysElapsedQ, totalDaysQ, dayOfYear, daysInYear } = di;
+  const qB = b26.slice(qStart, month + 1).reduce((a,b)=>a+b, 0);
+  const qR = r26.slice(qStart, month + 1).reduce((a,b)=>a+b, 0);
+  const est = {
+    bookings: {
+      monthEnd: extrapolate(b26[month] || 0, day, daysInMonth),
+      qEnd:     extrapolate(qB, daysElapsedQ, totalDaysQ),
+      yearEnd:  extrapolate(ytdB, dayOfYear, daysInYear),
+    },
+    revenue: {
+      monthEnd: extrapolate(r26[month] || 0, day, daysInMonth),
+      qEnd:     extrapolate(qR, daysElapsedQ, totalDaysQ),
+      yearEnd:  extrapolate(ytdR, dayOfYear, daysInYear),
+    },
+  };
   const qName = QUARTERS[di.qIdx];
 
   function pctBar(pct, color) {
@@ -1027,10 +1059,12 @@ function renderMetrics() {
   const pctColorR = pctR >= 100 ? '#3ecfc6' : pctR >= 75 ? '#3ecfc6' : '#f4a843';
 
   // ── BOOKINGS: main row ──
+  const aopSub = isFiltered ? 'Company AOP (ref only)' : `AOP Target: ${fn(g.aopBookings)}`;
+  const yoySub = isFiltered ? `2025 YTD (same period)` : `2025 Full Year: ${fn(g.bookings2025Full)}`;
   const bookingsMain =
-    card('2026 YTD Bookings', '$' + Math.round(ytdB * 1000).toLocaleString(), 'sm', `of ${fn(g.aopBookings)} AOP`, pctBar(pctB, pctColorB)) +
-    card('% to AOP', fp(pctB), pctB>=100?'pos':pctB>=75?'':'warn', `AOP Target: ${fn(g.aopBookings)}`) +
-    card('YoY vs 2025', (yoyB>=0?'+':'')+fp(yoyB), signCls(yoyB), `2025 Full Year: ${fn(g.bookings2025Full)}`) +
+    card('2026 YTD Bookings', '$' + Math.round(ytdB * 1000).toLocaleString(), 'sm', isFiltered ? 'Builder YTD' : `of ${fn(g.aopBookings)} AOP`, pctBar(pctB, pctColorB)) +
+    card('% to AOP', isFiltered ? 'N/A' : fp(pctB), isFiltered ? 'dim' : pctB>=100?'pos':pctB>=75?'':'warn', aopSub) +
+    card('YoY vs 2025', (yoyB>=0?'+':'')+fp(yoyB), signCls(yoyB), yoySub) +
     card(`Est. Month End`, fn(est.bookings.monthEnd), 'sm', `${di.day} / ${di.daysInMonth} days elapsed`) +
     card(`Est. ${qName} End`, fn(est.bookings.qEnd),  'sm', `${di.daysElapsedQ} / ${di.totalDaysQ} days elapsed`) +
     card('Est. Year End',     fn(est.bookings.yearEnd), 'sm', `Day ${di.dayOfYear} of ${di.daysInYear}`);
@@ -1039,17 +1073,19 @@ function renderMetrics() {
   const QNAMES = ['Q1 26','Q2 26','Q3 26','Q4 26'];
   let bookingsQtrly = '';
   for (let q = 0; q < 4; q++) {
-    const qm0     = q * 3;
-    const qSum    = D.monthly.bookings2026.slice(qm0, qm0+3).reduce((a,b)=>a+b, 0);
-    const qAOP    = g.qtrAOP2026[q];
+    const qm0      = q * 3;
+    const qSum     = b26.slice(qm0, qm0+3).reduce((a,v)=>a+v, 0);
+    const qSum25   = b25.slice(qm0, qm0+3).reduce((a,v)=>a+v, 0);
+    const qAOP     = g.qtrAOP2026[q];
     const daysLeft = daysTo(di.year, qm0+3, 0);
     const isPast    = q < di.qIdx;
     const isCurrent = q === di.qIdx;
-    const isFuture  = q > di.qIdx;
     const val   = qSum > 0 ? fc(qSum) : '—';
     const cls   = isPast ? 'pos' : isCurrent ? 'sm' : 'dim';
     const sub   = isPast ? `Completed ✓` : `${daysLeft} days to Q end`;
-    const delta = (isPast || isCurrent) && qAOP > 0 ? qSum - qAOP : null;
+    const delta = (isPast || isCurrent) && qSum > 0
+      ? (isFiltered ? qSum - qSum25 : qSum - qAOP)
+      : null;
     bookingsQtrly += cardCompact(QNAMES[q], val, cls, sub, delta);
   }
 
@@ -1057,7 +1093,8 @@ function renderMetrics() {
   const MONTH_LABELS = ['Jan 26','Feb 26','Mar 26','Apr 26','May 26','Jun 26','Jul 26','Aug 26','Sep 26','Oct 26','Nov 26','Dec 26'];
   let bookingsMonthly = '';
   for (let m = 0; m < 12; m++) {
-    const val26    = D.monthly.bookings2026[m];
+    const val26    = b26[m];
+    const val25    = b25[m];
     const mAOP     = g.monthlyAOP2026[m];
     const isPast    = m < di.month;
     const isCurrent = m === di.month;
@@ -1065,15 +1102,19 @@ function renderMetrics() {
     const val   = (isPast || isCurrent) && val26 > 0 ? fc(val26) : '—';
     const cls   = isPast ? 'pos' : isCurrent ? 'sm' : 'dim';
     const sub   = isPast ? 'Completed' : isCurrent ? `${daysLeft} days left` : '—';
-    const delta = (isPast || isCurrent) && val26 > 0 ? val26 - mAOP : null;
+    const delta = (isPast || isCurrent) && val26 > 0
+      ? (isFiltered ? val26 - val25 : val26 - mAOP)
+      : null;
     bookingsMonthly += cardCompact(MONTH_LABELS[m], val, cls, sub, delta);
   }
 
   // ── REVENUE: main row only ──
+  const revAopSub  = isFiltered ? 'Company AOP (ref only)' : `AOP Target: ${fc(g.aopRevenue)}`;
+  const revYoySub  = isFiltered ? '2025 YTD (same period)' : `2025 Full Year: ${fc(g.revenue2025Full)}`;
   const revenueCards =
-    card('2026 YTD Revenue', fc(ytdR), 'sm', `of ${fc(g.aopRevenue)} AOP`, pctBar(pctR, pctColorR)) +
-    card('% to AOP', fp(pctR), pctR>=100?'pos':pctR>=75?'':'warn', `AOP Target: ${fc(g.aopRevenue)}`) +
-    card('YoY vs 2025', (yoyR>=0?'+':'')+fp(yoyR), signCls(yoyR), `2025 Full Year: ${fc(g.revenue2025Full)}`) +
+    card('2026 YTD Revenue', fc(ytdR), 'sm', isFiltered ? 'Builder YTD' : `of ${fc(g.aopRevenue)} AOP`, pctBar(pctR, pctColorR)) +
+    card('% to AOP', isFiltered ? 'N/A' : fp(pctR), isFiltered ? 'dim' : pctR>=100?'pos':pctR>=75?'':'warn', revAopSub) +
+    card('YoY vs 2025', (yoyR>=0?'+':'')+fp(yoyR), signCls(yoyR), revYoySub) +
     card(`Est. Month End`, fc(est.revenue.monthEnd), 'sm', `${di.day} / ${di.daysInMonth} days elapsed`) +
     card(`Est. ${qName} End`, fc(est.revenue.qEnd),  'sm', `${di.daysElapsedQ} / ${di.totalDaysQ} days elapsed`) +
     card('Est. Year End',     fc(est.revenue.yearEnd), 'sm', `Day ${di.dayOfYear} of ${di.daysInYear}`);
