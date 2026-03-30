@@ -428,19 +428,17 @@
     .itm-row { margin-top: 20px; border-top: 1px solid var(--border); padding-top: 18px; }
     .itm-row-label { font-size: 19px; font-weight: 800; color: #ffffff; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 14px; text-shadow: 0 0 20px rgba(62,207,198,0.3); display: flex; align-items: center; gap: 10px; }
     .itm-row-label::before { content: ''; display: inline-block; width: 3px; height: 14px; background: var(--teal); border-radius: 2px; }
-    .itm-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    .itm-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
-    .itm-card-header { background: rgba(62,207,198,0.10); border-bottom: 1px solid var(--border); padding: 10px 18px; font-size: 11px; font-weight: 700; color: var(--teal); text-transform: uppercase; letter-spacing: 0.5px; }
-    .itm-card-top { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border-bottom: 1px solid var(--border); }
-    .itm-metric { padding: 16px 18px; text-align: center; }
-    .itm-metric + .itm-metric { border-left: 1px solid var(--border); }
-    .itm-metric-value { font-size: 22px; font-weight: 800; color: var(--teal); }
-    .itm-metric-label { font-size: 11px; color: var(--text-muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.4px; }
-    .itm-split { display: grid; grid-template-columns: 1fr 1fr 1fr; }
-    .itm-split-item { padding: 12px 8px; text-align: center; border-right: 1px solid var(--border); }
-    .itm-split-item:last-child { border-right: none; }
-    .itm-split-val { font-size: 18px; font-weight: 800; color: var(--text); }
-    .itm-split-label { font-size: 10px; color: var(--text-muted); margin-top: 3px; text-transform: uppercase; letter-spacing: 0.4px; }
+    /* ITM editable cards */
+    .itm-edit-card { background: var(--card-alt); border: 1px solid var(--border); border-radius: 8px; padding: 6px 4px; text-align: center; }
+    .itm-edit-month { font-size: 9px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 4px; }
+    .itm-edit-field-label { font-size: 7px; font-weight: 700; color: var(--text-dim); text-transform: uppercase; margin: 2px 0 1px; }
+    .itm-edit-input { width: 100%; background: var(--bg); border: 1px solid var(--border-lt); border-radius: 4px; color: var(--text); font-size: 10px; padding: 3px 2px; text-align: center; margin-bottom: 2px; box-sizing: border-box; }
+    .itm-edit-input:focus { outline: none; border-color: var(--teal); }
+    .itm-edit-split-labels { display: flex; gap: 2px; margin-bottom: 1px; }
+    .itm-edit-split-labels span { flex: 1; font-size: 7px; color: var(--text-dim); text-align: center; }
+    .itm-edit-split { display: flex; gap: 2px; }
+    .itm-edit-split-input { flex: 1; min-width: 0; background: var(--bg); border: 1px solid var(--border-lt); border-radius: 3px; color: var(--text-dim); font-size: 9px; padding: 2px 1px; text-align: center; box-sizing: border-box; }
+    .itm-edit-split-input:focus { outline: none; border-color: var(--teal); }
   </style>
 </head>
 <body>
@@ -679,7 +677,7 @@ const BUILDERS = [
 
 // __DATA_START__
 const DEFAULTS = {
-  dataVersion: 4,  // bump this whenever monthly/goals data changes to bust localStorage cache
+  dataVersion: 5,  // bump this whenever monthly/goals data changes to bust localStorage cache
   monthly: {
     // Bookings: full-year actuals from Justin Bookings Table row 58
     bookings2026: [218.909, 206.701, 203.036, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -705,11 +703,16 @@ const DEFAULTS = {
     packsSold:        0,
     itm:              0,
     itmConversion:  0,
-    itmRevenue:   [0,0,0,0,0,0,0,0,0,0,0,0],
-    itmPacksSold: [0,0,0,0,0,0,0,0,0,0,0,0],
-    itmPacks8:    [0,0,0,0,0,0,0,0,0,0,0,0],
-    itmPacks10:   [0,0,0,0,0,0,0,0,0,0,0,0],
-    itmPacks25:   [0,0,0,0,0,0,0,0,0,0,0,0],
+    itmRevenue:      [0,0,0,0,0,0,0,0,0,0,0,0],
+    itmPacksSold:    [0,0,0,0,0,0,0,0,0,0,0,0],
+    itmPacks8:       [0,0,0,0,0,0,0,0,0,0,0,0],
+    itmPacks10:      [0,0,0,0,0,0,0,0,0,0,0,0],
+    itmPacks25:      [0,0,0,0,0,0,0,0,0,0,0,0],
+    itmRevenue25:    [0,0,0,0,0,0,0,0,0,0,0,0],
+    itmPacksSold25:  [0,0,0,0,0,0,0,0,0,0,0,0],
+    itmPacks8_25:    [0,0,0,0,0,0,0,0,0,0,0,0],
+    itmPacks10_25:   [0,0,0,0,0,0,0,0,0,0,0,0],
+    itmPacks25_25:   [0,0,0,0,0,0,0,0,0,0,0,0],
   },
   training: {
     totalAgents:          800,
@@ -1266,21 +1269,17 @@ function renderModelHome() {
       </div>
     </div>`;
 
-  // ITM Program row — 12-month grid (mirrors bookings layout)
-  const di = getDateInfo();
-  const ITM_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const ITM_QTRS   = ['Q1 26','Q2 26','Q3 26','Q4 26'];
+  renderItmDrh();
+}
 
-  function itmCard(label, val, valCls, sub1, sub2='') {
-    return `<div class="metric-card compact">
-      <div class="metric-label sm">${label}</div>
-      <div class="metric-value xs ${valCls}">${val}</div>
-      <div class="metric-sub xs">${sub1}</div>
-      ${sub2 ? `<div class="metric-sub xs">${sub2}</div>` : ''}
-    </div>`;
-  }
-
-  let itmQtrHtml = '';
+// ═══════════════════════════════════════════════════════════
+//  ITM PROGRAM (DRH) — separate renderer so save can update
+//  quarterly totals without destroying the editable inputs
+// ═══════════════════════════════════════════════════════════
+function buildItmQtrHtml(m) {
+  const di    = getDateInfo();
+  const QTRS  = ['Q1 26','Q2 26','Q3 26','Q4 26'];
+  let html = '';
   for (let q = 0; q < 4; q++) {
     const s     = q * 3;
     const qRev  = (m.itmRevenue   || []).slice(s, s+3).reduce((a,v)=>a+v, 0);
@@ -1288,39 +1287,75 @@ function renderModelHome() {
     const qP8   = (m.itmPacks8    || []).slice(s, s+3).reduce((a,v)=>a+v, 0);
     const qP10  = (m.itmPacks10   || []).slice(s, s+3).reduce((a,v)=>a+v, 0);
     const qP25  = (m.itmPacks25   || []).slice(s, s+3).reduce((a,v)=>a+v, 0);
-    const isPast    = q < di.qIdx;
-    const isCurrent = q === di.qIdx;
-    const val  = qRev > 0 ? '$' + fn(Math.round(qRev)) : '—';
+    const isPast = q < di.qIdx, isCurrent = q === di.qIdx;
+    const val  = qRev  > 0 ? '$' + fn(Math.round(qRev)) : '—';
     const cls  = isPast ? 'pos' : isCurrent ? 'sm' : 'dim';
     const sub1 = qPkts > 0 ? fn(qPkts) + ' packs' : '—';
     const sub2 = qPkts > 0 ? `8:${fn(qP8)} / 10:${fn(qP10)} / 25:${fn(qP25)}` : '';
-    itmQtrHtml += itmCard(ITM_QTRS[q], val, cls, sub1, sub2);
+    html += `<div class="metric-card compact">
+      <div class="metric-label sm">${QTRS[q]}</div>
+      <div class="metric-value xs ${cls}">${val}</div>
+      <div class="metric-sub xs">${sub1}</div>
+      ${sub2 ? `<div class="metric-sub xs">${sub2}</div>` : ''}
+    </div>`;
   }
+  return html;
+}
 
-  let itmMonHtml = '';
-  for (let i = 0; i < 12; i++) {
-    const rev  = (m.itmRevenue[i]   || 0);
-    const pkts = (m.itmPacksSold[i] || 0);
-    const p8   = (m.itmPacks8[i]    || 0);
-    const p10  = (m.itmPacks10[i]   || 0);
-    const p25  = (m.itmPacks25[i]   || 0);
-    const isPast    = i < di.month;
-    const isCurrent = i === di.month;
-    const val  = rev > 0 ? '$' + fn(Math.round(rev)) : '—';
-    const cls  = isPast ? 'pos' : isCurrent ? 'sm' : 'dim';
-    const sub1 = pkts > 0 ? fn(pkts) + ' packs' : '—';
-    const sub2 = pkts > 0 ? `8:${fn(p8)} 10:${fn(p10)} 25:${fn(p25)}` : '';
-    itmMonHtml += itmCard(ITM_MONTHS[i], val, cls, sub1, sub2);
-  }
+function buildItmEditRow(yr, revArr, pktsArr, p8Arr, p10Arr, p25Arr) {
+  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return MONTHS.map((mon, i) => `
+    <div class="itm-edit-card">
+      <div class="itm-edit-month">${mon} ${yr}</div>
+      <div class="itm-edit-field-label">Rev $</div>
+      <input class="itm-edit-input" type="number" min="0" id="itm${yr}Rev_${i}"  value="${(revArr ||[])[i]||0}" onchange="saveItmData()">
+      <div class="itm-edit-field-label">Packs</div>
+      <input class="itm-edit-input" type="number" min="0" id="itm${yr}Pkts_${i}" value="${(pktsArr||[])[i]||0}" onchange="saveItmData()">
+      <div class="itm-edit-split-labels"><span>8</span><span>10</span><span>25</span></div>
+      <div class="itm-edit-split">
+        <input class="itm-edit-split-input" type="number" min="0" id="itm${yr}P8_${i}"  value="${(p8Arr ||[])[i]||0}" onchange="saveItmData()">
+        <input class="itm-edit-split-input" type="number" min="0" id="itm${yr}P10_${i}" value="${(p10Arr||[])[i]||0}" onchange="saveItmData()">
+        <input class="itm-edit-split-input" type="number" min="0" id="itm${yr}P25_${i}" value="${(p25Arr||[])[i]||0}" onchange="saveItmData()">
+      </div>
+    </div>`).join('');
+}
 
+function renderItmDrh() {
+  const m = D.modelHome;
   document.getElementById('itmDrhContainer').innerHTML = `
     <div class="itm-row">
       <div class="itm-row-label">ITM Program</div>
-      <div class="metrics-sub-label">Quarterly</div>
-      <div class="metrics-grid-4">${itmQtrHtml}</div>
-      <div class="metrics-sub-label">Monthly</div>
-      <div class="metrics-grid-12">${itmMonHtml}</div>
+      <div class="metrics-sub-label">Quarterly (auto-calculated from 2026 monthly)</div>
+      <div id="itmQtrDrh" class="metrics-grid-4">${buildItmQtrHtml(m)}</div>
+      <div class="metrics-sub-label">2026 Monthly</div>
+      <div class="metrics-grid-12">${buildItmEditRow(26, m.itmRevenue, m.itmPacksSold, m.itmPacks8, m.itmPacks10, m.itmPacks25)}</div>
+      <div class="metrics-sub-label">2025 Monthly</div>
+      <div class="metrics-grid-12">${buildItmEditRow(25, m.itmRevenue25, m.itmPacksSold25, m.itmPacks8_25, m.itmPacks10_25, m.itmPacks25_25)}</div>
     </div>`;
+}
+
+function saveItmData() {
+  const m = D.modelHome;
+  const ensureArr = k => { if (!Array.isArray(m[k])) m[k] = Array(12).fill(0); };
+  ['itmRevenue','itmPacksSold','itmPacks8','itmPacks10','itmPacks25',
+   'itmRevenue25','itmPacksSold25','itmPacks8_25','itmPacks10_25','itmPacks25_25'].forEach(ensureArr);
+  const g = id => { const el = document.getElementById(id); return el ? (+el.value || 0) : 0; };
+  for (let i = 0; i < 12; i++) {
+    m.itmRevenue[i]     = g(`itm26Rev_${i}`);
+    m.itmPacksSold[i]   = g(`itm26Pkts_${i}`);
+    m.itmPacks8[i]      = g(`itm26P8_${i}`);
+    m.itmPacks10[i]     = g(`itm26P10_${i}`);
+    m.itmPacks25[i]     = g(`itm26P25_${i}`);
+    m.itmRevenue25[i]   = g(`itm25Rev_${i}`);
+    m.itmPacksSold25[i] = g(`itm25Pkts_${i}`);
+    m.itmPacks8_25[i]   = g(`itm25P8_${i}`);
+    m.itmPacks10_25[i]  = g(`itm25P10_${i}`);
+    m.itmPacks25_25[i]  = g(`itm25P25_${i}`);
+  }
+  saveData();
+  // Only re-render the quarterly totals — leaves editable inputs untouched
+  const qEl = document.getElementById('itmQtrDrh');
+  if (qEl) qEl.innerHTML = buildItmQtrHtml(m);
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -1592,26 +1627,7 @@ function buildModelHomeForm() {
         <input class="form-input" type="number" step="0.1" id="mhItmConversion" value="${m.itmConversion}">
       </div>
     </div>
-    <div class="form-section-label">ITM Program — Monthly Data</div>
-    <p class="form-note" style="margin-bottom:10px">Enter actuals per month. Quarterly totals are auto-calculated.</p>
-    <div style="overflow-x:auto">
-    <table class="data-table">
-      <thead><tr>
-        <th>Month</th><th>Revenue ($)</th><th>Packs Sold</th><th>8-Pack</th><th>10-Pack</th><th>25-Pack</th>
-      </tr></thead>
-      <tbody>
-        ${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].map((mon,i) => `
-        <tr>
-          <td>${mon}</td>
-          <td><input type="number" min="0" id="itmRev_${i}"   value="${(m.itmRevenue  ||[])[i]||0}"></td>
-          <td><input type="number" min="0" id="itmPkts_${i}"  value="${(m.itmPacksSold||[])[i]||0}"></td>
-          <td><input type="number" min="0" id="itmP8_${i}"    value="${(m.itmPacks8   ||[])[i]||0}"></td>
-          <td><input type="number" min="0" id="itmP10_${i}"   value="${(m.itmPacks10  ||[])[i]||0}"></td>
-          <td><input type="number" min="0" id="itmP25_${i}"   value="${(m.itmPacks25  ||[])[i]||0}"></td>
-        </tr>`).join('')}
-      </tbody>
-    </table>
-    </div>`;
+    <p class="form-note" style="margin-top:10px">ITM monthly data is editable directly on the dashboard in the ITM Program rows below.</p>`;
 }
 
 function syncMHRemaining() {
@@ -1629,18 +1645,6 @@ function saveModelHome() {
   D.modelHome.packsSold           = +document.getElementById('mhPacksSold').value       || 0;
   D.modelHome.itm                 = +document.getElementById('mhItm').value             || 0;
   D.modelHome.itmConversion = +document.getElementById('mhItmConversion').value || 0;
-  D.modelHome.itmRevenue   = [];
-  D.modelHome.itmPacksSold = [];
-  D.modelHome.itmPacks8    = [];
-  D.modelHome.itmPacks10   = [];
-  D.modelHome.itmPacks25   = [];
-  for (let i = 0; i < 12; i++) {
-    D.modelHome.itmRevenue.push(  +document.getElementById(`itmRev_${i}`).value  || 0);
-    D.modelHome.itmPacksSold.push(+document.getElementById(`itmPkts_${i}`).value || 0);
-    D.modelHome.itmPacks8.push(   +document.getElementById(`itmP8_${i}`).value   || 0);
-    D.modelHome.itmPacks10.push(  +document.getElementById(`itmP10_${i}`).value  || 0);
-    D.modelHome.itmPacks25.push(  +document.getElementById(`itmP25_${i}`).value  || 0);
-  }
   saveData();
 }
 
@@ -1942,6 +1946,7 @@ function renderAll() {
   renderCharts();
   renderMetrics();
   renderModelHome();
+  renderItmDrh();
   renderTraining();
   renderModelHomeMaronda();
   renderTrainingMaronda();
