@@ -424,6 +424,22 @@
     #saveToast.show {
       opacity: 1; transform: translateX(-50%) translateY(0);
     }
+    /* ITM Program row */
+    .itm-row { margin-top: 20px; border-top: 1px solid var(--border); padding-top: 18px; }
+    .itm-row-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 14px; }
+    .itm-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .itm-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .itm-card-header { background: rgba(62,207,198,0.10); border-bottom: 1px solid var(--border); padding: 10px 18px; font-size: 11px; font-weight: 700; color: var(--teal); text-transform: uppercase; letter-spacing: 0.5px; }
+    .itm-card-top { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border-bottom: 1px solid var(--border); }
+    .itm-metric { padding: 16px 18px; text-align: center; }
+    .itm-metric + .itm-metric { border-left: 1px solid var(--border); }
+    .itm-metric-value { font-size: 22px; font-weight: 800; color: var(--teal); }
+    .itm-metric-label { font-size: 11px; color: var(--text-muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.4px; }
+    .itm-split { display: grid; grid-template-columns: 1fr 1fr 1fr; }
+    .itm-split-item { padding: 12px 8px; text-align: center; border-right: 1px solid var(--border); }
+    .itm-split-item:last-child { border-right: none; }
+    .itm-split-val { font-size: 18px; font-weight: 800; color: var(--text); }
+    .itm-split-label { font-size: 10px; color: var(--text-muted); margin-top: 3px; text-transform: uppercase; letter-spacing: 0.4px; }
   </style>
 </head>
 <body>
@@ -507,6 +523,7 @@
     </div>
     <div class="section-body">
       <div class="stats-grid" id="modelHomeContainer" style="grid-template-columns: repeat(7, 1fr);"></div>
+      <div id="itmDrhContainer"></div>
     </div>
   </div>
 
@@ -687,6 +704,16 @@ const DEFAULTS = {
     packsSold:        0,
     itm:              0,
     itmConversion:    0,
+    itmMonthlyRevenue:    0,
+    itmMonthlyPacksSold:  0,
+    itmMonthlyPacks8:     0,
+    itmMonthlyPacks10:    0,
+    itmMonthlyPacks25:    0,
+    itmQtrRevenue:        0,
+    itmQtrPacksSold:      0,
+    itmQtrPacks8:         0,
+    itmQtrPacks10:        0,
+    itmQtrPacks25:        0,
   },
   training: {
     totalAgents:          800,
@@ -1242,6 +1269,69 @@ function renderModelHome() {
         <div class="prog-pct" style="color:#f4a843;">${fp(expPct,0)}</div>
       </div>
     </div>`;
+
+  // ITM Program row
+  const fc = v => v >= 1000 ? '$' + (v/1000).toFixed(1) + 'K' : '$' + fn(v);
+  document.getElementById('itmDrhContainer').innerHTML = `
+    <div class="itm-row">
+      <div class="itm-row-label">ITM Program</div>
+      <div class="itm-cards">
+        <div class="itm-card">
+          <div class="itm-card-header">Monthly</div>
+          <div class="itm-card-top">
+            <div class="itm-metric">
+              <div class="itm-metric-value">${fc(m.itmMonthlyRevenue)}</div>
+              <div class="itm-metric-label">Total Revenue</div>
+            </div>
+            <div class="itm-metric">
+              <div class="itm-metric-value">${fn(m.itmMonthlyPacksSold)}</div>
+              <div class="itm-metric-label">Total Packs Sold</div>
+            </div>
+          </div>
+          <div class="itm-split">
+            <div class="itm-split-item">
+              <div class="itm-split-val">${fn(m.itmMonthlyPacks8)}</div>
+              <div class="itm-split-label">8-Pack</div>
+            </div>
+            <div class="itm-split-item">
+              <div class="itm-split-val">${fn(m.itmMonthlyPacks10)}</div>
+              <div class="itm-split-label">10-Pack</div>
+            </div>
+            <div class="itm-split-item">
+              <div class="itm-split-val">${fn(m.itmMonthlyPacks25)}</div>
+              <div class="itm-split-label">25-Pack</div>
+            </div>
+          </div>
+        </div>
+        <div class="itm-card">
+          <div class="itm-card-header">Quarterly</div>
+          <div class="itm-card-top">
+            <div class="itm-metric">
+              <div class="itm-metric-value">${fc(m.itmQtrRevenue)}</div>
+              <div class="itm-metric-label">Total Revenue</div>
+            </div>
+            <div class="itm-metric">
+              <div class="itm-metric-value">${fn(m.itmQtrPacksSold)}</div>
+              <div class="itm-metric-label">Total Packs Sold</div>
+            </div>
+          </div>
+          <div class="itm-split">
+            <div class="itm-split-item">
+              <div class="itm-split-val">${fn(m.itmQtrPacks8)}</div>
+              <div class="itm-split-label">8-Pack</div>
+            </div>
+            <div class="itm-split-item">
+              <div class="itm-split-val">${fn(m.itmQtrPacks10)}</div>
+              <div class="itm-split-label">10-Pack</div>
+            </div>
+            <div class="itm-split-item">
+              <div class="itm-split-val">${fn(m.itmQtrPacks25)}</div>
+              <div class="itm-split-label">25-Pack</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>`;
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -1512,6 +1602,52 @@ function buildModelHomeForm() {
         <label class="form-label">ITM Conversion Rate (%)</label>
         <input class="form-input" type="number" step="0.1" id="mhItmConversion" value="${m.itmConversion}">
       </div>
+    </div>
+    <div class="form-section-label">ITM Program — Monthly</div>
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Monthly Revenue ($)</label>
+        <input class="form-input" type="number" id="mhItmMoRev"    value="${m.itmMonthlyRevenue}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Monthly Packs Sold</label>
+        <input class="form-input" type="number" id="mhItmMoPacks"  value="${m.itmMonthlyPacksSold}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">8-Pack Sold</label>
+        <input class="form-input" type="number" id="mhItmMo8"      value="${m.itmMonthlyPacks8}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">10-Pack Sold</label>
+        <input class="form-input" type="number" id="mhItmMo10"     value="${m.itmMonthlyPacks10}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">25-Pack Sold</label>
+        <input class="form-input" type="number" id="mhItmMo25"     value="${m.itmMonthlyPacks25}">
+      </div>
+    </div>
+    <div class="form-section-label">ITM Program — Quarterly</div>
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Quarterly Revenue ($)</label>
+        <input class="form-input" type="number" id="mhItmQtrRev"   value="${m.itmQtrRevenue}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Quarterly Packs Sold</label>
+        <input class="form-input" type="number" id="mhItmQtrPacks" value="${m.itmQtrPacksSold}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">8-Pack Sold</label>
+        <input class="form-input" type="number" id="mhItmQtr8"     value="${m.itmQtrPacks8}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">10-Pack Sold</label>
+        <input class="form-input" type="number" id="mhItmQtr10"    value="${m.itmQtrPacks10}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">25-Pack Sold</label>
+        <input class="form-input" type="number" id="mhItmQtr25"    value="${m.itmQtrPacks25}">
+      </div>
     </div>`;
 }
 
@@ -1524,12 +1660,22 @@ function syncMHRemaining() {
 }
 
 function saveModelHome() {
-  D.modelHome.total          = +document.getElementById('mhTotal').value         || 0;
-  D.modelHome.withExperience = +document.getElementById('mhWithExp').value        || 0;
-  D.modelHome.remotely       = +document.getElementById('mhRemote').value         || 0;
-  D.modelHome.packsSold      = +document.getElementById('mhPacksSold').value      || 0;
-  D.modelHome.itm            = +document.getElementById('mhItm').value            || 0;
-  D.modelHome.itmConversion  = +document.getElementById('mhItmConversion').value  || 0;
+  D.modelHome.total               = +document.getElementById('mhTotal').value          || 0;
+  D.modelHome.withExperience      = +document.getElementById('mhWithExp').value         || 0;
+  D.modelHome.remotely            = +document.getElementById('mhRemote').value          || 0;
+  D.modelHome.packsSold           = +document.getElementById('mhPacksSold').value       || 0;
+  D.modelHome.itm                 = +document.getElementById('mhItm').value             || 0;
+  D.modelHome.itmConversion       = +document.getElementById('mhItmConversion').value   || 0;
+  D.modelHome.itmMonthlyRevenue   = +document.getElementById('mhItmMoRev').value        || 0;
+  D.modelHome.itmMonthlyPacksSold = +document.getElementById('mhItmMoPacks').value      || 0;
+  D.modelHome.itmMonthlyPacks8    = +document.getElementById('mhItmMo8').value          || 0;
+  D.modelHome.itmMonthlyPacks10   = +document.getElementById('mhItmMo10').value         || 0;
+  D.modelHome.itmMonthlyPacks25   = +document.getElementById('mhItmMo25').value         || 0;
+  D.modelHome.itmQtrRevenue       = +document.getElementById('mhItmQtrRev').value       || 0;
+  D.modelHome.itmQtrPacksSold     = +document.getElementById('mhItmQtrPacks').value     || 0;
+  D.modelHome.itmQtrPacks8        = +document.getElementById('mhItmQtr8').value         || 0;
+  D.modelHome.itmQtrPacks10       = +document.getElementById('mhItmQtr10').value        || 0;
+  D.modelHome.itmQtrPacks25       = +document.getElementById('mhItmQtr25').value        || 0;
   saveData();
 }
 
