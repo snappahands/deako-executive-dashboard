@@ -426,7 +426,8 @@
     }
     /* ITM Program row */
     .itm-row { margin-top: 20px; border-top: 1px solid var(--border); padding-top: 18px; }
-    .itm-row-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 14px; }
+    .itm-row-label { font-size: 19px; font-weight: 800; color: #ffffff; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 14px; text-shadow: 0 0 20px rgba(62,207,198,0.3); display: flex; align-items: center; gap: 10px; }
+    .itm-row-label::before { content: ''; display: inline-block; width: 3px; height: 14px; background: var(--teal); border-radius: 2px; }
     .itm-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
     .itm-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
     .itm-card-header { background: rgba(62,207,198,0.10); border-bottom: 1px solid var(--border); padding: 10px 18px; font-size: 11px; font-weight: 700; color: var(--teal); text-transform: uppercase; letter-spacing: 0.5px; }
@@ -678,7 +679,7 @@ const BUILDERS = [
 
 // __DATA_START__
 const DEFAULTS = {
-  dataVersion: 3,  // bump this whenever monthly/goals data changes to bust localStorage cache
+  dataVersion: 4,  // bump this whenever monthly/goals data changes to bust localStorage cache
   monthly: {
     // Bookings: full-year actuals from Justin Bookings Table row 58
     bookings2026: [218.909, 206.701, 203.036, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -703,17 +704,12 @@ const DEFAULTS = {
     remotely:       185,
     packsSold:        0,
     itm:              0,
-    itmConversion:    0,
-    itmMonthlyRevenue:    0,
-    itmMonthlyPacksSold:  0,
-    itmMonthlyPacks8:     0,
-    itmMonthlyPacks10:    0,
-    itmMonthlyPacks25:    0,
-    itmQtrRevenue:        0,
-    itmQtrPacksSold:      0,
-    itmQtrPacks8:         0,
-    itmQtrPacks10:        0,
-    itmQtrPacks25:        0,
+    itmConversion:  0,
+    itmRevenue:   [0,0,0,0,0,0,0,0,0,0,0,0],
+    itmPacksSold: [0,0,0,0,0,0,0,0,0,0,0,0],
+    itmPacks8:    [0,0,0,0,0,0,0,0,0,0,0,0],
+    itmPacks10:   [0,0,0,0,0,0,0,0,0,0,0,0],
+    itmPacks25:   [0,0,0,0,0,0,0,0,0,0,0,0],
   },
   training: {
     totalAgents:          800,
@@ -1129,7 +1125,7 @@ function renderMetrics() {
   const pctColorR = pctR >= 100 ? '#3ecfc6' : pctR >= 75 ? '#3ecfc6' : '#f4a843';
 
   // ── BOOKINGS: main row ──
-  const aopSub = isFiltered ? 'Company AOP (ref only)' : `AOP Target: ${fn(g.aopBookings)}`;
+  const aopSub = isFiltered ? 'Company AOP (ref only)' : `AOP Target: $${Math.round(g.aopBookings * 1000).toLocaleString()}`;
   const yoySub = isFiltered ? `2025 YTD (same period)` : `2025 Full Year: ${fn(g.bookings2025Full)}`;
   const bookingsMain =
     card('2026 YTD Bookings', '$' + Math.round(ytdB * 1000).toLocaleString(), 'sm', isFiltered ? 'Builder YTD' : `of ${fn(g.aopBookings)} AOP`, pctBar(pctB, pctColorB)) +
@@ -1243,7 +1239,7 @@ function renderModelHome() {
     </div>
     <div class="stat-card blue">
       <span class="stat-icon">🏡</span>
-      <div class="stat-value">${fn(m.itm)}</div>
+      <div class="stat-value">$${fn(m.itm)}</div>
       <div class="stat-label">ITM Total Revenue</div>
     </div>
     <div class="stat-card amber">
@@ -1270,67 +1266,60 @@ function renderModelHome() {
       </div>
     </div>`;
 
-  // ITM Program row
-  const fc = v => v >= 1000 ? '$' + (v/1000).toFixed(1) + 'K' : '$' + fn(v);
+  // ITM Program row — 12-month grid (mirrors bookings layout)
+  const di = getDateInfo();
+  const ITM_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const ITM_QTRS   = ['Q1 26','Q2 26','Q3 26','Q4 26'];
+
+  function itmCard(label, val, valCls, sub1, sub2='') {
+    return `<div class="metric-card compact">
+      <div class="metric-label sm">${label}</div>
+      <div class="metric-value xs ${valCls}">${val}</div>
+      <div class="metric-sub xs">${sub1}</div>
+      ${sub2 ? `<div class="metric-sub xs">${sub2}</div>` : ''}
+    </div>`;
+  }
+
+  let itmQtrHtml = '';
+  for (let q = 0; q < 4; q++) {
+    const s     = q * 3;
+    const qRev  = (m.itmRevenue   || []).slice(s, s+3).reduce((a,v)=>a+v, 0);
+    const qPkts = (m.itmPacksSold || []).slice(s, s+3).reduce((a,v)=>a+v, 0);
+    const qP8   = (m.itmPacks8    || []).slice(s, s+3).reduce((a,v)=>a+v, 0);
+    const qP10  = (m.itmPacks10   || []).slice(s, s+3).reduce((a,v)=>a+v, 0);
+    const qP25  = (m.itmPacks25   || []).slice(s, s+3).reduce((a,v)=>a+v, 0);
+    const isPast    = q < di.qIdx;
+    const isCurrent = q === di.qIdx;
+    const val  = qRev > 0 ? '$' + fn(Math.round(qRev)) : '—';
+    const cls  = isPast ? 'pos' : isCurrent ? 'sm' : 'dim';
+    const sub1 = qPkts > 0 ? fn(qPkts) + ' packs' : '—';
+    const sub2 = qPkts > 0 ? `8:${fn(qP8)} / 10:${fn(qP10)} / 25:${fn(qP25)}` : '';
+    itmQtrHtml += itmCard(ITM_QTRS[q], val, cls, sub1, sub2);
+  }
+
+  let itmMonHtml = '';
+  for (let i = 0; i < 12; i++) {
+    const rev  = (m.itmRevenue[i]   || 0);
+    const pkts = (m.itmPacksSold[i] || 0);
+    const p8   = (m.itmPacks8[i]    || 0);
+    const p10  = (m.itmPacks10[i]   || 0);
+    const p25  = (m.itmPacks25[i]   || 0);
+    const isPast    = i < di.month;
+    const isCurrent = i === di.month;
+    const val  = rev > 0 ? '$' + fn(Math.round(rev)) : '—';
+    const cls  = isPast ? 'pos' : isCurrent ? 'sm' : 'dim';
+    const sub1 = pkts > 0 ? fn(pkts) + ' packs' : '—';
+    const sub2 = pkts > 0 ? `8:${fn(p8)} 10:${fn(p10)} 25:${fn(p25)}` : '';
+    itmMonHtml += itmCard(ITM_MONTHS[i], val, cls, sub1, sub2);
+  }
+
   document.getElementById('itmDrhContainer').innerHTML = `
     <div class="itm-row">
       <div class="itm-row-label">ITM Program</div>
-      <div class="itm-cards">
-        <div class="itm-card">
-          <div class="itm-card-header">Monthly</div>
-          <div class="itm-card-top">
-            <div class="itm-metric">
-              <div class="itm-metric-value">${fc(m.itmMonthlyRevenue)}</div>
-              <div class="itm-metric-label">Total Revenue</div>
-            </div>
-            <div class="itm-metric">
-              <div class="itm-metric-value">${fn(m.itmMonthlyPacksSold)}</div>
-              <div class="itm-metric-label">Total Packs Sold</div>
-            </div>
-          </div>
-          <div class="itm-split">
-            <div class="itm-split-item">
-              <div class="itm-split-val">${fn(m.itmMonthlyPacks8)}</div>
-              <div class="itm-split-label">8-Pack</div>
-            </div>
-            <div class="itm-split-item">
-              <div class="itm-split-val">${fn(m.itmMonthlyPacks10)}</div>
-              <div class="itm-split-label">10-Pack</div>
-            </div>
-            <div class="itm-split-item">
-              <div class="itm-split-val">${fn(m.itmMonthlyPacks25)}</div>
-              <div class="itm-split-label">25-Pack</div>
-            </div>
-          </div>
-        </div>
-        <div class="itm-card">
-          <div class="itm-card-header">Quarterly</div>
-          <div class="itm-card-top">
-            <div class="itm-metric">
-              <div class="itm-metric-value">${fc(m.itmQtrRevenue)}</div>
-              <div class="itm-metric-label">Total Revenue</div>
-            </div>
-            <div class="itm-metric">
-              <div class="itm-metric-value">${fn(m.itmQtrPacksSold)}</div>
-              <div class="itm-metric-label">Total Packs Sold</div>
-            </div>
-          </div>
-          <div class="itm-split">
-            <div class="itm-split-item">
-              <div class="itm-split-val">${fn(m.itmQtrPacks8)}</div>
-              <div class="itm-split-label">8-Pack</div>
-            </div>
-            <div class="itm-split-item">
-              <div class="itm-split-val">${fn(m.itmQtrPacks10)}</div>
-              <div class="itm-split-label">10-Pack</div>
-            </div>
-            <div class="itm-split-item">
-              <div class="itm-split-val">${fn(m.itmQtrPacks25)}</div>
-              <div class="itm-split-label">25-Pack</div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <div class="metrics-sub-label">Quarterly</div>
+      <div class="metrics-grid-4">${itmQtrHtml}</div>
+      <div class="metrics-sub-label">Monthly</div>
+      <div class="metrics-grid-12">${itmMonHtml}</div>
     </div>`;
 }
 
@@ -1603,51 +1592,25 @@ function buildModelHomeForm() {
         <input class="form-input" type="number" step="0.1" id="mhItmConversion" value="${m.itmConversion}">
       </div>
     </div>
-    <div class="form-section-label">ITM Program — Monthly</div>
-    <div class="form-grid-2">
-      <div class="form-group">
-        <label class="form-label">Monthly Revenue ($)</label>
-        <input class="form-input" type="number" id="mhItmMoRev"    value="${m.itmMonthlyRevenue}">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Monthly Packs Sold</label>
-        <input class="form-input" type="number" id="mhItmMoPacks"  value="${m.itmMonthlyPacksSold}">
-      </div>
-      <div class="form-group">
-        <label class="form-label">8-Pack Sold</label>
-        <input class="form-input" type="number" id="mhItmMo8"      value="${m.itmMonthlyPacks8}">
-      </div>
-      <div class="form-group">
-        <label class="form-label">10-Pack Sold</label>
-        <input class="form-input" type="number" id="mhItmMo10"     value="${m.itmMonthlyPacks10}">
-      </div>
-      <div class="form-group">
-        <label class="form-label">25-Pack Sold</label>
-        <input class="form-input" type="number" id="mhItmMo25"     value="${m.itmMonthlyPacks25}">
-      </div>
-    </div>
-    <div class="form-section-label">ITM Program — Quarterly</div>
-    <div class="form-grid-2">
-      <div class="form-group">
-        <label class="form-label">Quarterly Revenue ($)</label>
-        <input class="form-input" type="number" id="mhItmQtrRev"   value="${m.itmQtrRevenue}">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Quarterly Packs Sold</label>
-        <input class="form-input" type="number" id="mhItmQtrPacks" value="${m.itmQtrPacksSold}">
-      </div>
-      <div class="form-group">
-        <label class="form-label">8-Pack Sold</label>
-        <input class="form-input" type="number" id="mhItmQtr8"     value="${m.itmQtrPacks8}">
-      </div>
-      <div class="form-group">
-        <label class="form-label">10-Pack Sold</label>
-        <input class="form-input" type="number" id="mhItmQtr10"    value="${m.itmQtrPacks10}">
-      </div>
-      <div class="form-group">
-        <label class="form-label">25-Pack Sold</label>
-        <input class="form-input" type="number" id="mhItmQtr25"    value="${m.itmQtrPacks25}">
-      </div>
+    <div class="form-section-label">ITM Program — Monthly Data</div>
+    <p class="form-note" style="margin-bottom:10px">Enter actuals per month. Quarterly totals are auto-calculated.</p>
+    <div style="overflow-x:auto">
+    <table class="data-table">
+      <thead><tr>
+        <th>Month</th><th>Revenue ($)</th><th>Packs Sold</th><th>8-Pack</th><th>10-Pack</th><th>25-Pack</th>
+      </tr></thead>
+      <tbody>
+        ${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].map((mon,i) => `
+        <tr>
+          <td>${mon}</td>
+          <td><input type="number" min="0" id="itmRev_${i}"   value="${(m.itmRevenue  ||[])[i]||0}"></td>
+          <td><input type="number" min="0" id="itmPkts_${i}"  value="${(m.itmPacksSold||[])[i]||0}"></td>
+          <td><input type="number" min="0" id="itmP8_${i}"    value="${(m.itmPacks8   ||[])[i]||0}"></td>
+          <td><input type="number" min="0" id="itmP10_${i}"   value="${(m.itmPacks10  ||[])[i]||0}"></td>
+          <td><input type="number" min="0" id="itmP25_${i}"   value="${(m.itmPacks25  ||[])[i]||0}"></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
     </div>`;
 }
 
@@ -1665,17 +1628,19 @@ function saveModelHome() {
   D.modelHome.remotely            = +document.getElementById('mhRemote').value          || 0;
   D.modelHome.packsSold           = +document.getElementById('mhPacksSold').value       || 0;
   D.modelHome.itm                 = +document.getElementById('mhItm').value             || 0;
-  D.modelHome.itmConversion       = +document.getElementById('mhItmConversion').value   || 0;
-  D.modelHome.itmMonthlyRevenue   = +document.getElementById('mhItmMoRev').value        || 0;
-  D.modelHome.itmMonthlyPacksSold = +document.getElementById('mhItmMoPacks').value      || 0;
-  D.modelHome.itmMonthlyPacks8    = +document.getElementById('mhItmMo8').value          || 0;
-  D.modelHome.itmMonthlyPacks10   = +document.getElementById('mhItmMo10').value         || 0;
-  D.modelHome.itmMonthlyPacks25   = +document.getElementById('mhItmMo25').value         || 0;
-  D.modelHome.itmQtrRevenue       = +document.getElementById('mhItmQtrRev').value       || 0;
-  D.modelHome.itmQtrPacksSold     = +document.getElementById('mhItmQtrPacks').value     || 0;
-  D.modelHome.itmQtrPacks8        = +document.getElementById('mhItmQtr8').value         || 0;
-  D.modelHome.itmQtrPacks10       = +document.getElementById('mhItmQtr10').value        || 0;
-  D.modelHome.itmQtrPacks25       = +document.getElementById('mhItmQtr25').value        || 0;
+  D.modelHome.itmConversion = +document.getElementById('mhItmConversion').value || 0;
+  D.modelHome.itmRevenue   = [];
+  D.modelHome.itmPacksSold = [];
+  D.modelHome.itmPacks8    = [];
+  D.modelHome.itmPacks10   = [];
+  D.modelHome.itmPacks25   = [];
+  for (let i = 0; i < 12; i++) {
+    D.modelHome.itmRevenue.push(  +document.getElementById(`itmRev_${i}`).value  || 0);
+    D.modelHome.itmPacksSold.push(+document.getElementById(`itmPkts_${i}`).value || 0);
+    D.modelHome.itmPacks8.push(   +document.getElementById(`itmP8_${i}`).value   || 0);
+    D.modelHome.itmPacks10.push(  +document.getElementById(`itmP10_${i}`).value  || 0);
+    D.modelHome.itmPacks25.push(  +document.getElementById(`itmP25_${i}`).value  || 0);
+  }
   saveData();
 }
 
@@ -1753,7 +1718,7 @@ function renderModelHomeMaronda() {
     </div>
     <div class="stat-card blue">
       <span class="stat-icon">🏡</span>
-      <div class="stat-value">${fn(m.itm)}</div>
+      <div class="stat-value">$${fn(m.itm)}</div>
       <div class="stat-label">ITM Total Revenue</div>
     </div>
     <div class="stat-card amber">
