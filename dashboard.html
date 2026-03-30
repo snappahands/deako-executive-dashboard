@@ -500,7 +500,7 @@
   <div class="section">
     <div class="section-header">
       <div>
-        <div class="section-title">Model Home Experience</div>
+        <div class="section-title">DRH Model Home Experience</div>
         <div class="section-sub">Setup status across all model home locations</div>
       </div>
       <button class="btn btn-outline" onclick="openModal('modelHome')">&#9998; Edit</button>
@@ -524,7 +524,35 @@
     </div>
   </div>
 
-  <!-- ── SECTION 5: CUSTOM DATA POINTS ── -->
+  <!-- ── SECTION 5: MARONDA MODEL HOME EXPERIENCE ── -->
+  <div class="section">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Maronda Model Home Experience</div>
+        <div class="section-sub">Setup status across all model home locations</div>
+      </div>
+      <button class="btn btn-outline" onclick="openModal('modelHomeMaronda')">&#9998; Edit</button>
+    </div>
+    <div class="section-body">
+      <div class="stats-grid" id="modelHomeMarondaContainer" style="grid-template-columns: repeat(7, 1fr);"></div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 6: MARONDA SALES AGENT TRAINING ── -->
+  <div class="section">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Maronda Sales Agent Training Program</div>
+        <div class="section-sub">Enrollment, training activity &amp; certification status</div>
+      </div>
+      <button class="btn btn-outline" onclick="openModal('trainingMaronda')">&#9998; Edit</button>
+    </div>
+    <div class="section-body">
+      <div class="stats-grid" id="trainingMarondaContainer"></div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 7: CUSTOM DATA POINTS ── -->
   <div class="section">
     <div class="section-header">
       <div>
@@ -666,6 +694,21 @@ const DEFAULTS = {
     availableTrainings:    28,
     totalTrained:         368,
     totalCertified:        62,
+  },
+  modelHomeMaronda: {
+    total:          0,
+    withExperience: 0,
+    remotely:       0,
+    packsSold:      0,
+    itm:            0,
+    itmConversion:  0,
+  },
+  trainingMaronda: {
+    totalAgents:          0,
+    totalTrainings:       0,
+    availableTrainings:   0,
+    totalTrained:         0,
+    totalCertified:       0,
   },
   customPoints: [],
 };
@@ -1311,6 +1354,13 @@ function openModal(type, param) {
   } else if (type === 'training') {
     title.textContent = 'Edit Sales Agent Training';
     body.innerHTML = buildTrainingForm();
+  } else if (type === 'modelHomeMaronda') {
+    title.textContent = 'Edit Maronda Model Home Experience';
+    body.innerHTML = buildModelHomeMarondaForm();
+    setTimeout(syncMHMRemaining, 0);
+  } else if (type === 'trainingMaronda') {
+    title.textContent = 'Edit Maronda Sales Agent Training';
+    body.innerHTML = buildTrainingMarondaForm();
   } else if (type === 'addCustom') {
     title.textContent = 'Add Custom Data Point';
     body.innerHTML = buildCustomForm(null);
@@ -1331,7 +1381,9 @@ function saveModal() {
   if      (currentModal === 'chartData')  saveChartData();
   else if (currentModal === 'goals')      saveGoals();
   else if (currentModal === 'modelHome')  saveModelHome();
-  else if (currentModal === 'training')   saveTraining();
+  else if (currentModal === 'training')         saveTraining();
+  else if (currentModal === 'modelHomeMaronda') saveModelHomeMaronda();
+  else if (currentModal === 'trainingMaronda')  saveTrainingMaronda();
   else if (currentModal === 'addCustom')  saveCustomPoint(false);
   else if (currentModal === 'editCustom') saveCustomPoint(true);
   closeModal();
@@ -1518,6 +1570,215 @@ function saveTraining() {
   saveData();
 }
 
+function renderModelHomeMaronda() {
+  const m = D.modelHomeMaronda;
+  const remaining = Math.max(0, m.total - m.withExperience - m.remotely);
+  const pct       = m.total > 0 ? ((m.withExperience + m.remotely) / m.total * 100) : 0;
+  const remotePct = m.total > 0 ? (m.remotely        / m.total * 100) : 0;
+  const expPct    = m.total > 0 ? (m.withExperience  / m.total * 100) : 0;
+  document.getElementById('modelHomeMarondaContainer').innerHTML = `
+    <div class="stat-card blue">
+      <span class="stat-icon">🏠</span>
+      <div class="stat-value">${fn(m.total)}</div>
+      <div class="stat-label">Total Model Homes</div>
+    </div>
+    <div class="stat-card green">
+      <span class="stat-icon">✅</span>
+      <div class="stat-value">${fn(m.withExperience)}</div>
+      <div class="stat-label">Set Up w/ Experience</div>
+      <div class="stat-note">${fp(expPct,0)} of total</div>
+    </div>
+    <div class="stat-card">
+      <span class="stat-icon">📡</span>
+      <div class="stat-value">${fn(m.remotely)}</div>
+      <div class="stat-label">Set Up Remotely</div>
+      <div class="stat-note">${fp(remotePct,0)} of total</div>
+    </div>
+    <div class="stat-card ${remaining > 0 ? 'amber' : 'green'}">
+      <span class="stat-icon">${remaining > 0 ? '⏳' : '🎉'}</span>
+      <div class="stat-value">${fn(remaining)}</div>
+      <div class="stat-label">Remaining to Set Up</div>
+      <div class="stat-note">${remaining > 0 ? fp(remaining/m.total*100,0)+' of total' : 'All complete!'}</div>
+    </div>
+    <div class="stat-card">
+      <span class="stat-icon">📦</span>
+      <div class="stat-value">${fn(m.packsSold)}</div>
+      <div class="stat-label">Total Packs Sold</div>
+    </div>
+    <div class="stat-card blue">
+      <span class="stat-icon">🏡</span>
+      <div class="stat-value">${fn(m.itm)}</div>
+      <div class="stat-label">ITM Total Revenue</div>
+    </div>
+    <div class="stat-card amber">
+      <span class="stat-icon">📊</span>
+      <div class="stat-value">${m.itmConversion}%</div>
+      <div class="stat-label">ITM Conversion Rate</div>
+    </div>
+    <div class="stat-card full">
+      <div class="prog-label-text">Total Set Up Remotely</div>
+      <div class="prog-label">
+        <div class="prog-big">
+          <div class="prog-big-fill" style="width:${Math.min(remotePct,100)}%;background:#3ecfc6;"></div>
+        </div>
+        <div class="prog-pct" style="color:#3ecfc6;">${fp(remotePct,0)}</div>
+      </div>
+    </div>
+    <div class="stat-card full">
+      <div class="prog-label-text">Set Up w/ Experience</div>
+      <div class="prog-label">
+        <div class="prog-big">
+          <div class="prog-big-fill" style="width:${Math.min(expPct,100)}%;background:#f4a843;"></div>
+        </div>
+        <div class="prog-pct" style="color:#f4a843;">${fp(expPct,0)}</div>
+      </div>
+    </div>`;
+}
+
+function buildModelHomeMarondaForm() {
+  const m = D.modelHomeMaronda;
+  const rem = Math.max(0, m.total - m.withExperience - m.remotely);
+  return `
+    <p class="form-note">Update model home setup counts. <strong>Remaining</strong> is auto-calculated as Total − With Experience − Remotely.</p>
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Total Model Homes</label>
+        <input class="form-input" type="number" id="mhmTotal"  value="${m.total}"          oninput="syncMHMRemaining()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Set Up w/ Experience</label>
+        <input class="form-input" type="number" id="mhmWithExp" value="${m.withExperience}" oninput="syncMHMRemaining()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Set Up Remotely</label>
+        <input class="form-input" type="number" id="mhmRemote" value="${m.remotely}"        oninput="syncMHMRemaining()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Remaining (auto-calculated)</label>
+        <input class="form-input" type="number" id="mhmRemaining" value="${rem}" readonly>
+      </div>
+    </div>
+    <div class="form-section-label">Additional Metrics</div>
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Total Packs Sold</label>
+        <input class="form-input" type="number" id="mhmPacksSold" value="${m.packsSold}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">ITM Total Revenue</label>
+        <input class="form-input" type="number" id="mhmItm" value="${m.itm}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">ITM Conversion Rate (%)</label>
+        <input class="form-input" type="number" step="0.1" id="mhmItmConversion" value="${m.itmConversion}">
+      </div>
+    </div>`;
+}
+
+function syncMHMRemaining() {
+  const t = +document.getElementById('mhmTotal')?.value   || 0;
+  const w = +document.getElementById('mhmWithExp')?.value || 0;
+  const r = +document.getElementById('mhmRemote')?.value  || 0;
+  const el = document.getElementById('mhmRemaining');
+  if (el) el.value = Math.max(0, t - w - r);
+}
+
+function saveModelHomeMaronda() {
+  D.modelHomeMaronda.total          = +document.getElementById('mhmTotal').value          || 0;
+  D.modelHomeMaronda.withExperience = +document.getElementById('mhmWithExp').value         || 0;
+  D.modelHomeMaronda.remotely       = +document.getElementById('mhmRemote').value          || 0;
+  D.modelHomeMaronda.packsSold      = +document.getElementById('mhmPacksSold').value       || 0;
+  D.modelHomeMaronda.itm            = +document.getElementById('mhmItm').value             || 0;
+  D.modelHomeMaronda.itmConversion  = +document.getElementById('mhmItmConversion').value   || 0;
+  saveData();
+}
+
+function renderTrainingMaronda() {
+  const t = D.trainingMaronda;
+  const certPct      = t.totalTrained       > 0 ? (t.totalCertified / t.totalTrained       * 100) : 0;
+  const trainedPct   = t.totalAgents        > 0 ? (t.totalTrained   / t.totalAgents        * 100) : 0;
+  const trainingsPct = t.availableTrainings > 0 ? (t.totalTrainings / t.availableTrainings * 100) : 0;
+  document.getElementById('trainingMarondaContainer').innerHTML = `
+    <div class="stat-card">
+      <span class="stat-icon">📚</span>
+      <div class="stat-value">${fn(t.totalTrainings)}</div>
+      <div class="stat-label">Total Trainings</div>
+      <div class="stat-note">${fp(trainingsPct,0)} of ${fn(t.availableTrainings)} available</div>
+    </div>
+    <div class="stat-card blue">
+      <span class="stat-icon">👥</span>
+      <div class="stat-value">${fn(t.totalAgents)}</div>
+      <div class="stat-label">Total Agents</div>
+    </div>
+    <div class="stat-card green">
+      <span class="stat-icon">🎓</span>
+      <div class="stat-value">${fn(t.totalTrained)}</div>
+      <div class="stat-label">Agents Trained</div>
+      <div class="stat-note">${fp(trainedPct,0)} of total agents</div>
+    </div>
+    <div class="stat-card amber">
+      <span class="stat-icon">🏆</span>
+      <div class="stat-value">${fn(t.totalCertified)}</div>
+      <div class="stat-label">Agents Certified</div>
+      <div class="stat-note">${fp(certPct,0)} of trained agents</div>
+    </div>
+    <div class="stat-card full">
+      <div class="prog-label-text">Q1/Q2 Training Completion</div>
+      <div class="prog-label">
+        <div class="prog-big">
+          <div class="prog-big-fill" style="width:${Math.min(trainedPct,100)}%;background:#3ecfc6;"></div>
+        </div>
+        <div class="prog-pct" style="color:#3ecfc6;">${fp(trainedPct,0)}</div>
+      </div>
+    </div>
+    <div class="stat-card full-amber">
+      <div class="prog-label-text">Certification Progress</div>
+      <div class="prog-label">
+        <div class="prog-big">
+          <div class="prog-big-fill" style="width:${Math.min(certPct,100)}%;background:#f4a843;"></div>
+        </div>
+        <div class="prog-pct" style="color:#f4a843;">${fp(certPct,0)}</div>
+      </div>
+    </div>`;
+}
+
+function buildTrainingMarondaForm() {
+  const t = D.trainingMaronda;
+  return `
+    <p class="form-note">Update sales agent training program metrics. All fields are independent — enter the values as-is.</p>
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Total Agents</label>
+        <input class="form-input" type="number" id="trmAgents"    value="${t.totalAgents}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Total Trainings Held</label>
+        <input class="form-input" type="number" id="trmTrainings" value="${t.totalTrainings}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Total Available Trainings</label>
+        <input class="form-input" type="number" id="trmAvailable" value="${t.availableTrainings}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Agents Trained</label>
+        <input class="form-input" type="number" id="trmTrained"   value="${t.totalTrained}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Agents Certified</label>
+        <input class="form-input" type="number" id="trmCertified" value="${t.totalCertified}">
+      </div>
+    </div>`;
+}
+
+function saveTrainingMaronda() {
+  D.trainingMaronda.totalAgents        = +document.getElementById('trmAgents').value    || 0;
+  D.trainingMaronda.totalTrainings     = +document.getElementById('trmTrainings').value || 0;
+  D.trainingMaronda.availableTrainings = +document.getElementById('trmAvailable').value || 0;
+  D.trainingMaronda.totalTrained       = +document.getElementById('trmTrained').value   || 0;
+  D.trainingMaronda.totalCertified     = +document.getElementById('trmCertified').value || 0;
+  saveData();
+}
+
 function buildCustomForm(existing) {
   const p = existing || { label:'', value:'', prefix:'', suffix:'', note:'' };
   return `
@@ -1571,6 +1832,8 @@ function renderAll() {
   renderMetrics();
   renderModelHome();
   renderTraining();
+  renderModelHomeMaronda();
+  renderTrainingMaronda();
   renderCustom();
 }
 
