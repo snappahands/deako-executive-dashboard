@@ -1169,7 +1169,8 @@ function renderMetrics() {
     const isCurrent = m === di.month;
     const daysLeft  = isCurrent ? (di.daysInMonth - di.day) : 0;
     const val   = (isPast || isCurrent) && val26 > 0 ? fc(val26) : '—';
-    const cls   = isPast ? 'pos' : isCurrent ? 'sm' : 'dim';
+    const metAOP = !isFiltered && val26 >= mAOP;
+    const cls   = isPast ? (metAOP ? 'pos' : 'neg') : isCurrent ? 'sm' : 'dim';
     const sub   = isPast ? 'Completed' : isCurrent ? `${daysLeft} days left` : '—';
     const delta = (isPast || isCurrent) && val26 > 0
       ? (isFiltered ? val26 - val25 : val26 - mAOP)
