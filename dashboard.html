@@ -451,7 +451,7 @@
   <div class="header-right">
     <div class="header-date" id="headerDate"></div>
     <div class="header-period" id="headerPeriod"></div>
-    <div style="font-size:11px;color:var(--teal);margin-top:4px;letter-spacing:.04em;font-weight:700">v3.1</div>
+    <div style="font-size:11px;color:var(--teal);margin-top:4px;letter-spacing:.04em;font-weight:700">v3.2</div>
   </div>
 </header>
 
@@ -1310,12 +1310,12 @@ function buildItmEditRow(yr, revArr, pktsArr, p8Arr, p10Arr, p25Arr, convArr) {
   return MONTHS.map((mon, i) => `
     <div class="itm-edit-card">
       <div class="itm-edit-month">${mon} ${yr}</div>
+      <div class="itm-edit-field-label">Conv. Rate %</div>
+      <input class="itm-edit-input" type="number" min="0" step="0.1" id="itm${yr}Conv_${i}" value="${(convArr||[])[i]||0}" onchange="saveItmData()">
       <div class="itm-edit-field-label">Rev $</div>
       <input class="itm-edit-input" type="number" min="0" id="itm${yr}Rev_${i}"  value="${(revArr ||[])[i]||0}" onchange="saveItmData()">
       <div class="itm-edit-field-label">Packs</div>
       <input class="itm-edit-input" type="number" min="0" id="itm${yr}Pkts_${i}" value="${(pktsArr||[])[i]||0}" onchange="saveItmData()">
-      <div class="itm-edit-field-label">Conv %</div>
-      <input class="itm-edit-input" type="number" min="0" step="0.1" id="itm${yr}Conv_${i}" value="${(convArr||[])[i]||0}" onchange="saveItmData()">
       <div class="itm-edit-split-labels"><span>8</span><span>10</span><span>25</span></div>
       <div class="itm-edit-split">
         <input class="itm-edit-split-input" type="number" min="0" id="itm${yr}P8_${i}"  value="${(p8Arr ||[])[i]||0}" onchange="saveItmData()">
