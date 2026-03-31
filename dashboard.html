@@ -451,7 +451,7 @@
   <div class="header-right">
     <div class="header-date" id="headerDate"></div>
     <div class="header-period" id="headerPeriod"></div>
-    <div style="font-size:11px;color:var(--teal);margin-top:4px;letter-spacing:.04em;font-weight:700">v3.0</div>
+    <div style="font-size:11px;color:var(--teal);margin-top:4px;letter-spacing:.04em;font-weight:700">v3.1</div>
   </div>
 </header>
 
@@ -713,6 +713,8 @@ const DEFAULTS = {
     itmPacks8_25:    [0,0,0,0,0,0,0,0,0,0,0,0],
     itmPacks10_25:   [0,0,0,0,0,0,0,0,0,0,0,0],
     itmPacks25_25:   [0,0,0,0,0,0,0,0,0,0,0,0],
+    itmConvRate:     [0,0,0,0,0,0,0,0,0,0,0,0],
+    itmConvRate25:   [0,0,0,0,0,0,0,0,0,0,0,0],
   },
   training: {
     totalAgents:          800,
@@ -1303,7 +1305,7 @@ function buildItmQtrHtml(m) {
   return html;
 }
 
-function buildItmEditRow(yr, revArr, pktsArr, p8Arr, p10Arr, p25Arr) {
+function buildItmEditRow(yr, revArr, pktsArr, p8Arr, p10Arr, p25Arr, convArr) {
   const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   return MONTHS.map((mon, i) => `
     <div class="itm-edit-card">
@@ -1312,6 +1314,8 @@ function buildItmEditRow(yr, revArr, pktsArr, p8Arr, p10Arr, p25Arr) {
       <input class="itm-edit-input" type="number" min="0" id="itm${yr}Rev_${i}"  value="${(revArr ||[])[i]||0}" onchange="saveItmData()">
       <div class="itm-edit-field-label">Packs</div>
       <input class="itm-edit-input" type="number" min="0" id="itm${yr}Pkts_${i}" value="${(pktsArr||[])[i]||0}" onchange="saveItmData()">
+      <div class="itm-edit-field-label">Conv %</div>
+      <input class="itm-edit-input" type="number" min="0" step="0.1" id="itm${yr}Conv_${i}" value="${(convArr||[])[i]||0}" onchange="saveItmData()">
       <div class="itm-edit-split-labels"><span>8</span><span>10</span><span>25</span></div>
       <div class="itm-edit-split">
         <input class="itm-edit-split-input" type="number" min="0" id="itm${yr}P8_${i}"  value="${(p8Arr ||[])[i]||0}" onchange="saveItmData()">
@@ -1329,17 +1333,17 @@ function renderItmDrh() {
       <div class="metrics-sub-label">Quarterly (auto-calculated from 2026 monthly)</div>
       <div id="itmQtrDrh" class="metrics-grid-4">${buildItmQtrHtml(m)}</div>
       <div class="metrics-sub-label">2026 Monthly</div>
-      <div class="metrics-grid-12">${buildItmEditRow(26, m.itmRevenue, m.itmPacksSold, m.itmPacks8, m.itmPacks10, m.itmPacks25)}</div>
+      <div class="metrics-grid-12">${buildItmEditRow(26, m.itmRevenue, m.itmPacksSold, m.itmPacks8, m.itmPacks10, m.itmPacks25, m.itmConvRate)}</div>
       <div class="metrics-sub-label">2025 Monthly</div>
-      <div class="metrics-grid-12">${buildItmEditRow(25, m.itmRevenue25, m.itmPacksSold25, m.itmPacks8_25, m.itmPacks10_25, m.itmPacks25_25)}</div>
+      <div class="metrics-grid-12">${buildItmEditRow(25, m.itmRevenue25, m.itmPacksSold25, m.itmPacks8_25, m.itmPacks10_25, m.itmPacks25_25, m.itmConvRate25)}</div>
     </div>`;
 }
 
 function saveItmData() {
   const m = D.modelHome;
   const ensureArr = k => { if (!Array.isArray(m[k])) m[k] = Array(12).fill(0); };
-  ['itmRevenue','itmPacksSold','itmPacks8','itmPacks10','itmPacks25',
-   'itmRevenue25','itmPacksSold25','itmPacks8_25','itmPacks10_25','itmPacks25_25'].forEach(ensureArr);
+  ['itmRevenue','itmPacksSold','itmPacks8','itmPacks10','itmPacks25','itmConvRate',
+   'itmRevenue25','itmPacksSold25','itmPacks8_25','itmPacks10_25','itmPacks25_25','itmConvRate25'].forEach(ensureArr);
   const g = id => { const el = document.getElementById(id); return el ? (+el.value || 0) : 0; };
   for (let i = 0; i < 12; i++) {
     m.itmRevenue[i]     = g(`itm26Rev_${i}`);
@@ -1347,11 +1351,13 @@ function saveItmData() {
     m.itmPacks8[i]      = g(`itm26P8_${i}`);
     m.itmPacks10[i]     = g(`itm26P10_${i}`);
     m.itmPacks25[i]     = g(`itm26P25_${i}`);
+    m.itmConvRate[i]    = g(`itm26Conv_${i}`);
     m.itmRevenue25[i]   = g(`itm25Rev_${i}`);
     m.itmPacksSold25[i] = g(`itm25Pkts_${i}`);
     m.itmPacks8_25[i]   = g(`itm25P8_${i}`);
     m.itmPacks10_25[i]  = g(`itm25P10_${i}`);
     m.itmPacks25_25[i]  = g(`itm25P25_${i}`);
+    m.itmConvRate25[i]  = g(`itm25Conv_${i}`);
   }
   saveData();
   // Only re-render the quarterly totals — leaves editable inputs untouched
