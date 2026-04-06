@@ -1122,7 +1122,7 @@ function makeBar(id, labels, ds, fmt, deltas, lines) {
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      layout: { padding: { top: deltas ? 22 : 4 } },
+      layout: { padding: { top: 4, bottom: deltas ? 18 : 4 } },
       plugins: {
         legend: {
           position:'top',
@@ -1146,10 +1146,10 @@ function makeBar(id, labels, ds, fmt, deltas, lines) {
             return (d >= 0 ? '+' : '') + (fmt === '$' ? fcr(d) : Math.round(d).toLocaleString());
           },
           color: (ctx) => (deltas[ctx.dataIndex] ?? 0) >= 0 ? '#3ecfc6' : '#e8728a',
-          anchor: 'end',
-          align: 'top',
+          anchor: 'start',
+          align: 'bottom',
           font: { size: 9, weight: '700' },
-          padding: { bottom: 2 }
+          offset: 4
         } : { display: false }
       },
       scales: {
@@ -1200,14 +1200,14 @@ function renderCharts() {
   const _g = D.goals;
   const aopLines = activeBuilder === 'all' ? [
     { type:'line', label:'AOP (3+9)', data: _g.monthlyAOP2026,
-      borderColor:'rgba(244,168,67,0.9)', backgroundColor:'transparent',
+      borderColor:'rgba(63,185,80,0.9)', backgroundColor:'transparent',
       borderWidth:2, borderDash:[6,3], pointRadius:3, pointHoverRadius:5,
-      pointBackgroundColor:'rgba(244,168,67,0.9)', tension:0.3, order:-1,
+      pointBackgroundColor:'rgba(63,185,80,0.9)', tension:0.3, order:-1,
       datalabels:{display:false} },
     { type:'line', label:'AOP (Investor)', data: _g.monthlyAOPInvestor,
-      borderColor:'rgba(232,114,138,0.9)', backgroundColor:'transparent',
+      borderColor:'rgba(139,148,158,0.85)', backgroundColor:'transparent',
       borderWidth:2, borderDash:[6,3], pointRadius:3, pointHoverRadius:5,
-      pointBackgroundColor:'rgba(232,114,138,0.9)', tension:0.3, order:-1,
+      pointBackgroundColor:'rgba(139,148,158,0.85)', tension:0.3, order:-1,
       datalabels:{display:false} },
   ] : null;
   makeBar('chartMonthlyBookings', MONTHS, [
@@ -2515,10 +2515,10 @@ function renderDrhCharts() {
   }
 
   // Bookings Q1-Q4 YoY
-  makeQtrYoy('drhQ1Yoy', d.total,  0, fc);
-  makeQtrYoy('drhQ2Yoy', d.total,  1, fc);
-  makeQtrYoy('drhQ3Yoy', d.total,  2, fc);
-  makeQtrYoy('drhQ4Yoy', d.total,  3, fc);
+  makeQtrYoy('drhQ1Yoy', d.total,  0, fcr);
+  makeQtrYoy('drhQ2Yoy', d.total,  1, fcr);
+  makeQtrYoy('drhQ3Yoy', d.total,  2, fcr);
+  makeQtrYoy('drhQ4Yoy', d.total,  3, fcr);
   // Starts Q1-Q4 YoY
   makeQtrYoy('drhQ1Starts', d.starts, 0, fn);
   makeQtrYoy('drhQ2Starts', d.starts, 1, fn);
