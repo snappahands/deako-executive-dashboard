@@ -872,6 +872,8 @@ const DEFAULTS = {
     revenue2025Full:   2418.6,  // 2025 full-year actual — AQ row 59
     // Monthly AOP 2026 (row 59, individual month columns)
     monthlyAOP2026: [202.401, 208.235, 219.454, 221.783, 229.603, 233.766, 235.989, 236.944, 236.674, 217.579, 186.706, 187.414],
+    // Monthly AOP 2026 — Investor view ($K)
+    monthlyAOPInvestor: [232.747, 243.768, 242.691, 241.194, 239.233, 243.521, 233.943, 236.671, 238.348, 235.784, 240.126, 238.289],
     // Quarterly AOP 2026 (row 59 quarter total columns)
     qtrAOP2026: [630.090, 685.152, 709.607, 591.699],
   },
@@ -1109,13 +1111,14 @@ function renderHeader() {
 // ═══════════════════════════════════════════════════════════
 //  CHARTS
 // ═══════════════════════════════════════════════════════════
-function makeBar(id, labels, ds, fmt, deltas) {
+function makeBar(id, labels, ds, fmt, deltas, lines) {
   const ctx = document.getElementById(id).getContext('2d');
   if (charts[id]) charts[id].destroy();
   const lastIdx = ds.length - 1;
+  const allDs = lines ? [...ds, ...lines] : ds;
   charts[id] = new Chart(ctx, {
     type: 'bar',
-    data: { labels, datasets: ds },
+    data: { labels, datasets: allDs },
     options: {
       responsive: true,
       maintainAspectRatio: false,
@@ -1194,10 +1197,22 @@ function renderCharts() {
   const deltaQtrB   = qB26.map((v,i) => v > 0 ? v - qB25[i] : null);
   const deltaQtrR   = qR26.map((v,i) => v > 0 ? v - qR25[i] : null);
 
+  const aopLines = activeBuilder === 'all' ? [
+    { type:'line', label:'AOP (3+9)', data: g.monthlyAOP2026,
+      borderColor:'rgba(244,168,67,0.9)', backgroundColor:'transparent',
+      borderWidth:2, borderDash:[6,3], pointRadius:3, pointHoverRadius:5,
+      pointBackgroundColor:'rgba(244,168,67,0.9)', tension:0.3, order:-1,
+      datalabels:{display:false} },
+    { type:'line', label:'AOP (Investor)', data: g.monthlyAOPInvestor,
+      borderColor:'rgba(232,114,138,0.9)', backgroundColor:'transparent',
+      borderWidth:2, borderDash:[6,3], pointRadius:3, pointHoverRadius:5,
+      pointBackgroundColor:'rgba(232,114,138,0.9)', tension:0.3, order:-1,
+      datalabels:{display:false} },
+  ] : null;
   makeBar('chartMonthlyBookings', MONTHS, [
     { label:'2025', data: b25, backgroundColor: b25c, borderRadius:4 },
     { label:'2026', data: b26, backgroundColor: b26c, borderRadius:4 },
-  ], '$', deltaMonthB);
+  ], '$', deltaMonthB, aopLines);
 
   makeBar('chartMonthlyRevenue', MONTHS, [
     { label:'2025', data: r25, backgroundColor: r25c, borderRadius:4 },
