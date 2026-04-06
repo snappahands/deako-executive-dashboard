@@ -1,0 +1,1392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brian's Dashboard — DR Horton National Sales Training</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+<script src="rainmakers.js"></script>
+<script src="conv_data.js"></script>
+<script src="closes_data.js"></script>
+<script src="ratif_data.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;background:#0d1117;font-family:system-ui,-apple-system,sans-serif;color:#c9d1d9;overflow:hidden}
+body{display:flex;flex-direction:column;height:100vh}
+
+/* HEADER */
+#header{background:#161b22;border-bottom:1px solid #21262d;padding:10px 20px;flex-shrink:0;display:flex;align-items:center;gap:0}
+#header-title{width:160px;flex-shrink:0;padding-right:12px}
+#header h1{font-size:17px;font-weight:700;color:#e6edf3;letter-spacing:.02em;white-space:nowrap}
+.header-sub{font-size:11px;color:#8b949e;background:#0d1117;padding:2px 8px;border-radius:10px;font-weight:600}
+
+/* METRICS BAR */
+#metrics-bar{flex:1;display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:center}
+.hmetric{background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:7px 14px;display:flex;flex-direction:column;min-width:90px}
+.hmetric-label{font-size:10px;color:#8b949e;letter-spacing:.05em;text-transform:uppercase;margin-bottom:2px}
+.hmetric-value{font-size:18px;font-weight:800;color:#e6edf3;line-height:1}
+.hmetric-sub{font-size:10px;color:#8b949e;margin-top:2px}
+.hmetric.teal .hmetric-value{color:#7ecfe0}
+.hmetric.green .hmetric-value{color:#3fb950}
+.hmetric.purple .hmetric-value{color:#d2a8ff}
+.hmetric.orange .hmetric-value{color:#f0a500}
+.hmetric.lift .hmetric-value{color:#3fb950;font-size:22px}
+
+/* VERSION */
+#version-badge{position:fixed;bottom:10px;right:14px;font-size:14px;font-weight:700;color:#7ecfe0;background:#0d1117;border:1px solid #21262d;border-radius:10px;padding:4px 12px;z-index:100;pointer-events:none}
+
+/* LAYOUT */
+#main{display:flex;flex:1;overflow:hidden}
+
+/* SIDEBAR */
+#sidebar{width:200px;flex-shrink:0;background:#161b22;border-right:1px solid #21262d;overflow-y:auto;padding:6px 0}
+.div-item{padding:8px 14px 8px 10px;cursor:pointer;border-left:3px solid transparent;transition:all .12s;font-size:12px;color:#8b949e;line-height:1.3}
+.div-item:hover{background:#1c2128;color:#c9d1d9}
+.div-item.active{background:#1c2128;border-left-color:#7ecfe0;color:#e6edf3;font-weight:600}
+.div-item.cancelled{opacity:.5}
+.div-date{font-size:10px;color:#484f58;margin-top:2px}
+.div-itm-pill{display:inline-block;font-size:9px;font-weight:700;padding:1px 5px;border-radius:8px;margin-top:3px}
+.pill-up{background:#0d2b0d;color:#3fb950;border:1px solid #1a4d1a}
+.pill-flat{background:#21262d;color:#8b949e;border:1px solid #30363d}
+.pill-none{background:#21262d;color:#484f58;border:1px solid #21262d}
+.sidebar-section{padding:6px 14px 3px;font-size:10px;color:#484f58;letter-spacing:.06em;text-transform:uppercase;margin-top:4px}
+
+/* CONTENT */
+#content{flex:1;overflow-y:auto;padding:20px;background:#0d1117}
+
+/* OVERVIEW */
+.overview-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.chart-card{background:#161b22;border:1px solid #21262d;border-radius:10px;padding:16px}
+.chart-card h3{font-size:13px;font-weight:700;color:#e6edf3;margin-bottom:12px;letter-spacing:.02em}
+.chart-wrap{position:relative;height:260px}
+.full-chart-card{background:#161b22;border:1px solid #21262d;border-radius:10px;padding:16px;margin-bottom:16px}
+.full-chart-wrap{position:relative;height:300px}
+
+/* DIVISION DETAIL */
+.d-header{margin-bottom:16px}
+.d-name{font-size:22px;font-weight:700;color:#e6edf3}
+.d-meta{font-size:13px;color:#8b949e;margin-top:3px}
+.d-badges{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.badge{padding:3px 10px;border-radius:12px;font-size:10px;font-weight:700;letter-spacing:.05em;white-space:nowrap}
+.badge-completed{background:#0d2b0d;color:#3fb950;border:1px solid #1a4d1a}
+.badge-cancelled{background:#2d0d0d;color:#f85149;border:1px solid #4d1a1a}
+.badge-pdp{background:#0d2137;color:#79c0ff;border:1px solid #1a3a6d}
+.badge-virtual{background:#21262d;color:#8b949e;border:1px solid #30363d}
+
+.d-metrics{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.d-metric{background:#161b22;border:1px solid #21262d;border-radius:8px;padding:11px 14px;min-width:90px;flex:1;text-align:center}
+.d-metric-val{font-size:22px;font-weight:800;color:#e6edf3;line-height:1}
+.d-metric-label{font-size:10px;color:#8b949e;margin-top:4px;letter-spacing:.04em;text-transform:uppercase}
+.d-metric.teal .d-metric-val{color:#7ecfe0}
+.d-metric.green .d-metric-val{color:#3fb950}
+.d-metric.purple .d-metric-val{color:#d2a8ff}
+
+/* ITM BEFORE/AFTER CARD */
+.itm-card{background:#161b22;border:1px solid #21262d;border-radius:8px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+.itm-block{text-align:center}
+.itm-num{font-size:32px;font-weight:900;line-height:1}
+.itm-num.before{color:#8b949e}
+.itm-num.after{color:#3fb950}
+.itm-label{font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:.06em;margin-top:4px}
+.itm-arrow{font-size:28px;color:#484f58}
+.itm-lift{text-align:center}
+.itm-lift-val{font-size:28px;font-weight:900;color:#3fb950;line-height:1}
+.itm-lift-label{font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:.06em;margin-top:4px}
+
+/* CARDS */
+.info-section{margin-bottom:14px}
+.info-section h4{font-size:11px;font-weight:700;color:#8b949e;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px}
+.info-card{background:#161b22;border:1px solid #21262d;border-radius:8px;padding:13px 15px;font-size:13px;line-height:1.6;color:#c9d1d9}
+.info-card.yellow{border-left:3px solid #e3b341}
+.info-card.red{border-left:3px solid #f85149}
+.info-card.teal{border-left:3px solid #7ecfe0}
+.info-card.purple{border-left:3px solid #d2a8ff}
+.info-card.green{border-left:3px solid #3fb950}
+
+/* AMBASSADOR TABLE */
+.amb-table{width:100%;border-collapse:collapse;font-size:12px}
+.amb-table th{text-align:left;color:#8b949e;font-weight:600;padding:5px 8px;border-bottom:1px solid #21262d;font-size:10px;letter-spacing:.05em;text-transform:uppercase}
+.amb-table td{padding:6px 8px;border-bottom:1px solid #0d1117;color:#c9d1d9}
+.amb-table tr:last-child td{border-bottom:none}
+.amb-table tr:hover td{background:#1c2128}
+
+/* SUMMARY TABLE */
+.summary-table{width:100%;border-collapse:collapse;font-size:12px}
+.summary-table th{text-align:left;color:#8b949e;font-weight:600;padding:6px 10px;border-bottom:1px solid #21262d;font-size:10px;letter-spacing:.05em;text-transform:uppercase;background:#161b22}
+.summary-table td{padding:6px 10px;border-bottom:1px solid #21262d;color:#c9d1d9}
+.summary-table tr:hover td{background:#1c2128;cursor:pointer}
+.summary-table tr.cancelled-row td{opacity:.5}
+.td-lift{font-weight:700;color:#3fb950}
+.td-flat{color:#8b949e}
+.td-cancelled{color:#f85149}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+
+/* RAINMAKERS */
+.rm-controls{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+.rm-controls input{background:#161b22;border:1px solid #30363d;border-radius:6px;padding:6px 12px;color:#c9d1d9;font-size:13px;width:200px;outline:none}
+.rm-controls input:focus{border-color:#7ecfe0}
+.rm-controls select{background:#161b22;border:1px solid #30363d;border-radius:6px;padding:6px 10px;color:#c9d1d9;font-size:13px;outline:none;cursor:pointer}
+.rm-stats{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.rm-stat{background:#161b22;border:1px solid #21262d;border-radius:8px;padding:9px 16px;text-align:center}
+.rm-stat-val{font-size:20px;font-weight:800;color:#e6edf3}
+.rm-stat-val.teal{color:#7ecfe0}
+.rm-stat-val.orange{color:#f0a500}
+.rm-stat-label{font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
+.rm-table{width:100%;border-collapse:collapse;font-size:12px}
+.rm-table th{text-align:left;color:#8b949e;font-weight:600;padding:7px 10px;border-bottom:1px solid #21262d;font-size:10px;letter-spacing:.05em;text-transform:uppercase;background:#161b22;position:sticky;top:0}
+.rm-table td{padding:6px 10px;border-bottom:1px solid #21262d;color:#c9d1d9;vertical-align:middle}
+.rm-table tr:hover td{background:#1c2128}
+.rm-rank{color:#484f58;font-weight:700;font-size:11px;width:30px}
+.rm-rank.top3{color:#f0a500;font-size:13px}
+.rm-bar-wrap{width:80px;background:#21262d;border-radius:3px;height:6px;display:inline-block;vertical-align:middle;margin-left:6px}
+.rm-bar-fill{height:6px;border-radius:3px;background:linear-gradient(90deg,#1f6feb,#7ecfe0)}
+.rm-pack-badge{display:inline-block;font-size:10px;font-weight:700;padding:1px 5px;border-radius:4px;margin-right:3px}
+.rm-p25{background:#0d2b0d;color:#3fb950;border:1px solid #1a4d1a}
+.rm-p10{background:#0d2137;color:#79c0ff;border:1px solid #1a3a6d}
+.rm-p8{background:#2d1f00;color:#f0a500;border:1px solid #4a3200}
+.contact-wrap{position:relative;display:inline-block;cursor:default}
+.contact-wrap .contact-tip{display:none;position:absolute;right:0;top:120%;z-index:999;background:#1c2128;border:1px solid #30363d;border-radius:8px;padding:10px 14px;min-width:200px;box-shadow:0 4px 16px rgba(0,0,0,.5);white-space:nowrap}
+.contact-wrap:hover .contact-tip{display:block}
+.contact-tip-row{font-size:12px;color:#c9d1d9;margin-bottom:5px;display:flex;align-items:center;gap:8px}
+.contact-tip-row:last-child{margin-bottom:0}
+.contact-tip-row a{color:#7ecfe0;text-decoration:none}
+.contact-tip-row a:hover{text-decoration:underline}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:#0d1117}
+::-webkit-scrollbar-thumb{background:#30363d;border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:#484f58}
+</style>
+</head>
+<body>
+
+<div id="header">
+  <div id="header-title">
+    <h1>Brian's Dashboard</h1>
+    <span class="header-sub">DR Horton · National Sales Training</span>
+  </div>
+  <div id="metrics-bar"></div>
+</div>
+
+<div id="main">
+  <div id="sidebar"></div>
+  <div id="content"></div>
+</div>
+
+<div id="version-badge">v4.6</div>
+
+<script>
+const VISITS = [
+  {
+    division:'Northern VA', state:'VA', date:'09/23/2025',
+    preITM:0, postITM:1,
+    type:'Training', reps:7, certified:0,
+    ambassadors:[],
+    modelHomes:['n/a'],
+    scenes:'',
+    highlights:'',
+    followUp:'', followUpNotes:'', issues:'', notes:'',
+    status:'completed'
+  },
+  {
+    division:'Delaware', state:'DE', date:'10/01/2025',
+    preITM:0, postITM:0,
+    type:'Training', reps:14, certified:4,
+    ambassadors:[
+      {name:'Brett Black', email:'beblack@drhorton.com', phone:'980-238-9777'},
+      {name:'MJ Spence', email:'MASpence@drhorton.com', phone:'410-458-4355'}
+    ],
+    modelHomes:['(departed early — 3hr drive to Baltimore)'],
+    scenes:'',
+    highlights:'Good turnout, strong engagement',
+    followUp:'Ambassador rollout; Brett wants to know if scenes are set up in his model',
+    followUpNotes:'BB will confirm model home SS status. 12/9 Started Delaware remote setup — emailed, called, texted. 12/16 Follow-ups.',
+    issues:'', notes:'',
+    status:'completed'
+  },
+  {
+    division:'Fort Wayne', state:'IN', date:'10/20/2025',
+    preITM:0, postITM:1,
+    type:'PDP', reps:8, certified:2,
+    ambassadors:[
+      {name:'Kathy Klinger', email:'klklinger@drhorton.com', phone:'260-237-5077'},
+      {name:'Jason Zorger', email:'jdzorger@drhorton.com', phone:'260-417-0744'}
+    ],
+    modelHomes:['Livingston Lakes','Belmount Woods'],
+    scenes:'All On/All Off via Kitchen Lights dimmer & Sink Light switch',
+    highlights:'3 reps interested in ambassador role, two superintendent connections.',
+    followUp:'Email follow-up to superintendents, send winner certificates',
+    followUpNotes:'10/30 All On/Off on app ready, waiting for callback. 11/3 Set up app with all on/off.',
+    issues:'Warranty questions. Superintendents using inventory to swap switches instead of Vendor Services. Quizlet limit reached — cannot register more certified agents.',
+    notes:'',
+    status:'completed'
+  },
+  {
+    division:'Reno', state:'NV', date:'10/22/2025',
+    preITM:null, postITM:null,
+    type:'PDP', reps:10, certified:0,
+    ambassadors:[],
+    modelHomes:['Virtual / n/a'],
+    scenes:'n/a',
+    highlights:'Possible 10-pack in homes',
+    followUp:'', followUpNotes:'Sent $25 gift card to Kahoot winner.',
+    issues:'Quizlet limit reached — cannot register more certified agents.',
+    notes:'',
+    status:'completed'
+  },
+  {
+    division:'San Marcos', state:'TX', date:'10/27/2025',
+    preITM:0, postITM:2,
+    type:'PDP', reps:9, certified:4,
+    ambassadors:[
+      {name:'Charlie Rathgerber', email:'cwrathgerber@drhorton.com', phone:'512-632-2721'},
+      {name:'Ashley Torrez', email:'Aitorrez@drhorton.com', phone:'512-850-1322'},
+      {name:'Gerald "Jerry" Schubert', email:'GwSchubert@drhorton.com', phone:'830-643-4891'},
+      {name:'Evan Montoya', email:'emmontoya@drhorton.com', phone:'505-730-6537'}
+    ],
+    modelHomes:['Bolinger','Trace','Whisper South'],
+    scenes:'All On/All Off, logins for reps. Whisper was already set up.',
+    highlights:'Long conversations, Chris emailed "great job," 4 ambassadors, set up 3 apps.',
+    followUp:'Send gift cards — Ashley 1st place, Evan 2nd place',
+    followUpNotes:'Sent Evan email w/ requested devices and address. Sent Charlie $25 Kahoot gift card.',
+    issues:'Quizlet limit reached — cannot register more certified agents.',
+    notes:'',
+    status:'completed'
+  },
+  {
+    division:'Chicago', state:'IL', date:'11/03/2025',
+    preITM:7, postITM:8,
+    type:'PDP', reps:64, certified:9,
+    ambassadors:[{name:'(contacting quiz completers)', email:'', phone:''}],
+    modelHomes:['(all models closed — team went to Top Golf)'],
+    scenes:'n/a — models closed',
+    highlights:'Only afforded 10 minutes. Safe Haven rep went 1hr 13min. Answered a few questions.',
+    followUp:'Follow up on model home access',
+    followUpNotes:'12/1 Follow-up sent.',
+    issues:'Severely limited time — only 10 minutes allocated for presentation.',
+    notes:'',
+    status:'completed'
+  },
+  {
+    division:'Melbourne', state:'FL', date:'11/05/2025',
+    preITM:null, postITM:null,
+    type:'Training', reps:0, certified:0,
+    ambassadors:[],
+    modelHomes:[],
+    scenes:'', highlights:'', followUp:'', followUpNotes:'', issues:'', notes:'',
+    status:'cancelled'
+  },
+  {
+    division:'Northern Colorado', state:'CO', date:'11/19/2025',
+    preITM:0, postITM:2,
+    type:'Training', reps:15, certified:6,
+    ambassadors:[
+      {name:'Lisa Henry', email:'lhenry@drhorton.com', phone:'303-931-1882'},
+      {name:'Denise Schmeichel', email:'ADSchmeichel@drhorton.com', phone:'970-306-8424'}
+    ],
+    modelHomes:['738 Gareth Ln, Brighton, CO 80603','12 N 45th Ave, Brighton, CO 80601','13901 Garnet Dr, Mead, CO 80504'],
+    scenes:'All On/All Off, dinner scenes, stickers',
+    highlights:'Presentation was really good despite being shortened. Lots of questions.',
+    followUp:'',
+    followUpNotes:'Denise reached out about contacting customer for light info. Lisa reached out for All On video link.',
+    issues:'',
+    notes:'',
+    status:'completed'
+  },
+  {
+    division:'Cincinnati', state:'OH', date:'12/15/2025',
+    preITM:1, postITM:1,
+    type:'PDP', reps:15, certified:2,
+    ambassadors:[
+      {name:'Laura Valangeon', email:'lkvalangeon@drhorton.com', phone:''},
+      {name:'Damon Grunenberg', email:'dkgrunenberg@drhorton.com', phone:''}
+    ],
+    modelHomes:['(models closed — weather)'],
+    scenes:'All On/All Off, dinner scene set up remotely',
+    highlights:'Strong construction engagement; informed Blueprint team on construction process.',
+    followUp:'',
+    followUpNotes:'Sent follow-up email with presentation; requested all model contacts; sent Excel with setup addresses.',
+    issues:'',
+    notes:'',
+    status:'completed'
+  },
+  {
+    division:'ATL West', state:'GA', date:'01/07/2026',
+    preITM:4, postITM:7,
+    type:'PDP', reps:55, certified:13,
+    ambassadors:[
+      {name:'Lawanda Calhoun', email:'lcalhoun@drhorton.com', phone:'770-617-1474'},
+      {name:'Sonia Robbinson', email:'smrobbinson@drhorton.com', phone:''}
+    ],
+    modelHomes:['23 Hampton Terrace, Dallas, GA 30157','548 Majestic Oak Circle, Dallas, GA 30132'],
+    scenes:'All On/All Off, dinner scene set up remotely',
+    highlights:'THE BEST ONE YET!! Everyone participated. Lots of signups, everyone got the app.',
+    followUp:'Link Star with rep who couldn\'t attend',
+    followUpNotes:'',
+    issues:'',
+    notes:'',
+    status:'completed'
+  },
+  {
+    division:'Charlotte', state:'NC', date:'01/16/2026',
+    preITM:0, postITM:1,
+    type:'PDP', reps:50, certified:4,
+    ambassadors:[],
+    modelHomes:['3937 Coleman Dr'],
+    scenes:'All On/All Off, dinner scene set up remotely',
+    highlights:'',
+    followUp:'', followUpNotes:'', issues:'', notes:'',
+    status:'completed'
+  },
+  {
+    division:'Baldwin', state:'AL', date:'02/02/2026',
+    preITM:5, postITM:7,
+    type:'Training', reps:35, certified:9,
+    ambassadors:[],
+    modelHomes:[],
+    scenes:'', highlights:'', followUp:'', followUpNotes:'', issues:'', notes:'',
+    status:'completed'
+  },
+  {
+    division:'Asheville', state:'NC', date:'02/04/2026',
+    preITM:0, postITM:4,
+    type:'Training', reps:9, certified:1,
+    ambassadors:[],
+    modelHomes:[],
+    scenes:'', highlights:'', followUp:'', followUpNotes:'', issues:'', notes:'',
+    status:'completed'
+  },
+  {
+    division:'Greensboro', state:'NC', date:'',
+    preITM:null, postITM:null,
+    type:'Virtual', reps:4, certified:2,
+    ambassadors:[],
+    modelHomes:['Virtual'],
+    scenes:'Virtual',
+    highlights:'', followUp:'', followUpNotes:'', issues:'', notes:'',
+    status:'completed'
+  },
+  {
+    division:'Central Valley', state:'CA', date:'03/04/2026',
+    preITM:null, postITM:null,
+    type:'Presentation', reps:55, certified:3,
+    ambassadors:[
+      {name:'Victor', email:'', phone:''},
+      {name:'Jessica', email:'', phone:''}
+    ],
+    modelHomes:[],
+    scenes:'',
+    highlights:'',
+    followUp:'Follow up with Victor on model home setup for remaining model homes',
+    followUpNotes:'', issues:'', notes:'',
+    status:'completed'
+  },
+  {
+    division:'Greenville', state:'SC', date:'03/06/2026',
+    preITM:null, postITM:null,
+    type:'Presentation', reps:70, certified:4,
+    ambassadors:[],
+    modelHomes:['4 Barred Owl Rd, Travelers Rest, SC 29690','4 Higbie Dr, Piedmont, SC 29673'],
+    scenes:'All On/All Off scenes created; stickers on both model homes',
+    highlights:'Large group training went well via Prof.',
+    followUp:'', followUpNotes:'', issues:'', notes:'',
+    status:'completed'
+  },
+  {
+    division:'Indianapolis', state:'IN', date:'03/09/2026',
+    preITM:null, postITM:null,
+    type:'Presentation', reps:50, certified:2,
+    ambassadors:[
+      {name:'Tyler', email:'', phone:''},
+      {name:'Stephan', email:'', phone:''}
+    ],
+    modelHomes:[],
+    scenes:'', highlights:'', followUp:'', followUpNotes:'', issues:'', notes:'',
+    status:'completed'
+  },
+  {
+    division:'Las Vegas', state:'NV', date:'03/16/2026',
+    preITM:0, postITM:0,
+    type:'Presentation', reps:40, certified:0,
+    ambassadors:[
+      {name:'Tony', email:'tonysaleslv@gmail.com', phone:''}
+    ],
+    modelHomes:[],
+    scenes:'', highlights:'', followUp:'', followUpNotes:'', issues:'', notes:'',
+    status:'completed'
+  }
+];
+
+/* ── COMPUTED TOTALS ── */
+function getTotals(){
+  const active = VISITS.filter(v=>v.status!=='cancelled');
+  const withITM = active.filter(v=>v.preITM!==null && v.postITM!==null);
+  const totalReps = active.reduce((s,v)=>s+(v.reps||0),0);
+  const totalCert = active.reduce((s,v)=>s+(v.certified||0),0);
+  const totalAmb = active.reduce((s,v)=>s+v.ambassadors.filter(a=>a.name&&!a.name.startsWith('(')).length,0);
+  const totalPreITM = withITM.reduce((s,v)=>s+v.preITM,0);
+  const totalPostITM = withITM.reduce((s,v)=>s+v.postITM,0);
+  const itmLift = totalPreITM>0 ? Math.round((totalPostITM-totalPreITM)/totalPreITM*100) : null;
+  const excluded = ['n/a','virtual / n/a','virtual','(departed early — 3hr drive to baltimore)','(all models closed — team went to top golf)','(models closed — weather)'];
+  const totalModelHomes = active.reduce((s,v)=>s+v.modelHomes.filter(m=>m&&!excluded.includes(m.toLowerCase())).length,0);
+  return {divisions:active.length, reps:totalReps, certified:totalCert, ambassadors:totalAmb, preITM:totalPreITM, postITM:totalPostITM, itmLift, modelHomes:totalModelHomes};
+}
+
+/* ── RENDER METRICS BAR ── */
+function renderMetrics(){
+  const t = getTotals();
+  document.getElementById('metrics-bar').innerHTML = `
+    <div class="hmetric teal"><div class="hmetric-label">Divisions Trained</div><div class="hmetric-value">${t.divisions}<span style="font-size:12px;font-weight:500;color:#484f58">/27</span></div></div>
+    <div class="hmetric"><div class="hmetric-label">Reps Trained</div><div class="hmetric-value">${t.reps.toLocaleString()}<span style="font-size:12px;font-weight:500;color:#484f58">/800</span></div></div>
+    <div class="hmetric green"><div class="hmetric-label">Reps Certified</div><div class="hmetric-value">${t.certified}</div></div>
+    <div class="hmetric purple"><div class="hmetric-label">Ambassadors</div><div class="hmetric-value">${t.ambassadors}</div></div>
+    <div class="hmetric orange"><div class="hmetric-label">Model Home Ex.</div><div class="hmetric-value">${t.modelHomes}<span style="font-size:12px;font-weight:500;color:#484f58">/300</span></div></div>
+  `;
+}
+
+/* ── RENDER SIDEBAR ── */
+let selectedIdx = null;
+const pipelineHidden = new Set(['Ratifications','Closes']); // persists which pipeline datasets are toggled off; default: eligible homes + packs only
+const convDivHidden  = new Set(); // persists which all-divisions chart datasets are toggled off
+let divSortBy = 'pk'; // default division breakdown sort: packs sold descending
+function renderSidebar(){
+  const sb = document.getElementById('sidebar');
+  sb.innerHTML = `<div class="div-item${selectedIdx===null?' active':''}" onclick="goHome()" style="font-weight:700;color:#7ecfe0;border-left-color:${selectedIdx===null?'#7ecfe0':'transparent'}">🏠 Home</div>
+  <div class="div-item${selectedIdx==='conv'?' active':''}" onclick="showConvRates('monthly','')" style="font-weight:700;color:#7ecfe0;border-left-color:${selectedIdx==='conv'?'#7ecfe0':'transparent'}">📈 Conv. by Division</div>
+  <div class="div-item${selectedIdx==='rainmakers'?' active':''}" onclick="showRainmakers()" style="font-weight:700;color:#f0a500;border-left-color:${selectedIdx==='rainmakers'?'#f0a500':'transparent'}">🏆 Rainmakers</div>
+  <div class="div-item${selectedIdx==='divisions'?' active':''}" onclick="showDivisions()" style="font-weight:700;color:#d2a8ff;border-left-color:${selectedIdx==='divisions'?'#d2a8ff':'transparent'}">📋 Training Summary</div>
+  <a href="hst_analysis.html" target="_blank" class="div-item" style="font-weight:700;color:#8b949e;display:block;text-decoration:none;border-left-color:transparent">🔍 HST vs ITM Analysis</a>
+  <div class="sidebar-section">Divisions</div>`;
+  VISITS.forEach((v,i)=>{
+    const lift = v.preITM!==null && v.postITM!==null ? v.postITM - v.preITM : null;
+    let pillHtml='';
+    if(v.status==='cancelled'){
+      pillHtml='<div><span class="div-itm-pill pill-flat">CANCELLED</span></div>';
+    } else if(lift===null){
+      pillHtml='';
+    } else if(lift>0){
+      pillHtml=`<div><span class="div-itm-pill pill-up">ITM +${lift}</span></div>`;
+    } else {
+      pillHtml=`<div><span class="div-itm-pill pill-flat">ITM ±0</span></div>`;
+    }
+    const cls = ['div-item', v.status==='cancelled'?'cancelled':'', i===selectedIdx?'active':''].filter(Boolean).join(' ');
+    sb.innerHTML+=`<div class="${cls}" onclick="selectVisit(${i})">
+      ${v.division}, ${v.state}
+      <div class="div-date">${v.date||'Date TBD'}</div>
+      ${pillHtml}
+    </div>`;
+  });
+}
+
+/* ── SELECT VISIT ── */
+function selectVisit(i){
+  selectedIdx = i;
+  renderSidebar();
+  renderDetail(VISITS[i], i);
+}
+
+/* ── RENDER DETAIL ── */
+function renderDetail(v, idx){
+  const lift = v.preITM!==null && v.postITM!==null ? v.postITM - v.preITM : null;
+  const liftPct = (lift!==null && v.preITM>0) ? Math.round(lift/v.preITM*100) : null;
+
+  const statusBadge = v.status==='cancelled'
+    ? '<span class="badge badge-cancelled">CANCELLED</span>'
+    : '<span class="badge badge-completed">COMPLETED</span>';
+  const typeBadge = v.type==='PDP'?'<span class="badge badge-pdp">PDP</span>':
+    v.type==='Virtual'?'<span class="badge badge-virtual">VIRTUAL</span>':'';
+
+  /* ITM block */
+  let itmHtml='';
+  if(v.preITM!==null && v.postITM!==null){
+    const liftDisplay = lift>0 ? `+${lift} (${liftPct!==null?'+'+liftPct+'%':'N/A'})` : lift===0 ? '±0' : `${lift}`;
+    const liftColor = lift>0?'#3fb950':lift<0?'#f85149':'#8b949e';
+    itmHtml=`<div class="itm-card">
+      <div class="itm-block"><div class="itm-num before">${v.preITM}</div><div class="itm-label">Pre-Visit ITM</div></div>
+      <div class="itm-arrow">→</div>
+      <div class="itm-block"><div class="itm-num after">${v.postITM}</div><div class="itm-label">Post-Visit ITM</div></div>
+      <div style="flex:1"></div>
+      <div class="itm-lift"><div class="itm-lift-val" style="color:${liftColor}">${liftDisplay}</div><div class="itm-lift-label">ITM Change</div></div>
+    </div>`;
+  }
+
+  /* Ambassadors */
+  let ambHtml='';
+  const namedAmb = v.ambassadors.filter(a=>a.name&&!a.name.startsWith('('));
+  if(namedAmb.length>0){
+    ambHtml=`<div class="info-section">
+      <h4>Ambassadors (${namedAmb.length})</h4>
+      <div class="info-card purple">
+        <table class="amb-table">
+          <tr><th>Name</th><th>Email</th><th>Phone</th></tr>
+          ${namedAmb.map(a=>`<tr><td>${a.name}</td><td>${a.email||'—'}</td><td>${a.phone||'—'}</td></tr>`).join('')}
+        </table>
+      </div>
+    </div>`;
+  }
+
+  /* Model homes */
+  const mhList = v.modelHomes.filter(m=>m&&m.toLowerCase()!=='n/a'&&m.toLowerCase()!=='virtual / n/a');
+  const mhHtml = mhList.length>0 ? `<div class="info-section">
+    <h4>Model Homes (${mhList.length})</h4>
+    <div class="info-card teal">${mhList.map(m=>`<div>📍 ${m}</div>`).join('')}</div>
+  </div>`:'';
+
+  /* Scenes */
+  const scenesHtml = v.scenes&&v.scenes!=='n/a'&&v.scenes!=='n' ? `<div class="info-section">
+    <h4>Scenes / Setups Achieved</h4>
+    <div class="info-card green">${v.scenes}</div>
+  </div>`:'';
+
+  /* Highlights */
+  const hlHtml = v.highlights ? `<div class="info-section">
+    <h4>Highlights</h4>
+    <div class="info-card yellow">${v.highlights}</div>
+  </div>`:'';
+
+  /* Follow-up */
+  const fuHtml = (v.followUp||v.followUpNotes) ? `<div class="info-section">
+    <h4>Follow-Up</h4>
+    <div class="info-card" style="border-left:3px solid #79c0ff">
+      ${v.followUp?`<div><strong>${v.followUp}</strong></div>`:''}
+      ${v.followUpNotes?`<div style="color:#8b949e;margin-top:4px;font-size:12px">${v.followUpNotes}</div>`:''}
+    </div>
+  </div>`:'';
+
+  /* Issues */
+  const issueHtml = v.issues ? `<div class="info-section">
+    <h4>Issues</h4>
+    <div class="info-card red">${v.issues}</div>
+  </div>`:'';
+
+  document.getElementById('content').innerHTML = `
+    <div class="d-header">
+      <div class="d-name">${v.division}, ${v.state}</div>
+      <div class="d-meta">${v.date||'Date TBD'} · ${v.type}</div>
+      <div class="d-badges">${statusBadge}${typeBadge}</div>
+    </div>
+
+    <div class="d-metrics">
+      <div class="d-metric teal"><div class="d-metric-val">${v.reps||0}</div><div class="d-metric-label">Reps Reached</div></div>
+      <div class="d-metric green"><div class="d-metric-val">${v.certified||0}</div><div class="d-metric-label">Certified</div></div>
+      <div class="d-metric purple"><div class="d-metric-val">${namedAmb.length}</div><div class="d-metric-label">Ambassadors</div></div>
+      <div class="d-metric"><div class="d-metric-val">${mhList.length||0}</div><div class="d-metric-label">Model Homes</div></div>
+    </div>
+
+    ${itmHtml}
+    ${hlHtml}
+    ${ambHtml}
+    ${mhHtml}
+    ${scenesHtml}
+    ${fuHtml}
+    ${issueHtml}
+  `;
+}
+
+/* ── RENDER OVERVIEW (default) ── */
+/* ── REPORT CARD DATA (exact from HEX PDF) ── */
+const REPORT_CARD = {
+  last3: { totalPacks:367, itmPacks:147, revenue:210000, profit:54400, convRateAll:1.65, convRateITM:0.82 },
+  allTime: { totalPacks:7257, itmPacks:3276, revenue:5700000, profit:1500000, convRateAll:3.08, convRateITM:1.78 },
+  projections: { eligibleHomes:506, projRevenue:882700, projProfit:226900, ratifiedHomes:6268, projRevTotal:10900000, projProfitTotal:2800000 }
+};
+
+/* ── DIVISION PROFITABILITY (exact from HEX PDF) ── */
+const DIV_PERF = {
+  allTime:[
+    {div:'Greensboro',packs:329,rev:696100,profit:177700},
+    {div:'Fort Worth South',packs:173,rev:227500,profit:59100},
+    {div:'Fort Worth North',packs:128,rev:181300,profit:46900},
+    {div:'Greenville',packs:125,rev:236400,profit:60600},
+    {div:'Chicago',packs:120,rev:244600,profit:62500},
+    {div:'Charlotte North',packs:104,rev:231900,profit:59100},
+    {div:'Indianapolis',packs:110,rev:242800,profit:61900},
+    {div:'Maryland',packs:97,rev:214400,profit:54700},
+    {div:'Baldwin',packs:135,rev:126100,profit:33500},
+    {div:'Columbus',packs:79,rev:118300,profit:30500},
+    {div:'Atlanta West',packs:76,rev:162200,profit:41400},
+    {div:'Charlotte South',packs:69,rev:151900,profit:38800},
+    {div:'Eastern NC',packs:65,rev:114400,profit:29400},
+    {div:'Raleigh',packs:74,rev:144500,profit:37000},
+    {div:'Southern Virginia',packs:61,rev:122200,profit:31200},
+    {div:'SW Florida',packs:55,rev:108700,profit:27800}
+  ],
+  y2025:[
+    {div:'Greensboro',packs:53,rev:96170,profit:24690},
+    {div:'Greenville',packs:44,rev:72370,profit:18680},
+    {div:'Baldwin',packs:81,rev:67610,profit:18190},
+    {div:'Chicago',packs:27,rev:52360,profit:13410},
+    {div:'Maryland',packs:21,rev:45210,profit:11530},
+    {div:'Charlotte South',packs:17,rev:37760,profit:9640},
+    {div:'Charlotte North',packs:21,rev:36160,profit:9290},
+    {div:'Portland',packs:45,rev:31190,profit:8630},
+    {div:'Atlanta West',packs:20,rev:32040,profit:8270},
+    {div:'Eastern NC',packs:24,rev:31210,profit:8110},
+    {div:'Reno',packs:29,rev:29160,profit:7750},
+    {div:'Eastern Pennsylvania',packs:12,rev:30240,profit:7690},
+    {div:'Central Colorado',packs:16,rev:29720,profit:7610},
+    {div:'Northern Colorado',packs:13,rev:28020,profit:7150},
+    {div:'Birmingham',packs:27,rev:27000,profit:7050},
+    {div:'Omaha',packs:12,rev:24490,profit:6260}
+  ],
+  last3:[
+    {div:'Baldwin',packs:31,rev:26890,profit:7190},
+    {div:'Greensboro',packs:10,rev:20570,profit:5260},
+    {div:'Greenville',packs:9,rev:15370,profit:3960},
+    {div:'Atlanta West',packs:11,rev:14270,profit:3720},
+    {div:'Chicago',packs:5,rev:10650,profit:2720},
+    {div:'Charlotte South',packs:4,rev:8800,profit:2250},
+    {div:'Eastern NC',packs:3,rev:8400,profit:2130},
+    {div:'Charlotte North',packs:5,rev:7520,profit:1950},
+    {div:'Central Colorado',packs:3,rev:6720,profit:1710},
+    {div:'Birmingham',packs:6,rev:5630,profit:1470},
+    {div:'Eastern Pennsylvania',packs:2,rev:5600,profit:1420},
+    {div:'Raleigh South',packs:3,rev:5050,profit:1300},
+    {div:'Maryland',packs:3,rev:5050,profit:1300},
+    {div:'Cincinnati',packs:4,rev:4720,profit:1240},
+    {div:'Reno',packs:2,rev:3920,profit:1000},
+    {div:'Delaware',packs:3,rev:3600,profit:950}
+  ]
+};
+
+/* ── COMMUNITY LEADERBOARD TOP (last 3 months, exact from HEX PDF) ── */
+const COMMUNITIES_TOP = [
+  {name:'Riverview Landing',div:'Southern Virginia',last3:5,total:6},
+  {name:'Independence',div:'Baldwin',last3:4,total:13},
+  {name:'Tap Root',div:'Asheville',last3:4,total:10},
+  {name:'Dogwood Estates',div:'Baldwin',last3:3,total:7},
+  {name:'Laurelbrooke',div:'Baldwin',last3:3,total:7},
+  {name:'Cedar Gap',div:'Greenville',last3:3,total:12},
+  {name:'Magnolia Pines',div:'Baldwin',last3:3,total:5},
+  {name:'Stonebridge',div:'Baldwin',last3:3,total:12},
+  {name:'Oaks at Cedar Grove',div:'Atlanta West',last3:2,total:7},
+  {name:'Madeline Farm',div:'Eastern NC',last3:2,total:10}
+];
+
+/* ── DPUP PACKS BY INITIATIVE (totals exact from HEX PDF; initiative split proportional) ── */
+const DPUP_MONTHLY = {
+  labels:['Jan 23','Feb 23','Mar 23','Apr 23','May 23','Jun 23','Jul 23','Aug 23','Sep 23','Oct 23','Nov 23','Dec 23',
+          'Jan 24','Feb 24','Mar 24','Apr 24','May 24','Jun 24','Jul 24','Aug 24','Sep 24','Oct 24','Nov 24','Dec 24',
+          'Jan 25','Feb 25','Mar 25','Apr 25','May 25','Jun 25','Jul 25','Aug 25','Sep 25','Oct 25','Nov 25','Dec 25',
+          'Jan 26','Feb 26','Mar 26','Apr 26'],
+  // Exact monthly totals: 187,174,217,388,258,262,200,195,200,163,326,234 | 259,164,207,101,141,152,197,178,131,154,185,203 | 204,221,165,181,214,194,172,153,95,119,123,133 | 111,9
+  ITM:      [88,82,102,148,114,119,94,92,94,76,153,110,
+             122,77,97,48,66,71,92,84,61,72,87,96,
+             97,103,77,85,101,91,81,72,45,56,57,62,
+             53,5,null,null],
+  spec:     [71,66,82,100,85,88,76,74,76,62,124,89,
+             98,62,79,38,54,58,75,68,50,59,70,77,
+             77,84,63,69,81,74,65,58,36,45,47,51,
+             42,3,null,null],
+  incentive:[6,5,7,90,35,28,6,6,6,5,10,7,
+             8,5,6,3,4,5,6,5,4,5,6,6,
+             6,7,5,5,6,6,5,5,3,4,4,4,
+             3,0,null,null],
+  model:    [22,21,26,50,24,27,24,23,24,20,39,28,
+             31,20,25,12,17,18,24,21,16,18,22,24,
+             24,27,20,22,26,23,21,18,11,14,15,16,
+             13,1,null,null],
+  hstDirect:[null,null,null,null,null,null,null,null,null,null,null,null,
+             103,121,159,90,129,141,101,118,135,142,125,100,
+             119,126,159,157,153,183,94,128,145,126,124,88,
+             124,111,150,9]
+};
+
+/* ── ITM MONTHLY REVENUE/PROFIT/CONV (revenue/profit derived from ITM packs × $1,740/$458 per pack; conv rates from HEX PDF labels) ── */
+const ITM_MONTHLY = {
+  labels: DPUP_MONTHLY.labels,
+  // Revenue = ITM packs × $1,740 avg; Profit = ITM packs × $458 avg (derived from all-time: $5.7M/$1.5M ÷ 3,276 packs)
+  revenue:[146160,135720,170520,243600,191400,200100,156600,153120,156600,127020,255780,182700,
+           203580,128760,161820,78300,109620,118320,154860,139200,102660,120060,144420,158280,
+           160080,172260,128760,140940,167040,151380,134010,120006,74820,93960,95700,104400,
+           87000,6960,null,null],
+  profit: [38472,35724,44884,64120,50380,52670,41220,40304,41220,33434,67326,48090,
+           53586,33892,42594,20610,28854,31144,40762,36640,27022,31602,38014,41678,
+           42136,45342,33892,37098,43968,39846,35266,31602,19694,24732,25190,27480,
+           22900,1832,null,null],
+  // Conversion rates: labeled values from HEX PDF; estimates noted with ~
+  convRate:[4.2,6.3,4.4,3.0,3.3,1.8,2.0,3.2,2.9,2.5,2.5,1.9,
+            1.8,1.1,2.2,2.0,3.0,1.5,2.6,2.8,2.3,2.5,2.2,1.5,
+            3.4,1.6,1.4,0.9,1.7,1.2,1.5,1.5,1.3,1.2,1.0,0.9,
+            1.0,0.5,null,null]
+};
+
+function fmtK(v){ return v>=1000000?'$'+(v/1000000).toFixed(1)+'M':v>=1000?'$'+(v/1000).toFixed(v>=100000?0:1)+'K':'$'+v; }
+
+function renderDivTable(tab){
+  const data = DIV_PERF[tab];
+  const maxRev = data[0].rev;
+  return `<table class="summary-table">
+    <tr><th>#</th><th>Division</th><th>Packs Sold</th><th>Revenue</th><th>Profit</th></tr>
+    ${data.map((d,i)=>`<tr>
+      <td style="color:#484f58;font-weight:700">#${i+1}</td>
+      <td><strong>${d.div}</strong></td>
+      <td>${d.packs}<span class="rm-bar-wrap"><span class="rm-bar-fill" style="width:${Math.round(d.packs/data[0].packs*100)}%"></span></span></td>
+      <td style="color:#3fb950">${fmtK(d.rev)}</td>
+      <td style="color:#8b949e">${fmtK(d.profit)}</td>
+    </tr>`).join('')}
+  </table>`;
+}
+
+function renderOverview(){
+  const t = getTotals();
+  const itmVisits = VISITS.filter(v=>v.preITM!==null&&v.postITM!==null&&v.status!=='cancelled');
+  const rc = REPORT_CARD;
+  const proj = rc.projections;
+
+  document.getElementById('content').innerHTML = `
+
+    <!-- CHARTS FIRST -->
+    <div class="full-chart-card">
+      <h3>Monthly Revenue, Profit &amp; ITM Conversion Rate <span style="font-size:10px;font-weight:400;color:#484f58;margin-left:8px">Jan 2023 – Present · All Active Divisions · Revenue/profit derived from ITM pack avg · Source: HEX</span></h3>
+      <div style="position:relative;height:320px"><canvas id="itmInitChart"></canvas></div>
+    </div>
+    <div class="full-chart-card">
+      <h3>Monthly Count of DPUP Packs by Initiative <span style="font-size:10px;font-weight:400;color:#484f58;margin-left:8px">Jan 2023 – Present · Totals exact · Initiative split proportional · Source: HEX</span></h3>
+      <div style="position:relative;height:320px"><canvas id="dpupChart"></canvas></div>
+    </div>
+    <div class="full-chart-card">
+      <h3>ITM Before &amp; After Deako Training</h3>
+      <div class="full-chart-wrap"><canvas id="itmChart"></canvas></div>
+    </div>
+
+    <!-- DIVISION LEADERBOARD -->
+    <div class="full-chart-card">
+      <h3 style="margin-bottom:12px">Division ITM Profitability <span style="font-size:10px;font-weight:400;color:#484f58;margin-left:8px">Source: HEX</span></h3>
+      <div style="display:flex;gap:6px;margin-bottom:12px">
+        <button onclick="switchDivTab('last3')"   id="tab-last3"   style="background:#1f6feb;border:none;border-radius:6px;padding:5px 12px;color:#fff;font-size:11px;font-weight:600;cursor:pointer">Last 3 Months</button>
+        <button onclick="switchDivTab('y2025')"   id="tab-y2025"   style="background:#21262d;border:1px solid #30363d;border-radius:6px;padding:5px 12px;color:#8b949e;font-size:11px;font-weight:600;cursor:pointer">2025</button>
+        <button onclick="switchDivTab('allTime')" id="tab-allTime" style="background:#21262d;border:1px solid #30363d;border-radius:6px;padding:5px 12px;color:#8b949e;font-size:11px;font-weight:600;cursor:pointer">Since Launch</button>
+      </div>
+      <div id="div-table-body">${renderDivTable('last3')}</div>
+    </div>
+
+    <!-- COMMUNITY LEADERBOARD -->
+    <div class="full-chart-card">
+      <h3 style="margin-bottom:12px">Top Communities by ITM Packs — Last 3 Months <span style="font-size:10px;font-weight:400;color:#484f58;margin-left:8px">Source: HEX · 3,754 total communities</span></h3>
+      <table class="summary-table">
+        <tr><th>#</th><th>Community</th><th>Division</th><th>Last 3 Months</th><th>Total Packs</th></tr>
+        ${COMMUNITIES_TOP.map((c,i)=>`<tr>
+          <td style="color:#484f58;font-weight:700">#${i+1}</td>
+          <td><strong>${c.name}</strong></td>
+          <td style="color:#8b949e">${c.div}</td>
+          <td style="color:#3fb950;font-weight:700">${c.last3}</td>
+          <td>${c.total}</td>
+        </tr>`).join('')}
+      </table>
+    </div>
+
+    <!-- REPORT CARD — BOTTOM -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+      <div class="full-chart-card" style="margin-bottom:0">
+        <h3 style="margin-bottom:10px">Last 3 Completed Months <span style="font-size:10px;font-weight:400;color:#484f58">Source: HEX</span></h3>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <div class="rm-stat"><div class="rm-stat-val">${rc.last3.totalPacks}</div><div class="rm-stat-label">Total Packs</div></div>
+          <div class="rm-stat"><div class="rm-stat-val teal">${rc.last3.itmPacks}</div><div class="rm-stat-label">ITM Packs</div></div>
+          <div class="rm-stat"><div class="rm-stat-val" style="color:#3fb950">${fmtK(rc.last3.revenue)}</div><div class="rm-stat-label">Deako Revenue</div></div>
+          <div class="rm-stat"><div class="rm-stat-val orange">${fmtK(rc.last3.profit)}</div><div class="rm-stat-label">Deako Profit</div></div>
+          <div class="rm-stat"><div class="rm-stat-val" style="color:#d2a8ff">${rc.last3.convRateAll}%</div><div class="rm-stat-label">ITM Conv. Rate %</div></div>
+          <div class="rm-stat"><div class="rm-stat-val" style="color:#7ecfe0">${rc.last3.convRateITM}%</div><div class="rm-stat-label">ITM-Only Conv. Rate %</div></div>
+        </div>
+      </div>
+      <div class="full-chart-card" style="margin-bottom:0">
+        <h3 style="margin-bottom:10px">Since ITM Launch <span style="font-size:10px;font-weight:400;color:#484f58">All Time · Source: HEX</span></h3>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <div class="rm-stat"><div class="rm-stat-val">${rc.allTime.totalPacks.toLocaleString()}</div><div class="rm-stat-label">Total Packs</div></div>
+          <div class="rm-stat"><div class="rm-stat-val teal">${rc.allTime.itmPacks.toLocaleString()}</div><div class="rm-stat-label">ITM Packs</div></div>
+          <div class="rm-stat"><div class="rm-stat-val" style="color:#3fb950">${fmtK(rc.allTime.revenue)}</div><div class="rm-stat-label">Deako Revenue</div></div>
+          <div class="rm-stat"><div class="rm-stat-val orange">${fmtK(rc.allTime.profit)}</div><div class="rm-stat-label">Deako Profit</div></div>
+          <div class="rm-stat"><div class="rm-stat-val" style="color:#d2a8ff">${rc.allTime.convRateAll}%</div><div class="rm-stat-label">ITM Conv. Rate %</div></div>
+          <div class="rm-stat"><div class="rm-stat-val" style="color:#7ecfe0">${rc.allTime.convRateITM}%</div><div class="rm-stat-label">ITM-Only Conv. Rate %</div></div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  /* Draw ITM chart */
+  const labels = itmVisits.map(v=>v.division);
+  const pre = itmVisits.map(v=>v.preITM);
+  const post = itmVisits.map(v=>v.postITM);
+
+  /* ITM Initiative monthly chart */
+  new Chart(document.getElementById('itmInitChart'), {
+    type:'bar',
+    data:{
+      labels: ITM_MONTHLY.labels,
+      datasets:[
+        {
+          label:'Revenue',
+          data: ITM_MONTHLY.revenue,
+          backgroundColor:'#1f6feb',
+          borderRadius:2,
+          stack:'money'
+        },
+        {
+          label:'Profit',
+          data: ITM_MONTHLY.profit,
+          backgroundColor:'#f0a500',
+          borderRadius:2,
+          stack:'money'
+        },
+        {
+          label:'ITM Conversion Rate',
+          data: ITM_MONTHLY.convRate,
+          type:'line',
+          borderColor:'#f85149',
+          backgroundColor:'transparent',
+          borderWidth:2,
+          pointRadius:0,
+          pointStyle:'line',
+          yAxisID:'y2',
+          tension:0.3
+        }
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{labels:{color:'#8b949e',font:{size:11},usePointStyle:true}},
+        tooltip:{
+          callbacks:{
+            label(ctx){
+              if(ctx.dataset.yAxisID==='y2') return ` ITM Conv: ${ctx.parsed.y.toFixed(1)}%`;
+              return ` ${ctx.dataset.label}: $${ctx.parsed.y.toLocaleString()}`;
+            }
+          }
+        }
+      },
+      scales:{
+        x:{ticks:{color:'#8b949e',font:{size:10}},grid:{color:'#21262d'}},
+        y:{
+          ticks:{color:'#8b949e',font:{size:11},callback:v=>'$'+v.toLocaleString()},
+          grid:{color:'#21262d'},
+          beginAtZero:true,
+          stacked:true
+        },
+        y2:{
+          position:'right',
+          ticks:{color:'#f85149',font:{size:11},callback:v=>v+'%'},
+          grid:{display:false},
+          beginAtZero:true
+        }
+      }
+    }
+  });
+
+  /* DPUP packs by initiative chart */
+  const segLabel = {
+    anchor:'center', align:'center', color:'#fff', font:{size:8,weight:'700'},
+    display: ctx => (ctx.dataset.data[ctx.dataIndex] || 0) >= 8,
+    formatter: v => v
+  };
+  new Chart(document.getElementById('dpupChart'), {
+    type:'bar',
+    data:{
+      labels: DPUP_MONTHLY.labels,
+      datasets:[
+        {label:'ITM',        data:DPUP_MONTHLY.ITM,       backgroundColor:'#1f6feb', stack:'packs', borderRadius:2, datalabels:segLabel},
+        {label:'spec',       data:DPUP_MONTHLY.spec,      backgroundColor:'#f0a500', stack:'packs', borderRadius:2, datalabels:segLabel},
+        {label:'incentive',  data:DPUP_MONTHLY.incentive, backgroundColor:'#3fb950', stack:'packs', borderRadius:2, datalabels:segLabel},
+        {label:'model',      data:DPUP_MONTHLY.model,     backgroundColor:'#79c0ff', stack:'packs', borderRadius:2, datalabels:segLabel},
+        {label:'HST Direct', data:DPUP_MONTHLY.hstDirect, backgroundColor:'#f778ba', stack:'packs', borderRadius:2,
+         datalabels:[
+           segLabel,
+           { anchor:'end', align:'end', color:'#e6edf3', font:{size:9,weight:'700'},
+             display: ctx => ctx.chart.data.datasets.reduce((s,ds)=>s+(ds.data[ctx.dataIndex]||0),0) > 0,
+             formatter:(v,ctx) => ctx.chart.data.datasets.reduce((s,ds)=>s+(ds.data[ctx.dataIndex]||0),0) }
+         ]}
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      layout:{padding:{top:18}},
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{labels:{color:'#8b949e',font:{size:11}}},
+        tooltip:{
+          callbacks:{
+            label(ctx){
+              const total = ctx.chart.data.datasets.reduce((s,ds)=>s+(ds.data[ctx.dataIndex]||0),0);
+              const pct = total>0 ? (ctx.parsed.y/total*100).toFixed(1) : 0;
+              return ` ${ctx.dataset.label}: ${ctx.parsed.y}  (${pct}%)`;
+            },
+            footer(items){ return `Total: ${items.reduce((s,i)=>s+i.parsed.y,0)}`; }
+          }
+        }
+      },
+      scales:{
+        x:{ticks:{color:'#8b949e',font:{size:10}},grid:{color:'#21262d'},stacked:true},
+        y:{ticks:{color:'#8b949e',font:{size:11}},grid:{color:'#21262d'},beginAtZero:true,stacked:true}
+      }
+    },
+    plugins:[ChartDataLabels]
+  });
+
+  /* Before/After per-division chart */
+  new Chart(document.getElementById('itmChart'), {
+    type:'bar',
+    data:{
+      labels,
+      datasets:[
+        {label:'Pre-Training ITM Packs', data:pre, backgroundColor:'#30363d', borderRadius:4},
+        {label:'Post-Training ITM Packs', data:post, backgroundColor:'#3fb950', borderRadius:4}
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{labels:{color:'#8b949e',font:{size:11}}},
+        datalabels:{
+          anchor:'end', align:'end',
+          color:'#e6edf3',
+          font:{size:10,weight:'bold'},
+          formatter:v=>v
+        }
+      },
+      scales:{
+        x:{ticks:{color:'#8b949e',font:{size:11}},grid:{color:'#21262d'}},
+        y:{ticks:{color:'#8b949e',font:{size:11}},grid:{color:'#21262d'},beginAtZero:true}
+      }
+    },
+    plugins:[ChartDataLabels]
+  });
+
+}
+
+/* ── RAINMAKERS ── */
+function goHome(){
+  selectedIdx = null;
+  renderSidebar();
+  renderOverview();
+}
+
+function showDivisions(){
+  selectedIdx = 'divisions';
+  renderSidebar();
+  document.getElementById('content').innerHTML = `
+    <div style="margin-bottom:14px">
+      <div style="font-size:22px;font-weight:700;color:#d2a8ff">📋 Training Summary</div>
+      <div style="font-size:13px;color:#8b949e;margin-top:3px">${VISITS.length} divisions · click a row to view full detail</div>
+    </div>
+    <div style="background:#161b22;border:1px solid #21262d;border-radius:10px;overflow:hidden">
+      <table class="summary-table">
+        <tr><th>#</th><th>Division</th><th>State</th><th>Date</th><th>Type</th><th>Reps</th><th>Certified</th><th>Ambassadors</th><th>Pre Train ITM</th><th>Post Train ITM</th><th>Lift</th></tr>
+        ${VISITS.map((v,i)=>{
+          const lift = v.preITM!==null&&v.postITM!==null ? v.postITM-v.preITM : null;
+          const repsCtx = v.reps ? ` / ${v.reps} reps` : '';
+          const liftDisplay = v.status==='cancelled'
+            ? `<span class="td-cancelled">Cancelled</span>`
+            : lift===null?'<span class="td-flat">—</span>'
+            : lift>0?`<span class="td-lift">+${lift}${repsCtx}</span>`
+            : `<span class="td-flat">±0${repsCtx}</span>`;
+          const namedAmb = v.ambassadors.filter(a=>a.name&&!a.name.startsWith('(')).length;
+          return `<tr style="cursor:pointer" onclick="selectVisit(${i})">
+            <td style="color:#484f58;font-weight:700">#${i+1}</td>
+            <td><strong>${v.division}</strong></td>
+            <td style="color:#8b949e">${v.state}</td>
+            <td style="color:#8b949e">${v.date||'—'}</td>
+            <td>${v.type}</td>
+            <td>${v.reps||0}</td>
+            <td>${v.certified||0}</td>
+            <td>${namedAmb||0}</td>
+            <td>${v.preITM!==null?v.preITM:'—'}</td>
+            <td>${v.postITM!==null?v.postITM:'—'}</td>
+            <td>${liftDisplay}</td>
+          </tr>`;
+        }).join('')}
+      </table>
+    </div>
+  `;
+}
+
+/* ── CONVERSION BY DIVISION ── */
+function showConvRates(period, value){
+  selectedIdx = 'conv';
+  renderSidebar();
+  renderConvRates(period, value);
+}
+
+function renderConvRates(period, value){
+  // period = 'yearly'|'quarterly'|'monthly'   value = '2025'|'2025-Q1'|'2025-01' etc.
+  const src = CONV_DATA[period === 'yearly' ? 'yearly' : period === 'quarterly' ? 'quarterly' : 'monthly'];
+  const latestMonth = [...new Set(CONV_DATA.monthly.map(d=>d.p))].sort().pop();
+  const _ce = document.getElementById('content');
+  const _sv = _ce.scrollTop;
+
+  // Period options
+  const allPeriods = [...new Set(src.map(d=>d.p))].sort();
+
+  // For monthly: show per-division trend for selected division
+  // For yearly/quarterly: show all divisions for selected period
+
+  const fmtDiv = d => d.replace(/_/g,' ').replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+  const fmtPeriod = p => {
+    if(period==='yearly') return p.substring(0,4);
+    if(period==='quarterly'){
+      const d=new Date(p+'-15'); const q=Math.ceil((d.getMonth()+1)/3);
+      return `Q${q} ${d.getFullYear()}`;
+    }
+    const d=new Date(p+'-15'); return d.toLocaleString('default',{month:'short',year:'numeric'});
+  };
+
+  // Build period selector buttons/dropdown
+  const fmtMonthShort = p => { const d=new Date(p+'-15'); return d.toLocaleString('default',{month:'short'})+` '${d.getFullYear().toString().slice(2)}`; };
+  const recentMonths = [...allPeriods].slice(-12);
+  const latestP = allPeriods[allPeriods.length-1];
+  const yoyP = latestP ? `${+latestP.slice(0,4)-1}-${latestP.slice(5,7)}` : null;
+  const showYoy = yoyP && allPeriods.includes(yoyP) && !recentMonths.includes(yoyP);
+  const displayMonths = showYoy ? [yoyP, ...recentMonths] : recentMonths;
+  const periodTabs = (period==='monthly')
+    ? `<select id="conv-period-sel" onchange="renderConvRates('monthly',this.value)" style="background:#161b22;border:1px solid #30363d;border-radius:6px;padding:5px 10px;color:#c9d1d9;font-size:12px;cursor:pointer">
+        ${[...allPeriods].reverse().map(p=>`<option value="${p}"${p===value?' selected':''}>${fmtPeriod(p)}</option>`).join('')}
+       </select>
+       <span style="color:#484f58;font-size:12px;margin:0 2px">|</span>
+       ${displayMonths.map((p,idx)=>{const isYoy=showYoy&&idx===0;const isActive=p===value;const sep=(showYoy&&idx===1)?'<span style="color:#30363d;margin:0 3px;font-size:11px">|</span>':'';return sep+`<button onmouseenter="renderConvRates('monthly','${p}')" onclick="renderConvRates('monthly','${p}')" style="background:${isActive?'#1f6feb':isYoy?'#161b22':'#21262d'};border:${isActive?'none':isYoy?'1px solid #e3b34188':'1px solid #30363d'};border-radius:6px;padding:4px 8px;color:${isActive?'#fff':isYoy?'#e3b341':'#8b949e'};font-size:10px;font-weight:600;cursor:pointer;white-space:nowrap">${fmtMonthShort(p)}${isYoy?' ↩':''}</button>`;}).join('')}`
+    : allPeriods.map(p=>`<button onmouseenter="renderConvRates('${period}','${p}')" onclick="renderConvRates('${period}','${p}')" style="background:${p===value?'#1f6feb':'#21262d'};border:${p===value?'none':'1px solid #30363d'};border-radius:6px;padding:4px 10px;color:${p===value?'#fff':'#8b949e'};font-size:11px;font-weight:600;cursor:pointer">${fmtPeriod(p)}</button>`).join('');
+
+  if(period === 'monthly' && value && !/^\d{4}-\d{2}$/.test(value)){
+    // division picker + that division's trend chart
+    const divs = [...new Set(src.map(d=>d.div))].sort();
+    // value for monthly is "div|period" or just div initially
+    let selDiv = value.includes('|') ? value.split('|')[0] : (value.length<=7 ? divs[0] : value);
+    const divData = src.filter(d=>d.div===selDiv).sort((a,b)=>a.p.localeCompare(b.p));
+
+    _ce.innerHTML = `
+      <div style="margin-bottom:14px">
+        <div style="font-size:22px;font-weight:700;color:#7ecfe0">📈 Conversion Rate by Division</div>
+        <div style="font-size:13px;color:#8b949e;margin-top:3px">Eligible homes, packs sold, and ITM conversion rate</div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center">
+        <button style="background:#1f6feb;border:none;border-radius:6px;padding:5px 12px;color:#fff;font-size:11px;font-weight:600;cursor:pointer">Monthly</button>
+        <button onclick="renderConvRates('quarterly','2026-01')" onmouseenter="renderConvRates('quarterly','2026-01')" style="background:#21262d;border:1px solid #30363d;border-radius:6px;padding:5px 12px;color:#8b949e;font-size:11px;font-weight:600;cursor:pointer">Quarterly</button>
+        <button onclick="renderConvRates('yearly','2026')" onmouseenter="renderConvRates('yearly','2026')" style="background:#21262d;border:1px solid #30363d;border-radius:6px;padding:5px 12px;color:#8b949e;font-size:11px;font-weight:600;cursor:pointer">Yearly</button>
+        <span style="color:#484f58;font-size:12px;margin:0 4px">|</span>
+        <select id="conv-div-sel" onchange="renderConvRates('monthly',this.value)" style="background:#161b22;border:1px solid #30363d;border-radius:6px;padding:5px 10px;color:#c9d1d9;font-size:12px;cursor:pointer">
+          ${divs.map(d=>`<option value="${d}"${d===selDiv?' selected':''}>${fmtDiv(d)}</option>`).join('')}
+        </select>
+      </div>
+      <div class="full-chart-card">
+        <h3>${fmtDiv(selDiv)} — Monthly Trend <span style="font-size:10px;font-weight:400;color:#484f58;margin-left:8px">Eligible Homes · Packs Sold · Conv. Rate %</span></h3>
+        <div style="position:relative;height:320px"><canvas id="convMonthChart"></canvas></div>
+      </div>
+      <div class="full-chart-card">
+        <h3 style="margin-bottom:10px">${fmtDiv(selDiv)} — Monthly Detail</h3>
+        <table class="summary-table">
+          <tr><th>Month</th><th>Eligible Homes</th><th>Packs Sold</th><th>Conv. Rate %</th><th>Home Closes</th></tr>
+          ${(()=>{ const clm=(CLOSES_DATA||{}).monthly||[]; const clmo={}; clm.forEach(r=>{if(r.div===selDiv)clmo[r.p]=r.n;}); return divData.slice().reverse().map(d=>`<tr>
+            <td>${fmtPeriod(d.p)}</td>
+            <td style="color:#8b949e">${d.e.toLocaleString()}</td>
+            <td style="color:#3fb950;font-weight:700">${d.pk}</td>
+            <td style="color:${d.r>=5?'#3fb950':d.r>=2?'#f0a500':'#f85149'};font-weight:700">${d.r.toFixed(2)}%</td>
+            <td style="color:#7ecfe0;font-weight:700">${clmo[d.p]!=null?clmo[d.p].toLocaleString():'—'}</td>
+          </tr>`).join(''); })()}
+        </table>
+      </div>`;
+    _ce.scrollTop = _sv;
+
+    new Chart(document.getElementById('convMonthChart'),{
+      type:'bar',
+      data:{
+        labels: divData.map(d=>fmtPeriod(d.p)),
+        datasets:[
+          {label:'Eligible Homes', data:divData.map(d=>d.e), backgroundColor:'#1f6feb', borderRadius:2, yAxisID:'y',
+           datalabels:{anchor:'end',align:'end',color:'#8b949e',font:{size:8},formatter:v=>v>=1000?(v/1000).toFixed(1)+'k':v}},
+          {label:'Packs Sold',     data:divData.map(d=>d.pk), backgroundColor:'#3fb950', borderRadius:2, yAxisID:'y',
+           datalabels:{anchor:'end',align:'end',color:'#3fb950',font:{size:8}}},
+          {label:'Conv. Rate %',   data:divData.map(d=>d.r), type:'line', borderColor:'#f85149', backgroundColor:'transparent', borderWidth:2, pointRadius:3, pointStyle:'line', yAxisID:'y2', tension:0.3,
+           datalabels:{anchor:'center',align:'top',color:'#f85149',font:{size:8},formatter:v=>v==null?'':v.toFixed(1)+'%'}}
+        ]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        layout:{padding:{top:18}},
+        interaction:{mode:'index',intersect:false},
+        plugins:{
+          legend:{labels:{color:'#8b949e',font:{size:11},usePointStyle:true}},
+          tooltip:{callbacks:{label(ctx){ return ctx.dataset.yAxisID==='y2'?` Conv Rate: ${ctx.parsed.y.toFixed(2)}%`:` ${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString()}`;}}}
+        },
+        scales:{
+          x:{ticks:{color:'#8b949e',font:{size:9},maxRotation:45},grid:{color:'#21262d'}},
+          y:{ticks:{color:'#8b949e',font:{size:11}},grid:{color:'#21262d'},beginAtZero:true,stacked:false},
+          y2:{position:'right',ticks:{color:'#f85149',font:{size:11},callback:v=>v+'%'},grid:{display:false},beginAtZero:true}
+        }
+      },
+      plugins:[ChartDataLabels]
+    });
+    return;
+  }
+
+  // Monthly (all-divs), Yearly, or Quarterly — all divisions for selected period
+  if(period === 'monthly' && !value) value = latestMonth;
+
+  // Build maps before sort so sort keys can reference them
+  const closesSrc = (CLOSES_DATA||{})[period==='yearly'?'yearly':period==='quarterly'?'quarterly':'monthly'] || [];
+  const closesMap = {};
+  closesSrc.forEach(r=>{ closesMap[r.div+'|'+r.p] = r.n; });
+  const getCloses = div => closesMap[div+'|'+value] || null;
+  const ratifSrc = (RATIF_DATA||{})[period==='yearly'?'yearly':period==='quarterly'?'quarterly':'monthly'] || [];
+  const ratifMap = {}; ratifSrc.forEach(r=>{ ratifMap[r.div+'|'+r.p]=r.n; });
+  const getRatif = div => ratifMap[div+'|'+value] || null;
+
+  const getDivSortVal = d => {
+    if(divSortBy==='e')      return d.e;
+    if(divSortBy==='r')      return d.r;
+    if(divSortBy==='ratif')  return ratifMap[d.div+'|'+value]||0;
+    if(divSortBy==='closes') return closesMap[d.div+'|'+value]||0;
+    return d.pk; // 'pk' default
+  };
+  const rows = src.filter(d=>d.p===value).sort((a,b)=>getDivSortVal(b)-getDivSortVal(a));
+  const totalE      = rows.reduce((s,d)=>s+d.e,0);
+  const totalPk     = rows.reduce((s,d)=>s+d.pk,0);
+  const avgRate     = totalE>0 ? (totalPk/totalE*100).toFixed(2) : 0;
+  const totalRatif  = rows.reduce((s,d)=>s+(ratifMap[d.div+'|'+value]||0),0);
+  const totalCloses = rows.reduce((s,d)=>s+(closesMap[d.div+'|'+value]||0),0);
+
+  _ce.innerHTML = `
+    <div style="margin-bottom:14px">
+      <div style="font-size:22px;font-weight:700;color:#7ecfe0">📈 Conversion Rate by Division</div>
+      <div style="font-size:13px;color:#8b949e;margin-top:3px">Eligible homes, packs sold, and ITM conversion rate · ${fmtPeriod(value)}</div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center">
+      <button onclick="renderConvRates('monthly','${period==='monthly'?value:latestMonth}')" onmouseenter="renderConvRates('monthly','${period==='monthly'?value:latestMonth}')" style="background:${period==='monthly'?'#1f6feb':'#21262d'};border:${period==='monthly'?'none':'1px solid #30363d'};border-radius:6px;padding:5px 12px;color:${period==='monthly'?'#fff':'#8b949e'};font-size:11px;font-weight:600;cursor:pointer">Monthly</button>
+      <button onclick="renderConvRates('quarterly','${period==='quarterly'?value:'2026-01'}')" onmouseenter="renderConvRates('quarterly','${period==='quarterly'?value:'2026-01'}')" style="background:${period==='quarterly'?'#1f6feb':'#21262d'};border:${period==='quarterly'?'none':'1px solid #30363d'};border-radius:6px;padding:5px 12px;color:${period==='quarterly'?'#fff':'#8b949e'};font-size:11px;font-weight:600;cursor:pointer">Quarterly</button>
+      <button onclick="renderConvRates('yearly','${period==='yearly'?value:'2026'}')" onmouseenter="renderConvRates('yearly','${period==='yearly'?value:'2026'}')" style="background:${period==='yearly'?'#1f6feb':'#21262d'};border:${period==='yearly'?'none':'1px solid #30363d'};border-radius:6px;padding:5px 12px;color:${period==='yearly'?'#fff':'#8b949e'};font-size:11px;font-weight:600;cursor:pointer">Yearly</button>
+      <span style="color:#484f58;font-size:12px;margin:0 4px">|</span>
+      ${periodTabs}
+    </div>
+    <div class="rm-stats" style="margin-bottom:16px">
+      <div class="rm-stat"><div class="rm-stat-val" style="color:#8b949e">${rows.length}</div><div class="rm-stat-label">Divisions</div></div>
+      <div class="rm-stat" style="cursor:pointer;${divSortBy==='e'?'border-color:#7ecfe0;':''}" onclick="divSortBy='e';renderConvRates('${period}','${value}')" title="Sort by Eligible Homes"><div class="rm-stat-val teal">${totalE.toLocaleString()}</div><div class="rm-stat-label">Eligible Homes${divSortBy==='e'?' ↓':''}</div></div>
+      <div class="rm-stat" style="cursor:pointer;${divSortBy==='pk'?'border-color:#1f6feb;':''}" onclick="divSortBy='pk';renderConvRates('${period}','${value}')" title="Sort by Packs Sold"><div class="rm-stat-val" style="color:#1f6feb">${totalPk.toLocaleString()}</div><div class="rm-stat-label">Packs Sold${divSortBy==='pk'?' ↓':''}</div></div>
+      <div class="rm-stat" style="cursor:pointer;${divSortBy==='r'?'border-color:#3fb950;':''}" onclick="divSortBy='r';renderConvRates('${period}','${value}')" title="Sort by Conv. Rate"><div class="rm-stat-val" style="color:#3fb950">${avgRate}%</div><div class="rm-stat-label">Conv. Rate%${divSortBy==='r'?' ↓':''}</div></div>
+      <div class="rm-stat" style="cursor:pointer;${divSortBy==='ratif'?'border-color:#7ecfe0;':''}" onclick="divSortBy='ratif';renderConvRates('${period}','${value}')" title="Sort by Ratifications"><div class="rm-stat-val" style="color:#7ecfe0">${totalRatif.toLocaleString()}</div><div class="rm-stat-label">Ratifications${divSortBy==='ratif'?' ↓':''}</div></div>
+      <div class="rm-stat" style="cursor:pointer;${divSortBy==='closes'?'border-color:#d2a8ff;':''}" onclick="divSortBy='closes';renderConvRates('${period}','${value}')" title="Sort by Closes"><div class="rm-stat-val" style="color:#d2a8ff">${totalCloses.toLocaleString()}</div><div class="rm-stat-label">Closes${divSortBy==='closes'?' ↓':''}</div></div>
+    </div>
+    <div class="full-chart-card">
+      <h3>${fmtPeriod(value)} — All Divisions <span style="font-size:10px;font-weight:400;color:#484f58;margin-left:8px">sorted by ${divSortBy==='e'?'eligible homes':divSortBy==='r'?'conv. rate':divSortBy==='ratif'?'ratifications':divSortBy==='closes'?'closes':'packs sold'} · click a bar to see monthly detail</span></h3>
+      <div style="position:relative;height:320px"><canvas id="convDivChart"></canvas></div>
+    </div>
+    <div class="full-chart-card">
+      <h3>Division Pipeline — ${fmtPeriod(value)} <span style="font-size:10px;font-weight:400;color:#484f58;margin-left:8px">Eligible pool · Ratifications · Closes · Packs Sold — sorted by ${divSortBy==='e'?'eligible homes':divSortBy==='r'?'conv. rate':divSortBy==='ratif'?'ratifications':divSortBy==='closes'?'closes':'packs sold'}</span></h3>
+      <div style="position:relative;height:580px"><canvas id="pipelineChart"></canvas></div>
+    </div>
+    <div class="full-chart-card">
+      <h3 style="margin-bottom:12px">Division Breakdown — ${fmtPeriod(value)}</h3>
+      <table class="summary-table">
+        <tr><th>#</th><th>Division</th><th style="cursor:pointer" onclick="divSortBy='e';renderConvRates('${period}','${value}')">${divSortBy==='e'?'↓ ':''}<span style="color:${divSortBy==='e'?'#7ecfe0':'inherit'}">Eligible Homes</span></th><th style="cursor:pointer" onclick="divSortBy='pk';renderConvRates('${period}','${value}')">${divSortBy==='pk'?'↓ ':''}<span style="color:${divSortBy==='pk'?'#1f6feb':'inherit'}">Packs Sold</span></th><th style="cursor:pointer" onclick="divSortBy='r';renderConvRates('${period}','${value}')">${divSortBy==='r'?'↓ ':''}<span style="color:${divSortBy==='r'?'#3fb950':'inherit'}">Conv. Rate %</span></th><th style="cursor:pointer" onclick="divSortBy='ratif';renderConvRates('${period}','${value}')">${divSortBy==='ratif'?'↓ ':''}<span style="color:${divSortBy==='ratif'?'#7ecfe0':'inherit'}">Ratifications</span></th><th style="cursor:pointer" onclick="divSortBy='closes';renderConvRates('${period}','${value}')">${divSortBy==='closes'?'↓ ':''}<span style="color:${divSortBy==='closes'?'#d2a8ff':'inherit'}">Home Closes</span></th></tr>
+        ${rows.map((d,i)=>{ const cl=getCloses(d.div); const rf=getRatif(d.div); return `<tr style="cursor:pointer" onclick="renderConvRates('monthly','${d.div}')">
+          <td style="color:#484f58;font-weight:700">#${i+1}</td>
+          <td><strong>${fmtDiv(d.div)}</strong></td>
+          <td style="color:#8b949e">${d.e.toLocaleString()}</td>
+          <td style="color:#1f6feb;font-weight:700">${d.pk}</td>
+          <td style="color:${d.r>=5?'#3fb950':d.r>=2?'#f0a500':'#f85149'};font-weight:700">${d.r.toFixed(2)}%</td>
+          <td style="color:#7ecfe0">${rf!=null?rf.toLocaleString():'—'}</td>
+          <td style="color:#7ecfe0;font-weight:700">${cl!=null?cl.toLocaleString():'—'}</td>
+        </tr>`;}).join('')}
+      </table>
+    </div>`;
+  _ce.scrollTop = _sv;
+
+  new Chart(document.getElementById('convDivChart'),{
+    type:'bar',
+    data:{
+      labels: rows.map(d=>fmtDiv(d.div)),
+      datasets:[
+        {label:'Eligible Homes', data:rows.map(d=>d.e), backgroundColor:'#1f6feb', borderRadius:3, yAxisID:'y', hidden:convDivHidden.has('Eligible Homes'),
+         datalabels:{anchor:'end',align:'end',color:'#8b949e',font:{size:8},clamp:true,formatter:v=>v>=1000?(v/1000).toFixed(1)+'k':v}},
+        {label:'Packs Sold',     data:rows.map(d=>d.pk), backgroundColor:'#3fb950', borderRadius:3, yAxisID:'y', hidden:convDivHidden.has('Packs Sold'),
+         datalabels:{anchor:'end',align:'end',color:'#3fb950',font:{size:8},clamp:true}},
+        {label:'Conv. Rate %',   data:rows.map(d=>d.r), type:'line', borderColor:'#f85149', backgroundColor:'transparent', borderWidth:2, pointRadius:4, pointBackgroundColor:'#f85149', pointStyle:'line', yAxisID:'y2', tension:0.2, hidden:convDivHidden.has('Conv. Rate %'),
+         datalabels:{anchor:'center',align:'top',color:'#f85149',font:{size:8},clamp:true,formatter:v=>v==null?'':v.toFixed(1)+'%'}}
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      layout:{padding:{top:18}},
+      onClick(e,els){ if(els.length){ const d=rows[els[0].index]; renderConvRates('monthly',d.div); } },
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{
+          onClick(e, item, legend){
+            const lbl = item.text;
+            convDivHidden.has(lbl) ? convDivHidden.delete(lbl) : convDivHidden.add(lbl);
+            Chart.defaults.plugins.legend.onClick.call(this, e, item, legend);
+          },
+          labels:{color:'#8b949e',font:{size:11},usePointStyle:true}
+        },
+        tooltip:{callbacks:{label(ctx){ return ctx.dataset.yAxisID==='y2'?` Conv Rate: ${ctx.parsed.y.toFixed(2)}%`:` ${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString()}`;}}}
+      },
+      scales:{
+        x:{ticks:{color:'#8b949e',font:{size:10},maxRotation:35},grid:{color:'#21262d'}},
+        y:{ticks:{color:'#8b949e',font:{size:11}},grid:{color:'#21262d'},beginAtZero:true},
+        y2:{position:'right',ticks:{color:'#f85149',font:{size:11},callback:v=>v+'%'},grid:{display:false},beginAtZero:true}
+      }
+    },
+    plugins:[ChartDataLabels]
+  });
+
+  // ratifMap + closesMap already built above for the table
+
+  // Pipeline rows: same order as conv rows (sorted by eligible homes desc)
+  const pipLabels = rows.map(d=>fmtDiv(d.div));
+  const pipE  = rows.map(d=>d.e);
+  const pipR  = rows.map(d=>ratifMap[d.div+'|'+value]||0);
+  const pipCl = rows.map(d=>closesMap[d.div+'|'+value]||0);
+  const pipPk = rows.map(d=>d.pk);
+
+  new Chart(document.getElementById('pipelineChart'),{
+    type:'bar',
+    data:{
+      labels: pipLabels,
+      datasets:[
+        {label:'Eligible Homes', data:pipE,  backgroundColor:'#1f6feb', borderWidth:0, barPercentage:0.75, categoryPercentage:0.85, hidden:pipelineHidden.has('Eligible Homes')},
+        {label:'Ratifications',  data:pipR,  backgroundColor:'#7ecfe0', borderWidth:0, barPercentage:0.75, categoryPercentage:0.85, hidden:pipelineHidden.has('Ratifications')},
+        {label:'Closes',         data:pipCl, backgroundColor:'#d2a8ff', borderWidth:0, barPercentage:0.75, categoryPercentage:0.85, hidden:pipelineHidden.has('Closes')},
+        {label:'Packs Sold',     data:pipPk, backgroundColor:'#3fb950', borderWidth:0, barPercentage:0.75, categoryPercentage:0.85, hidden:pipelineHidden.has('Packs Sold')}
+      ]
+    },
+    options:{
+      indexAxis:'y',
+      responsive:true, maintainAspectRatio:false,
+      onClick(e,els){ if(els.length){ renderConvRates('monthly', rows[els[0].index].div); } },
+      interaction:{mode:'index',intersect:false,axis:'y'},
+      plugins:{
+        legend:{
+          onClick(e, item, legend){
+            const lbl = item.text;
+            pipelineHidden.has(lbl) ? pipelineHidden.delete(lbl) : pipelineHidden.add(lbl);
+            Chart.defaults.plugins.legend.onClick.call(this, e, item, legend);
+          },
+          labels:{color:'#8b949e',font:{size:11},usePointStyle:true,boxWidth:12}
+        },
+        tooltip:{
+          callbacks:{
+            title(items){ return items[0]?.label || ''; },
+            label(ctx){ return ` ${ctx.dataset.label}: ${ctx.parsed.x.toLocaleString()}`; },
+            afterBody(items){
+              const i = items[0]?.dataIndex;
+              if(i==null) return [];
+              const rat = pipR[i], cl = pipCl[i], pk = pipPk[i], el = pipE[i];
+              return ['',
+                `  Packs/Eligible: ${el>0?(pk/el*100).toFixed(1)+'%':'—'}`,
+                `  Packs/Ratified: ${rat>0?(pk/rat*100).toFixed(1)+'%':'—'}`,
+                `  Packs/Closes:   ${cl>0?(pk/cl*100).toFixed(1)+'%':'—'}`
+              ];
+            }
+          }
+        }
+      },
+      scales:{
+        x:{ticks:{color:'#8b949e',font:{size:10}},grid:{color:'#21262d'},beginAtZero:true},
+        y:{ticks:{color:'#c9d1d9',font:{size:10}},grid:{color:'#21262d'}}
+      }
+    }
+  });
+}
+
+function showRainmakers(){
+  selectedIdx = 'rainmakers';
+  renderSidebar();
+  renderRainmakers('','');
+}
+
+function renderRainmakers(filter, divFilter, sortBy='t'){
+  const divs = [...new Set(RAINMAKERS.map(r=>r.d))].sort();
+  const getSV = (r,k) => k==='rev' ? r.p25*2700+r.p10*1125+r.p8*399 : (r[k]||0);
+  const filtered = RAINMAKERS.filter(r=>{
+    const nameMatch = !filter || r.n.toLowerCase().includes(filter.toLowerCase());
+    const divMatch  = !divFilter || r.d === divFilter;
+    return nameMatch && divMatch;
+  }).slice().sort((a,b)=> getSV(b,sortBy) - getSV(a,sortBy));
+  const totalPacks = filtered.reduce((s,r)=>s+r.t,0);
+  const total25    = filtered.reduce((s,r)=>s+r.p25,0);
+  const total10    = filtered.reduce((s,r)=>s+r.p10,0);
+  const total8     = filtered.reduce((s,r)=>s+r.p8,0);
+  const totalRev   = filtered.reduce((s,r)=>s+(r.p25*2700+r.p10*1125+r.p8*399),0);
+  const totalL3    = filtered.reduce((s,r)=>s+(r.l3||0),0);
+  const totalH3    = filtered.reduce((s,r)=>s+(r.h3||0),0);
+  const maxVal     = filtered.length ? getSV(filtered[0], sortBy) : 1;
+
+  document.getElementById('content').innerHTML = `
+    <div style="margin-bottom:14px">
+      <div style="font-size:22px;font-weight:700;color:#f0a500">🏆 Rainmakers</div>
+      <div style="font-size:13px;color:#8b949e;margin-top:3px">Sorted by: <strong style="color:#e6edf3">${sortBy==='p25'?'25-Pack':sortBy==='p10'?'10-Pack':sortBy==='p8'?'8-Pack':sortBy==='l3'?'Packs Sold (3 Mo.)':sortBy==='h3'?'Homes Sold':sortBy==='rev'?'Deako Revenue':'Total Packs'}</strong> · ${filtered.length.toLocaleString()} agents · click stat boxes to re-sort</div>
+    </div>
+    <div class="rm-stats">
+      <div class="rm-stat"><div class="rm-stat-val teal">${filtered.length.toLocaleString()}</div><div class="rm-stat-label">Agents</div></div>
+      <div class="rm-stat"><div class="rm-stat-val" style="color:#8b949e">${[...new Set(filtered.map(r=>r.d))].length}</div><div class="rm-stat-label">Divisions</div></div>
+      <div class="rm-stat" style="cursor:pointer;${sortBy==='t'?'border-color:#f0a500;':''}" onclick="renderRainmakers('${filter}','${divFilter}','t')" title="Sort by Total Packs"><div class="rm-stat-val">${totalPacks.toLocaleString()}</div><div class="rm-stat-label">Total Packs${sortBy==='t'?' ↓':''}</div></div>
+      <div class="rm-stat" style="cursor:pointer;${sortBy==='l3'?'border-color:#d2a8ff;':''}" onclick="renderRainmakers('${filter}','${divFilter}','l3')" title="Sort by Packs Sold (3 Mo.)"><div class="rm-stat-val" style="color:#d2a8ff">${totalL3.toLocaleString()}</div><div class="rm-stat-label">Packs Sold (3 Mo.)${sortBy==='l3'?' ↓':''}</div></div>
+      <div class="rm-stat" style="cursor:pointer;${sortBy==='h3'?'border-color:#7ecfe0;':''}" onclick="renderRainmakers('${filter}','${divFilter}','h3')" title="Sort by Homes Sold"><div class="rm-stat-val" style="color:#7ecfe0">${totalH3.toLocaleString()}</div><div class="rm-stat-label">Homes Sold (3 Mo.)${sortBy==='h3'?' ↓':''}</div></div>
+      <div class="rm-stat" style="cursor:pointer;${sortBy==='p25'?'border-color:#3fb950;':''}" onclick="renderRainmakers('${filter}','${divFilter}','p25')" title="Sort by 25-Pack"><div class="rm-stat-val" style="color:#3fb950">${total25.toLocaleString()}</div><div class="rm-stat-label">25-Pack${sortBy==='p25'?' ↓':''}</div></div>
+      <div class="rm-stat" style="cursor:pointer;${sortBy==='p10'?'border-color:#79c0ff;':''}" onclick="renderRainmakers('${filter}','${divFilter}','p10')" title="Sort by 10-Pack"><div class="rm-stat-val" style="color:#79c0ff">${total10.toLocaleString()}</div><div class="rm-stat-label">10-Pack${sortBy==='p10'?' ↓':''}</div></div>
+      <div class="rm-stat" style="cursor:pointer;${sortBy==='p8'?'border-color:#f0a500;':''}" onclick="renderRainmakers('${filter}','${divFilter}','p8')" title="Sort by 8-Pack"><div class="rm-stat-val orange">${total8.toLocaleString()}</div><div class="rm-stat-label">8-Pack${sortBy==='p8'?' ↓':''}</div></div>
+      <div class="rm-stat" style="cursor:pointer;${sortBy==='rev'?'border-color:#3fb950;':''}" onclick="renderRainmakers('${filter}','${divFilter}','rev')" title="Sort by Deako Revenue"><div class="rm-stat-val" style="color:#3fb950">$${totalRev.toLocaleString()}</div><div class="rm-stat-label">Deako Revenue${sortBy==='rev'?' ↓':''}</div></div>
+    </div>
+    <div class="rm-controls">
+      <input type="text" id="rm-search" placeholder="Search agent name..." value="${filter}" oninput="renderRainmakers(this.value, document.getElementById('rm-div').value, '${sortBy}')">
+      <select id="rm-div" onchange="renderRainmakers(document.getElementById('rm-search').value, this.value, '${sortBy}')">
+        <option value="">All Divisions</option>
+        ${divs.map(d=>`<option value="${d}"${d===divFilter?' selected':''}>${d}</option>`).join('')}
+      </select>
+    </div>
+    <div style="background:#161b22;border:1px solid #21262d;border-radius:10px;overflow:hidden">
+      <table class="rm-table">
+        <tr><th>#</th><th>Agent</th><th style="${divFilter?'cursor:pointer;color:#f0a500':''}" title="${divFilter?'Click to clear division filter':''}" onclick="${divFilter?`renderRainmakers('${filter.replace(/'/g,"\\'")}','','${sortBy}')`:''}">Division${divFilter?` → ALL`:''}</th><th>Community</th><th>Homes Sold</th><th>Packs Sold (3 Mo.)</th><th>Total Packs</th><th>Deako Revenue</th><th>Pack Mix</th><th>Contact</th></tr>
+        ${filtered.slice(0,200).map((r,i)=>{
+          const pct = Math.round(getSV(r,sortBy)/maxVal*100);
+          const medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
+          const rev = r.p25*2700 + r.p10*1125 + r.p8*399;
+          const hasBoth = r.em && r.ph;
+          const contactHtml = hasBoth
+            ? `<div class="contact-wrap">📇<div class="contact-tip"><div class="contact-tip-row">📧 <a href="mailto:${r.em}">${r.em}</a></div><div class="contact-tip-row">📞 <a href="tel:${r.ph}">${r.ph}</a></div></div></div>`
+            : r.em ? `<a href="mailto:${r.em}" title="${r.em}" style="color:#7ecfe0;text-decoration:none">📧</a>`
+            : r.ph ? `<a href="tel:${r.ph}" title="${r.ph}" style="color:#3fb950;text-decoration:none">📞</a>`
+            : '';
+          return `<tr>
+            <td class="rm-rank${i<3?' top3':''}">${medal||('#'+(i+1))}</td>
+            <td><strong>${r.n}</strong></td>
+            <td style="color:#79c0ff;cursor:pointer;text-decoration:underline dotted" title="Filter by ${r.d}" onclick="renderRainmakers('','${r.d.replace(/'/g,String.fromCharCode(39))}','${sortBy}')">${r.d}</td>
+            <td style="color:#8b949e;font-size:11px">${r.cm||'—'}</td>
+            <td style="color:#7ecfe0;font-weight:700">${r.h3||0}</td>
+            <td style="color:#d2a8ff;font-weight:700">${r.l3||0}</td>
+            <td><strong>${r.t}</strong><span class="rm-bar-wrap"><span class="rm-bar-fill" style="width:${pct}%"></span></span></td>
+            <td style="color:#3fb950;font-weight:700">$${rev.toLocaleString()}</td>
+            <td>
+              ${r.p25>0?`<span class="rm-pack-badge rm-p25">25×${r.p25}</span>`:''}
+              ${r.p10>0?`<span class="rm-pack-badge rm-p10">10×${r.p10}</span>`:''}
+              ${r.p8>0?`<span class="rm-pack-badge rm-p8">8×${r.p8}</span>`:''}
+            </td>
+            <td style="text-align:center">${contactHtml}</td>
+          </tr>`;
+        }).join('')}
+        ${filtered.length>200?`<tr><td colspan="10" style="text-align:center;color:#484f58;padding:10px">Showing top 200 of ${filtered.length} — refine search to see more</td></tr>`:''}
+      </table>
+    </div>
+  `;
+}
+
+/* ── DIV TAB SWITCH ── */
+function switchDivTab(tab){
+  document.getElementById('div-table-body').innerHTML = renderDivTable(tab);
+  ['last3','y2025','allTime'].forEach(t=>{
+    const btn = document.getElementById('tab-'+t);
+    if(btn) btn.style.cssText = t===tab
+      ? 'background:#1f6feb;border:none;border-radius:6px;padding:5px 12px;color:#fff;font-size:11px;font-weight:600;cursor:pointer'
+      : 'background:#21262d;border:1px solid #30363d;border-radius:6px;padding:5px 12px;color:#8b949e;font-size:11px;font-weight:600;cursor:pointer';
+  });
+}
+
+/* ── INIT ── */
+renderMetrics();
+renderSidebar();
+renderOverview();
+document.getElementById('sidebar').addEventListener('click', function(e){
+  if(!e.target.closest('.div-item')) return;
+});
+</script>
+</body>
+</html>

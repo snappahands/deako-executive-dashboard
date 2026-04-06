@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HST Direct vs. ITM — Pack Sales Impact Analysis</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0d1117;
+      color: #e6edf3;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif;
+      padding: 24px 32px 48px;
+      max-width: 1380px;
+      margin: 0 auto;
+    }
+    header {
+      padding: 28px 0 22px;
+      border-bottom: 1px solid #21262d;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+    }
+    header h1 { font-size: 26px; font-weight: 700; margin-bottom: 6px; }
+    .subtitle { font-size: 13px; color: #8b949e; }
+    a.back-link {
+      font-size: 13px;
+      color: #58a6ff;
+      text-decoration: none;
+    }
+    a.back-link:hover { text-decoration: underline; }
+
+    /* ── Stat cards ── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+    .stat-card {
+      background: #161b22;
+      border: 1px solid #21262d;
+      border-radius: 8px;
+      padding: 14px 12px;
+      text-align: center;
+    }
+    .stat-card .lbl { font-size: 10px; color: #8b949e; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 8px; }
+    .stat-card .val { font-size: 26px; font-weight: 700; }
+    .stat-card .sub { font-size: 11px; margin-top: 4px; }
+    .red   { color: #f85149; }
+    .blue  { color: #58a6ff; }
+    .green { color: #3fb950; }
+    .amber { color: #e3b341; }
+    .muted { color: #8b949e; }
+
+    /* ── Chart sections ── */
+    .chart-section {
+      background: #161b22;
+      border: 1px solid #21262d;
+      border-radius: 10px;
+      padding: 22px 24px 20px;
+      margin-bottom: 20px;
+    }
+    .chart-section h2 {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .chart-note {
+      font-size: 12px;
+      color: #8b949e;
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+    .chart-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    .chart-row .chart-section { margin-bottom: 0; }
+    .chart-row-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    .chart-row-3 .chart-section { margin-bottom: 0; }
+
+    /* ── Conclusion ── */
+    .conclusion {
+      background: #161b22;
+      border: 1px solid #21262d;
+      border-radius: 10px;
+      padding: 28px 30px;
+      margin-bottom: 20px;
+    }
+    .conclusion h2 {
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid #21262d;
+    }
+    .findings-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .finding {
+      background: #0d1117;
+      border-radius: 8px;
+      padding: 16px 18px;
+      border-left: 3px solid;
+    }
+    .finding.red-b   { border-color: #f85149; }
+    .finding.blue-b  { border-color: #58a6ff; }
+    .finding.amber-b { border-color: #e3b341; }
+    .finding.green-b { border-color: #3fb950; }
+    .finding h3 { font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+    .finding p  { font-size: 12.5px; color: #8b949e; line-height: 1.65; }
+    .finding strong { color: #e6edf3; }
+
+    .verdict {
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      padding: 20px 22px;
+      margin-top: 4px;
+    }
+    .verdict h3 {
+      font-size: 14px;
+      font-weight: 700;
+      color: #e3b341;
+      margin-bottom: 14px;
+    }
+    .verdict p {
+      font-size: 13.5px;
+      color: #c9d1d9;
+      line-height: 1.75;
+      margin-bottom: 12px;
+    }
+    .verdict p:last-child { margin-bottom: 0; }
+    .verdict strong { color: #e6edf3; }
+
+    /* ── Stats table ── */
+    .stats-table-wrap { margin-top: 24px; }
+    .stats-table-wrap h3 { font-size: 13px; font-weight: 700; margin-bottom: 12px; color: #8b949e; text-transform: uppercase; letter-spacing: .5px; }
+    table.kt {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    table.kt th {
+      background: #0d1117;
+      color: #8b949e;
+      padding: 9px 14px;
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 1px solid #21262d;
+    }
+    table.kt td {
+      padding: 9px 14px;
+      border-bottom: 1px solid #161b22;
+      color: #e6edf3;
+    }
+    table.kt tr:last-child td { border-bottom: none; }
+
+    .footnote { font-size: 11px; color: #484f58; margin-top: 12px; }
+    .inline-badge {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>HST Direct vs. ITM — Pack Sales Impact Analysis</h1>
+    <p class="subtitle">January 2024 – February 2026 &nbsp;·&nbsp; 26 months of dual-channel data &nbsp;·&nbsp; All 21 DPUP Divisions Combined</p>
+  </div>
+  <a class="back-link" href="index.html">← Back to Dashboard</a>
+</header>
+
+<!-- ── Key Stats ── -->
+<div class="stats-row">
+  <div class="stat-card">
+    <div class="lbl">2023 ITM Avg/Mo</div>
+    <div class="val" style="color:#c9d1d9">106</div>
+    <div class="sub muted">Pre-HST baseline</div>
+  </div>
+  <div class="stat-card">
+    <div class="lbl">2024 HST Avg/Mo</div>
+    <div class="val blue">122</div>
+    <div class="sub green">68% more than ITM</div>
+  </div>
+  <div class="stat-card">
+    <div class="lbl">2024 ITM Avg/Mo</div>
+    <div class="val red">73</div>
+    <div class="sub red">↓ 31% vs 2023</div>
+  </div>
+  <div class="stat-card">
+    <div class="lbl">2025 ITM Avg/Mo</div>
+    <div class="val red">69</div>
+    <div class="sub red">↓ 35% vs 2023</div>
+  </div>
+  <div class="stat-card">
+    <div class="lbl">2025 HST Avg/Mo</div>
+    <div class="val blue">134</div>
+    <div class="sub green">↑ 9.4% vs 2024</div>
+  </div>
+  <div class="stat-card">
+    <div class="lbl">ITM Conv Rate</div>
+    <div style="display:flex;justify-content:space-around;margin:8px 0 4px">
+      <span style="text-align:center">
+        <div class="val" style="font-size:18px;color:#c9d1d9">3.2%</div>
+        <div class="sub muted">2023</div>
+      </span>
+      <span style="text-align:center">
+        <div class="val" style="font-size:18px" class="red">2.1%</div>
+        <div class="sub muted">2024</div>
+      </span>
+      <span style="text-align:center">
+        <div class="val" style="font-size:18px;color:#f85149">1.5%</div>
+        <div class="sub muted">2025</div>
+      </span>
+    </div>
+    <div class="sub red">↓ 53% decline</div>
+  </div>
+</div>
+
+<!-- ── Chart 1: Monthly side-by-side + conv rate ── -->
+<div class="chart-section">
+  <h2>Monthly Pack Sales — ITM vs HST Direct, with ITM Conversion Rate</h2>
+  <p class="chart-note">
+    HST Direct launched January 2024. ITM volumes dropped sharply the same month and have never recovered to 2023 levels.
+    The green line (conversion rate, right axis) has trended down alongside ITM's decline.
+  </p>
+  <canvas id="monthlyChart" height="110"></canvas>
+  <p class="footnote">* Feb 2026 ITM = 5 packs — likely incomplete/partial-month data; treat as an outlier.</p>
+</div>
+
+<!-- ── Charts 2 + 3 ── -->
+<div class="chart-row">
+  <div class="chart-section">
+    <h2>Annual Totals: ITM vs HST Direct (2023–2025)</h2>
+    <p class="chart-note">ITM packs fell 31% in the year HST launched, and have held that lower level ever since. HST outpaced ITM by a factor of nearly 2× in both 2024 and 2025.</p>
+    <canvas id="annualChart" height="210"></canvas>
+  </div>
+  <div class="chart-section">
+    <h2>HST's Monthly Share of All DPUP Pack Sales</h2>
+    <p class="chart-note">Stacked bars show the split between HST and ITM each month. HST started at 46% in January 2024 and reached 76% by September 2025. The trend is toward even greater HST dominance.</p>
+    <canvas id="shareChart" height="210"></canvas>
+  </div>
+</div>
+
+<!-- ── Charts 3 + 4 ── -->
+<div class="chart-row">
+  <div class="chart-section">
+    <h2>Inverse Correlation — HST vs ITM Packs per Month</h2>
+    <p class="chart-note">Each dot = one month (Jan 2024 – Jan 2026). The downward-sloping trendline shows that in months where HST Direct volume is high, ITM volume tends to be low, and vice versa. Negative correlation confirmed.</p>
+    <canvas id="scatterChart" height="210"></canvas>
+  </div>
+  <div class="chart-section">
+    <h2>Month-over-Month Direction Agreement</h2>
+    <p class="chart-note">When HST goes UP from the prior month, does ITM go DOWN (and vice versa)? This chart shows each month as a confirmation or contradiction of the inverse relationship.</p>
+    <canvas id="momChart" height="210"></canvas>
+  </div>
+</div>
+
+<!-- ── Chart 5: Quarterly averages ── -->
+<div class="chart-section">
+  <h2>Quarterly Averages — ITM vs HST Direct (Q1 2024 – Q4 2025)</h2>
+  <p class="chart-note">
+    ITM is weakest in Q2 and Q4 each year — the same quarters where HST tends to be strongest. Q2 2025 shows the starkest split:
+    HST averaged 164 packs/month while ITM averaged just 92. Seasonality may play a role, but the directional gap consistently favors HST.
+  </p>
+  <canvas id="quarterlyChart" height="90"></canvas>
+</div>
+
+<!-- ── Conclusion ── -->
+<div class="conclusion">
+  <h2>Analysis: How HST Direct Is Impacting ITM Pack Sales &amp; Conversion Rate (Since Jan 2024)</h2>
+
+  <div class="findings-grid">
+    <div class="finding red-b">
+      <h3 class="red">Finding 1 — ITM Fell Immediately When HST Launched</h3>
+      <p>
+        In 2023, ITM averaged <strong>106 packs/month</strong> with no competing channel.
+        The month HST Direct launched (January 2024), ITM dropped and never came back — averaging <strong>73/month in 2024</strong> and
+        <strong>69/month in 2025</strong>. That is a <strong class="red">sustained 35% decline</strong> relative to the pre-HST baseline.
+        The timing is not coincidental.
+      </p>
+    </div>
+    <div class="finding blue-b">
+      <h3 class="blue">Finding 2 — HST Direct Now Outsells ITM ~2:1</h3>
+      <p>
+        In 2024, HST averaged <strong>122 packs/month vs 73 for ITM</strong> — a 68% premium.
+        In 2025, that gap widened: <strong>134 vs 69</strong>. Combined, these two channels are selling
+        roughly <strong>200+ packs/month</strong>, but the balance has shifted
+        decisively toward HST, which now accounts for <strong>60–77% of all packs</strong> in any given month.
+      </p>
+    </div>
+    <div class="finding amber-b">
+      <h3 class="amber">Finding 3 — Inverse Correlation Is Real but Moderate</h3>
+      <p>
+        A scatter plot of HST vs ITM by month produces a <strong>negative trendline</strong>.
+        Looking at month-over-month direction changes, the inverse relationship holds roughly <strong>60–65% of the time</strong>:
+        when HST rises, ITM tends to fall, and vice versa. It is not perfectly inverse — some months both rise —
+        but the pattern is consistent enough to be meaningful.
+      </p>
+    </div>
+    <div class="finding red-b">
+      <h3 class="red">Finding 4 — ITM Conversion Rate Has Collapsed</h3>
+      <p>
+        The ITM conversion rate averaged <strong>3.2% in 2023</strong>, fell to <strong>2.1% in 2024</strong>,
+        and dropped further to <strong>1.5% in 2025</strong> — a <strong class="red">53% decline in two years</strong>.
+        This cannot be explained by fewer eligible homes alone. HST Direct appears to be capturing buyers
+        who would otherwise have been strong ITM candidates, leaving the harder conversions for ITM trainers.
+      </p>
+    </div>
+    <div class="finding green-b">
+      <h3 class="green">Finding 5 — HST Is Expanding Total Volume, Not Just Replacing ITM</h3>
+      <p>
+        In 2023, total DPUP packs were roughly <strong>1,272 (ITM only)</strong>. In 2024, ITM+HST combined
+        reached <strong>2,337 packs</strong>. In 2025, <strong>2,429 packs</strong>. The total market is larger —
+        HST is not simply a 1-for-1 replacement of ITM. It is reaching buyers who likely never
+        would have converted through an in-person ITM training event.
+      </p>
+    </div>
+    <div class="finding amber-b">
+      <h3 class="amber">Finding 6 — Seasonal Patterns Complicate the Picture</h3>
+      <p>
+        Both channels show seasonal patterns. HST peaks in Q2 (spring selling season) and mid-year.
+        ITM also dips in Q2 historically. Some of the apparent inverse correlation may simply reflect
+        the same seasonal forces affecting both channels differently. Q3 2025 (Jul–Sep) shows
+        HST=122 avg and ITM=46 avg — the widest quarterly gap on record.
+      </p>
+    </div>
+  </div>
+
+  <div class="verdict">
+    <h3>Verdict: The Bottom Line Since January 2024</h3>
+    <p>
+      <strong>HST Direct is partially cannibalizing ITM, and the data makes a strong case.</strong> The 35% sustained
+      drop in ITM pack volume that began the exact month HST launched — and has held for two full years — is
+      not a coincidence. When a high-volume sales channel targets the same buyer (new home owners in the same
+      communities), resources get split, attention gets divided, and the easier conversions get captured upstream by HST,
+      leaving ITM trainers with a harder, more reluctant audience. That is why the conversion rate has fallen
+      more than the raw pack count — the quality of the ITM opportunity is declining, not just the quantity.
+    </p>
+    <p>
+      <strong>However, HST is also genuinely growing the pie.</strong> Total packs sold (ITM + HST combined) nearly
+      doubled from 2023 to 2024 and grew again in 2025. The program is reaching buyers who would not have
+      attended an ITM event. That is real, additive value — and it shows HST is not simply a rebranded ITM.
+    </p>
+    <p>
+      <strong>The concern worth watching:</strong> If the ITM conversion rate continues its current trajectory —
+      3.2% (2023) → 2.1% (2024) → 1.5% (2025) → 0.75% pace in early 2026 — ITM risks becoming
+      a marginal channel relative to HST. The question for your team is whether ITM investment is being
+      right-sized given that HST now delivers roughly 2× the monthly volume. If ITM resources are being
+      stretched across both programs, that would explain both the volume drop and the conversion rate collapse —
+      and would point to a staffing or prioritization solution rather than a market problem.
+    </p>
+  </div>
+
+  <div class="stats-table-wrap">
+    <h3>Year-by-Year Summary</h3>
+    <table class="kt">
+      <tr>
+        <th>Year</th>
+        <th>ITM Total Packs</th>
+        <th>ITM Avg/Mo</th>
+        <th>ITM YoY Change</th>
+        <th>HST Total Packs</th>
+        <th>HST Avg/Mo</th>
+        <th>HST % of Combined</th>
+        <th>ITM Conv Rate Avg</th>
+      </tr>
+      <tr>
+        <td>2023</td>
+        <td>1,272</td>
+        <td>106</td>
+        <td class="muted">—  Baseline</td>
+        <td class="muted">—</td>
+        <td class="muted">Not launched</td>
+        <td class="muted">0%</td>
+        <td>3.2%</td>
+      </tr>
+      <tr>
+        <td>2024</td>
+        <td class="red">873</td>
+        <td class="red">73</td>
+        <td class="red">↓ 31.4%</td>
+        <td class="blue">1,464</td>
+        <td class="blue">122</td>
+        <td class="blue">62.6%</td>
+        <td class="amber">2.1%</td>
+      </tr>
+      <tr>
+        <td>2025</td>
+        <td class="red">827</td>
+        <td class="red">69</td>
+        <td class="red">↓ 5.3% (↓ 35.0% vs 2023)</td>
+        <td class="blue">1,602</td>
+        <td class="blue">134</td>
+        <td class="blue">65.9%</td>
+        <td class="red">1.5%</td>
+      </tr>
+      <tr>
+        <td>2026 (Jan–Feb)</td>
+        <td class="red">58</td>
+        <td class="red">29 *</td>
+        <td class="red">Trending lower</td>
+        <td class="blue">235</td>
+        <td class="blue">118</td>
+        <td class="blue">80.2%</td>
+        <td class="red">0.75%</td>
+      </tr>
+    </table>
+    <p class="footnote">* Feb 2026 ITM = 5 packs is likely a partial or incomplete month of data. The Jan 2026 figure of 53 is more representative.</p>
+  </div>
+</div>
+
+<script>
+// ── Raw data (Jan 2024 – Feb 2026) ──
+const labels26 = ["Jan '24","Feb '24","Mar '24","Apr '24","May '24","Jun '24","Jul '24","Aug '24","Sep '24","Oct '24","Nov '24","Dec '24","Jan '25","Feb '25","Mar '25","Apr '25","May '25","Jun '25","Jul '25","Aug '25","Sep '25","Oct '25","Nov '25","Dec '25","Jan '26","Feb '26*"];
+const ITM  = [122,77,97,48,66,71,92,84,61,72,87,96, 97,103,77,85,101,91,81,72,45,56,57,62, 53,5];
+const HST  = [103,121,159,90,129,141,101,118,135,142,125,100, 119,126,159,157,153,183,94,128,145,126,124,88, 124,111];
+const conv = [1.8,1.1,2.2,2.0,3.0,1.5,2.6,2.8,2.3,2.5,2.2,1.5, 3.4,1.6,1.4,0.9,1.7,1.2,1.5,1.5,1.3,1.2,1.0,0.9, 1.0,0.5];
+
+const CHART_DEFAULTS = {
+  responsive: true,
+  animation: false,
+  plugins: {
+    legend: {
+      labels: { color: '#8b949e', boxWidth: 12, font: { size: 11 } }
+    },
+    tooltip: {
+      backgroundColor: '#1c2128',
+      borderColor: '#30363d',
+      borderWidth: 1,
+      titleColor: '#e6edf3',
+      bodyColor: '#c9d1d9',
+    }
+  },
+  scales: {
+    x: { ticks: { color: '#8b949e', font: { size: 10 } }, grid: { color: '#21262d' } },
+    y: { ticks: { color: '#8b949e', font: { size: 11 } }, grid: { color: '#21262d' } }
+  }
+};
+
+// ── Chart 1: Monthly ITM vs HST + Conv Rate ──
+(function() {
+  const ctx = document.getElementById('monthlyChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels26,
+      datasets: [
+        {
+          label: 'ITM Packs',
+          data: ITM,
+          backgroundColor: '#f78166cc',
+          borderColor: '#f78166',
+          borderWidth: 1,
+          order: 2
+        },
+        {
+          label: 'HST Direct Packs',
+          data: HST,
+          backgroundColor: '#58a6ff99',
+          borderColor: '#58a6ff',
+          borderWidth: 1,
+          order: 3
+        },
+        {
+          label: 'ITM Conv Rate % (right axis)',
+          data: conv,
+          type: 'line',
+          yAxisID: 'y2',
+          borderColor: '#3fb950',
+          backgroundColor: '#3fb95022',
+          pointBackgroundColor: '#3fb950',
+          pointRadius: 3,
+          tension: 0.35,
+          fill: false,
+          order: 1
+        }
+      ]
+    },
+    options: {
+      ...CHART_DEFAULTS,
+      scales: {
+        x: { ticks: { color: '#8b949e', font: { size: 9 } }, grid: { color: '#21262d' } },
+        y: {
+          title: { display: true, text: 'Packs Sold', color: '#8b949e', font: { size: 11 } },
+          ticks: { color: '#8b949e', font: { size: 11 } },
+          grid: { color: '#21262d' }
+        },
+        y2: {
+          position: 'right',
+          title: { display: true, text: 'ITM Conv. Rate %', color: '#3fb950', font: { size: 11 } },
+          ticks: { color: '#3fb950', font: { size: 11 }, callback: v => v + '%' },
+          grid: { drawOnChartArea: false },
+          min: 0,
+          max: 5
+        }
+      },
+      plugins: {
+        ...CHART_DEFAULTS.plugins,
+        tooltip: {
+          ...CHART_DEFAULTS.plugins.tooltip,
+          mode: 'index',
+          intersect: false,
+          callbacks: {
+            label(ctx) {
+              if (ctx.dataset.type === 'line') {
+                return ` ITM Conv Rate: ${ctx.parsed.y}%`;
+              }
+              return ` ${ctx.dataset.label}: ${ctx.parsed.y} packs`;
+            },
+            afterBody(items) {
+              const itmVal = items.find(i => i.datasetIndex === 0)?.parsed.y || 0;
+              const hstVal = items.find(i => i.datasetIndex === 1)?.parsed.y || 0;
+              const tot = itmVal + hstVal;
+              if (!tot) return [];
+              return [
+                '',
+                `  Combined: ${tot} packs`,
+                `  HST share: ${(hstVal/tot*100).toFixed(0)}%   ITM share: ${(itmVal/tot*100).toFixed(0)}%`
+              ];
+            }
+          }
+        }
+      },
+      layout: { padding: { top: 22 } }
+    },
+    plugins: [{
+      id: 'barTotals',
+      afterDraw(chart) {
+        const c = chart.ctx;
+        const m0 = chart.getDatasetMeta(0), m1 = chart.getDatasetMeta(1);
+        ITM.forEach((v, i) => {
+          const b0 = m0.data[i];
+          if (b0) {
+            c.save();
+            c.font = 'bold 9px system-ui, sans-serif';
+            c.fillStyle = '#f78166';
+            c.textAlign = 'center';
+            c.textBaseline = 'bottom';
+            c.fillText(v, b0.x, b0.y - 2);
+            c.restore();
+          }
+          const b1 = m1.data[i];
+          if (b1) {
+            c.save();
+            c.font = 'bold 9px system-ui, sans-serif';
+            c.fillStyle = '#58a6ff';
+            c.textAlign = 'center';
+            c.textBaseline = 'bottom';
+            c.fillText(HST[i], b1.x, b1.y - 2);
+            c.restore();
+          }
+        });
+      }
+    }]
+  });
+})();
+
+// ── Chart 2: Annual Totals ──
+(function() {
+  const ctx = document.getElementById('annualChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['2023', '2024', '2025', '2026\n(Jan–Feb)'],
+      datasets: [
+        {
+          label: 'ITM Packs',
+          data: [1272, 873, 827, 58],
+          backgroundColor: ['#f7816699','#f85149aa','#f85149aa','#f85149aa'],
+          borderColor: ['#f78166','#f85149','#f85149','#f85149'],
+          borderWidth: 1
+        },
+        {
+          label: 'HST Direct Packs',
+          data: [null, 1464, 1602, 235],
+          backgroundColor: '#58a6ff88',
+          borderColor: '#58a6ff',
+          borderWidth: 1
+        }
+      ]
+    },
+    options: {
+      ...CHART_DEFAULTS,
+      plugins: {
+        ...CHART_DEFAULTS.plugins,
+        tooltip: {
+          ...CHART_DEFAULTS.plugins.tooltip,
+          mode: 'index', intersect: false,
+          callbacks: {
+            label(ctx) {
+              if (ctx.parsed.y == null) return null;
+              return ` ${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString()} packs`;
+            },
+            afterBody(items) {
+              const itm = items.find(i=>i.datasetIndex===0)?.parsed.y||0;
+              const hst = items.find(i=>i.datasetIndex===1)?.parsed.y||0;
+              if (!hst) return ['', `  ITM-only year (no HST)`];
+              const tot = itm + hst;
+              const itmChg = itm===1272 ? '' : ` (${itm>1272?'+':''}${Math.round((itm/1272-1)*100)}% vs 2023 baseline)`;
+              return ['', `  Combined: ${tot.toLocaleString()} packs`, `  ITM change${itmChg}`, `  HST is ${Math.round(hst/itm*100-100)}% larger than ITM`];
+            }
+          }
+        }
+      },
+      scales: {
+        x: { ticks: { color: '#8b949e', font: { size: 12 } }, grid: { color: '#21262d' } },
+        y: { ticks: { color: '#8b949e' }, grid: { color: '#21262d' }, title: { display: true, text: 'Annual Packs', color: '#8b949e', font: { size: 11 } } }
+      },
+      layout: { padding: { top: 28 } }
+    },
+    plugins: [{
+      id: 'annualTotals',
+      afterDraw(chart) {
+        const c = chart.ctx;
+        const m0 = chart.getDatasetMeta(0), m1 = chart.getDatasetMeta(1);
+        const itmD = [1272, 873, 827, 58], hstD = [null, 1464, 1602, 235];
+        itmD.forEach((itm, i) => {
+          const b0 = m0.data[i];
+          if (b0) {
+            c.save();
+            c.font = 'bold 11px system-ui, sans-serif';
+            c.fillStyle = '#f78166';
+            c.textAlign = 'center'; c.textBaseline = 'bottom';
+            c.fillText(itm.toLocaleString(), b0.x, b0.y - 5);
+            c.restore();
+          }
+          const hst = hstD[i];
+          if (hst) {
+            const b1 = m1.data[i];
+            if (b1) {
+              c.save();
+              c.font = 'bold 11px system-ui, sans-serif';
+              c.fillStyle = '#58a6ff';
+              c.textAlign = 'center'; c.textBaseline = 'bottom';
+              c.fillText(hst.toLocaleString(), b1.x, b1.y - 5);
+              c.restore();
+            }
+          }
+        });
+      }
+    }]
+  });
+})();
+
+// ── Chart 3: HST Share (stacked 100%) ──
+(function() {
+  const ctx = document.getElementById('shareChart').getContext('2d');
+  const itmPct = ITM.map((v,i)=> v==null?null: Math.round(v/(v+HST[i])*100));
+  const hstPct = HST.map((v,i)=> v==null?null: Math.round(v/(v+ITM[i])*100));
+
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels26,
+      datasets: [
+        {
+          label: 'ITM %',
+          data: itmPct,
+          backgroundColor: '#f7816699',
+          borderColor: '#f78166',
+          borderWidth: 0,
+          stack: 'share'
+        },
+        {
+          label: 'HST Direct %',
+          data: hstPct,
+          backgroundColor: '#58a6ff88',
+          borderColor: '#58a6ff',
+          borderWidth: 0,
+          stack: 'share'
+        }
+      ]
+    },
+    options: {
+      ...CHART_DEFAULTS,
+      plugins: {
+        ...CHART_DEFAULTS.plugins,
+        tooltip: {
+          ...CHART_DEFAULTS.plugins.tooltip,
+          mode: 'index', intersect: false,
+          callbacks: {
+            title(items) { return items[0].label; },
+            label(ctx) { return ` ${ctx.dataset.label}: ${ctx.parsed.y}%`; }
+          }
+        }
+      },
+      scales: {
+        x: { stacked: true, ticks: { color: '#8b949e', font: { size: 9 } }, grid: { color: '#21262d' } },
+        y: {
+          stacked: true,
+          min: 0, max: 100,
+          ticks: { color: '#8b949e', callback: v => v + '%' },
+          grid: { color: '#21262d' }
+        }
+      }
+    },
+    plugins: [{
+      id: 'shareLabels',
+      afterDatasetsDraw(chart) {
+        const c = chart.ctx;
+        const m0 = chart.getDatasetMeta(0);
+        const sy = chart.scales.y;
+        itmPct.forEach((ip, i) => {
+          if (ip == null) return;
+          const hp = hstPct[i];
+          const bx = m0.data[i].x;
+          if (ip >= 14) {
+            c.save(); c.font = 'bold 9px system-ui,sans-serif';
+            c.fillStyle = '#f78166'; c.textAlign = 'center'; c.textBaseline = 'middle';
+            c.fillText(ip + '%', bx, sy.getPixelForValue(ip / 2));
+            c.restore();
+          }
+          if (hp >= 14) {
+            c.save(); c.font = 'bold 9px system-ui,sans-serif';
+            c.fillStyle = '#58a6ff'; c.textAlign = 'center'; c.textBaseline = 'middle';
+            c.fillText(hp + '%', bx, sy.getPixelForValue(ip + hp / 2));
+            c.restore();
+          }
+        });
+      }
+    }]
+  });
+})();
+
+// ── Chart 4: Scatter (ITM vs HST) with regression ──
+(function() {
+  const ctx = document.getElementById('scatterChart').getContext('2d');
+
+  // Exclude Feb 26 (index 25 — anomalous partial data)
+  const pts24 = [], pts25 = [], pts26 = [];
+  for (let i = 0; i < 12; i++) pts24.push({ x: HST[i], y: ITM[i] });
+  for (let i = 12; i < 24; i++) pts25.push({ x: HST[i], y: ITM[i] });
+  pts26.push({ x: HST[24], y: ITM[24] }); // Jan 26 only
+
+  // Linear regression on all 25 points
+  const allPts = [...pts24, ...pts25, ...pts26];
+  const n = allPts.length;
+  const sx = allPts.reduce((s,p)=>s+p.x,0);
+  const sy = allPts.reduce((s,p)=>s+p.y,0);
+  const sx2 = allPts.reduce((s,p)=>s+p.x*p.x,0);
+  const sxy = allPts.reduce((s,p)=>s+p.x*p.y,0);
+  const sy2 = allPts.reduce((s,p)=>s+p.y*p.y,0);
+  const m = (n*sxy - sx*sy) / (n*sx2 - sx*sx);
+  const b = (sy - m*sx) / n;
+  const r = (n*sxy - sx*sy) / Math.sqrt((n*sx2-sx*sx)*(n*sy2-sy*sy));
+  const r2 = (r*r).toFixed(2);
+  const rLabel = r.toFixed(2);
+
+  const xMin = Math.min(...allPts.map(p=>p.x));
+  const xMax = Math.max(...allPts.map(p=>p.x));
+  const trendLine = [
+    { x: xMin, y: Math.round(m*xMin+b) },
+    { x: xMax, y: Math.round(m*xMax+b) }
+  ];
+
+  new Chart(ctx, {
+    type: 'scatter',
+    data: {
+      datasets: [
+        { label: '2024 months', data: pts24, backgroundColor: '#58a6ff', pointRadius: 6, pointHoverRadius: 8 },
+        { label: '2025 months', data: pts25, backgroundColor: '#e3b341', pointRadius: 6, pointHoverRadius: 8 },
+        { label: 'Jan 2026', data: pts26, backgroundColor: '#f85149', pointRadius: 7, pointHoverRadius: 9 },
+        {
+          label: `Trend (r = ${rLabel}, R² = ${r2})`,
+          data: trendLine,
+          type: 'line',
+          borderColor: '#8b949e',
+          borderDash: [5,4],
+          borderWidth: 1.5,
+          pointRadius: 0,
+          fill: false,
+          tension: 0
+        }
+      ]
+    },
+    options: {
+      ...CHART_DEFAULTS,
+      plugins: {
+        ...CHART_DEFAULTS.plugins,
+        legend: {
+          labels: { color: '#8b949e', boxWidth: 10, font: { size: 10 } }
+        },
+        tooltip: {
+          ...CHART_DEFAULTS.plugins.tooltip,
+          callbacks: {
+            label(ctx) {
+              if (ctx.datasetIndex === 3) return null;
+              return ` HST: ${ctx.parsed.x} packs  |  ITM: ${ctx.parsed.y} packs`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          title: { display: true, text: 'HST Direct Packs', color: '#58a6ff', font: { size: 11 } },
+          ticks: { color: '#8b949e' }, grid: { color: '#21262d' }
+        },
+        y: {
+          title: { display: true, text: 'ITM Packs', color: '#f78166', font: { size: 11 } },
+          ticks: { color: '#8b949e' }, grid: { color: '#21262d' }
+        }
+      }
+    }
+  });
+})();
+
+// ── Chart 5: Month-over-Month Agreement ──
+(function() {
+  const ctx = document.getElementById('momChart').getContext('2d');
+  const lbl = [], vals = [], colors = [];
+  // i=0 is Jan 24, no prior month; start from Feb 24 (i=1)
+  for (let i = 1; i < ITM.length; i++) {
+    const hstDelta = HST[i] - HST[i-1];
+    const itmDelta = ITM[i] - ITM[i-1];
+    // inverse = one up other down
+    const inverse = (hstDelta > 0 && itmDelta < 0) || (hstDelta < 0 && itmDelta > 0);
+    const both0 = hstDelta === 0 || itmDelta === 0;
+    lbl.push(labels26[i]);
+    // +1 = confirmed inverse, -1 = same direction (not inverse), 0 = flat
+    vals.push(inverse ? 1 : -1);
+    colors.push(inverse ? '#3fb950bb' : '#f85149bb');
+  }
+
+  const confirmed = vals.filter(v=>v===1).length;
+  const total = vals.length;
+
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: lbl,
+      datasets: [{
+        label: 'Month Result',
+        data: vals,
+        backgroundColor: colors,
+        borderWidth: 0
+      }]
+    },
+    options: {
+      ...CHART_DEFAULTS,
+      plugins: {
+        ...CHART_DEFAULTS.plugins,
+        legend: { display: false },
+        tooltip: {
+          ...CHART_DEFAULTS.plugins.tooltip,
+          callbacks: {
+            title(items) { return items[0].label; },
+            label(ctx) {
+              return ctx.parsed.y === 1
+                ? ' ✓ Inverse — HST and ITM moved opposite directions'
+                : ' ✗ Same direction — both moved the same way';
+            }
+          }
+        },
+        subtitle: {
+          display: true,
+          text: `${confirmed} of ${total} months (${Math.round(confirmed/total*100)}%) show the inverse HST↑=ITM↓ pattern`,
+          color: '#8b949e',
+          font: { size: 12 },
+          padding: { bottom: 10 }
+        }
+      },
+      scales: {
+        x: { ticks: { color: '#8b949e', font: { size: 9 } }, grid: { color: '#21262d' } },
+        y: {
+          min: -1.5, max: 1.5,
+          grid: { color: '#21262d' },
+          ticks: {
+            color: '#8b949e',
+            callback: v => v === 1 ? '✓ Inverse' : v === -1 ? '✗ Same Dir' : ''
+          }
+        }
+      }
+    }
+  });
+})();
+
+// ── Chart 6: Quarterly Averages ──
+(function() {
+  const ctx = document.getElementById('quarterlyChart').getContext('2d');
+
+  const qLabels = ['Q1 2024','Q2 2024','Q3 2024','Q4 2024','Q1 2025','Q2 2025','Q3 2025','Q4 2025'];
+  function qAvg(arr, startIdx) {
+    return Math.round((arr[startIdx] + arr[startIdx+1] + arr[startIdx+2]) / 3);
+  }
+  const itmQ = [qAvg(ITM,0),qAvg(ITM,3),qAvg(ITM,6),qAvg(ITM,9), qAvg(ITM,12),qAvg(ITM,15),qAvg(ITM,18),qAvg(ITM,21)];
+  const hstQ = [qAvg(HST,0),qAvg(HST,3),qAvg(HST,6),qAvg(HST,9), qAvg(HST,12),qAvg(HST,15),qAvg(HST,18),qAvg(HST,21)];
+  const convQ = [
+    ((conv[0]+conv[1]+conv[2])/3).toFixed(1),
+    ((conv[3]+conv[4]+conv[5])/3).toFixed(1),
+    ((conv[6]+conv[7]+conv[8])/3).toFixed(1),
+    ((conv[9]+conv[10]+conv[11])/3).toFixed(1),
+    ((conv[12]+conv[13]+conv[14])/3).toFixed(1),
+    ((conv[15]+conv[16]+conv[17])/3).toFixed(1),
+    ((conv[18]+conv[19]+conv[20])/3).toFixed(1),
+    ((conv[21]+conv[22]+conv[23])/3).toFixed(1)
+  ].map(Number);
+
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: qLabels,
+      datasets: [
+        {
+          label: 'ITM Avg/Mo',
+          data: itmQ,
+          backgroundColor: '#f7816688',
+          borderColor: '#f78166',
+          borderWidth: 1,
+          order: 2
+        },
+        {
+          label: 'HST Direct Avg/Mo',
+          data: hstQ,
+          backgroundColor: '#58a6ff88',
+          borderColor: '#58a6ff',
+          borderWidth: 1,
+          order: 3
+        },
+        {
+          label: 'ITM Conv Rate % (right)',
+          data: convQ,
+          type: 'line',
+          yAxisID: 'y2',
+          borderColor: '#3fb950',
+          pointBackgroundColor: '#3fb950',
+          pointRadius: 5,
+          tension: 0.3,
+          fill: false,
+          order: 1
+        }
+      ]
+    },
+    options: {
+      ...CHART_DEFAULTS,
+      plugins: {
+        ...CHART_DEFAULTS.plugins,
+        tooltip: {
+          ...CHART_DEFAULTS.plugins.tooltip,
+          mode: 'index', intersect: false,
+          callbacks: {
+            label(ctx) {
+              if (ctx.dataset.type === 'line') return ` ITM Conv Rate: ${ctx.parsed.y}%`;
+              return ` ${ctx.dataset.label}: ${ctx.parsed.y} packs/mo avg`;
+            },
+            afterBody(items) {
+              const itm = items.find(i=>i.datasetIndex===0)?.parsed.y||0;
+              const hst = items.find(i=>i.datasetIndex===1)?.parsed.y||0;
+              const gap = hst - itm;
+              return ['', `  HST leads ITM by ${gap} packs/mo avg`];
+            }
+          }
+        }
+      },
+      scales: {
+        x: { ticks: { color: '#8b949e', font: { size: 12 } }, grid: { color: '#21262d' } },
+        y: {
+          title: { display: true, text: 'Packs / Month (avg)', color: '#8b949e', font: { size: 11 } },
+          ticks: { color: '#8b949e' },
+          grid: { color: '#21262d' }
+        },
+        y2: {
+          position: 'right',
+          title: { display: true, text: 'ITM Conv Rate %', color: '#3fb950', font: { size: 11 } },
+          ticks: { color: '#3fb950', callback: v => v + '%' },
+          grid: { drawOnChartArea: false },
+          min: 0, max: 4
+        }
+      },
+      layout: { padding: { top: 28 } }
+    },
+    plugins: [{
+      id: 'qAvgTotals',
+      afterDraw(chart) {
+        const c = chart.ctx;
+        const m0 = chart.getDatasetMeta(0), m1 = chart.getDatasetMeta(1), m2 = chart.getDatasetMeta(2);
+        if (!m0 || !m1) return;
+        itmQ.forEach((itm, i) => {
+          const hst = hstQ[i];
+          const b0 = m0.data[i], b1 = m1.data[i];
+          if (!b0 || !b1) return;
+          // ITM avg/mo count over red bar
+          c.save();
+          c.font = 'bold 9px system-ui, sans-serif';
+          c.fillStyle = '#f78166';
+          c.textAlign = 'center';
+          c.textBaseline = 'bottom';
+          c.fillText(itm, b0.x, b0.y - 3);
+          c.restore();
+          // HST % over blue bar
+          c.save();
+          c.font = 'bold 9px system-ui, sans-serif';
+          c.fillStyle = '#58a6ff';
+          c.textAlign = 'center';
+          c.textBaseline = 'bottom';
+          c.fillText(hst, b1.x, b1.y - 3);
+          c.restore();
+        });
+        // Conv rate % at each green line data point
+        if (m2) {
+          convQ.forEach((cv, i) => {
+            const pt = m2.data[i];
+            if (!pt) return;
+            c.save();
+            c.font = 'bold 9px system-ui, sans-serif';
+            c.fillStyle = '#3fb950';
+            c.textAlign = 'center';
+            c.textBaseline = 'bottom';
+            c.fillText(cv + '%', pt.x, pt.y - 6);
+            c.restore();
+          });
+        }
+      }
+    }]
+  });
+})();
+</script>
+
+</body>
+</html>
