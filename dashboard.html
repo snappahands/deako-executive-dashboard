@@ -439,6 +439,44 @@
     .itm-edit-split { display: flex; gap: 2px; }
     .itm-edit-split-input { flex: 1; min-width: 0; background: var(--bg); border: 1px solid var(--border-lt); border-radius: 3px; color: var(--text-dim); font-size: 9px; padding: 2px 1px; text-align: center; box-sizing: border-box; }
     .itm-edit-split-input:focus { outline: none; border-color: var(--teal); }
+
+    /* ── BUILDER TYPE TOGGLE ── */
+    .builder-type-toggle {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 18px;
+      padding: 12px 18px;
+      background: var(--card-alt);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+    .toggle-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-right: 4px;
+    }
+    /* ── DRH QUAD / SECTION DIVIDERS ── */
+    .drh-quad-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-top: 8px;
+    }
+    .drh-quad-wrap { height: 195px !important; min-height: 195px; }
+    .drh-section-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      margin: 24px 0 8px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border);
+    }
   </style>
 </head>
 <body>
@@ -451,17 +489,27 @@
   <div class="header-right">
     <div class="header-date" id="headerDate"></div>
     <div class="header-period" id="headerPeriod"></div>
-    <div style="font-size:11px;color:var(--teal);margin-top:4px;letter-spacing:.04em;font-weight:700">v3.2</div>
+    <div style="font-size:11px;color:var(--teal);margin-top:4px;letter-spacing:.04em;font-weight:700">v3.4</div>
   </div>
 </header>
 
 <div class="container">
 
+  <!-- ── BUILDER TYPE TOGGLE ── -->
+  <div class="builder-type-toggle">
+    <span class="toggle-label">View:</span>
+    <button id="btnMedBuilders" class="btn btn-primary" onclick="setBuilderType('medium')">Medium Builders</button>
+    <button id="btnLargeBuilders" class="btn btn-ghost" onclick="setBuilderType('large')">Large Builders (DRH)</button>
+  </div>
+
+  <!-- ── MEDIUM BUILDER SECTIONS ── -->
+  <div id="medBuilderSections">
+
   <!-- ── SECTION 1: CHARTS ── -->
   <div class="section">
     <div class="section-header">
       <div>
-        <div class="section-title">Bookings &amp; Revenue Performance</div>
+        <div class="section-title">Medium Builder Bookings &amp; Revenue Performance</div>
         <div class="section-sub">Monthly &amp; quarterly comparison — 2025 vs 2026</div>
       </div>
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
@@ -501,7 +549,7 @@
   <div class="section">
     <div class="section-header">
       <div>
-        <div class="section-title">Key Performance Metrics</div>
+        <div class="section-title">Medium Builder Key Performance Metrics</div>
         <div class="section-sub">YTD actuals vs AOP · YoY comparison · Forward estimates</div>
       </div>
       <button class="btn btn-outline" onclick="openModal('goals')">&#9998; Edit Goals &amp; AOP</button>
@@ -510,6 +558,137 @@
       <div id="metricsContainer"></div>
     </div>
   </div>
+
+  </div><!-- end #medBuilderSections -->
+
+  <!-- ── LARGE BUILDER (DRH) SECTIONS ── -->
+  <div id="drhBuilderSections" style="display:none">
+
+  <!-- DRH SECTION A: BOOKINGS & REVENUE PERFORMANCE -->
+  <div class="section">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Large Builder Bookings &amp; Revenue Performance</div>
+        <div class="section-sub">DRH monthly actuals — 2025 vs 2026</div>
+      </div>
+    </div>
+    <div class="section-body">
+      <div class="charts-grid">
+        <div class="chart-card">
+          <div class="chart-title">Monthly Bookings ($K)</div>
+          <div class="chart-wrap"><canvas id="drhMonthlyBookings"></canvas></div>
+          <div class="chart-note" id="drhNoteMonthly"></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Monthly Revenue ($K)</div>
+          <div class="chart-wrap"><canvas id="drhMonthlyRevenue"></canvas></div>
+          <div class="chart-note" style="font-style:italic">Revenue data pending — placeholder view</div>
+        </div>
+      </div>
+      <div class="drh-section-label">Total Bookings — Year-over-Year by Quarter</div>
+      <div class="drh-quad-grid">
+        <div class="chart-card">
+          <div class="chart-title">Q1 &middot; Jan / Feb / Mar</div>
+          <div class="chart-wrap drh-quad-wrap"><canvas id="drhQ1Yoy"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Q2 &middot; Apr / May / Jun</div>
+          <div class="chart-wrap drh-quad-wrap"><canvas id="drhQ2Yoy"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Q3 &middot; Jul / Aug / Sep</div>
+          <div class="chart-wrap drh-quad-wrap"><canvas id="drhQ3Yoy"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Q4 &middot; Oct / Nov / Dec</div>
+          <div class="chart-wrap drh-quad-wrap"><canvas id="drhQ4Yoy"></canvas></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DRH SECTION B: KEY PERFORMANCE METRICS -->
+  <div class="section">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Large Builder Key Performance Metrics</div>
+        <div class="section-sub">YTD actuals · YoY comparison · Forward estimates</div>
+      </div>
+    </div>
+    <div class="section-body">
+      <div id="drhMetrics"></div>
+      <div class="drh-section-label">Bookings by Category &amp; Pipeline</div>
+      <div class="charts-grid">
+        <div class="chart-card">
+          <div class="chart-title">Bookings by Category ($K) — Jan 2025 to Mar 2026</div>
+          <div class="chart-wrap"><canvas id="drhCatStack"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Home Starts &amp; Closes — Jan 2025 to Mar 2026</div>
+          <div class="chart-wrap"><canvas id="drhStartsCloses"></canvas></div>
+        </div>
+      </div>
+      <div class="drh-section-label">Home Starts — Year-over-Year by Quarter</div>
+      <div class="drh-quad-grid">
+        <div class="chart-card">
+          <div class="chart-title">Q1 Starts &middot; Jan / Feb / Mar</div>
+          <div class="chart-wrap drh-quad-wrap"><canvas id="drhQ1Starts"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Q2 Starts &middot; Apr / May / Jun</div>
+          <div class="chart-wrap drh-quad-wrap"><canvas id="drhQ2Starts"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Q3 Starts &middot; Jul / Aug / Sep</div>
+          <div class="chart-wrap drh-quad-wrap"><canvas id="drhQ3Starts"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Q4 Starts &middot; Oct / Nov / Dec</div>
+          <div class="chart-wrap drh-quad-wrap"><canvas id="drhQ4Starts"></canvas></div>
+        </div>
+      </div>
+      <div class="drh-section-label">Home Closes — Year-over-Year by Quarter</div>
+      <div class="drh-quad-grid">
+        <div class="chart-card">
+          <div class="chart-title">Q1 Closes &middot; Jan / Feb / Mar</div>
+          <div class="chart-wrap drh-quad-wrap"><canvas id="drhQ1Closes"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Q2 Closes &middot; Apr / May / Jun</div>
+          <div class="chart-wrap drh-quad-wrap"><canvas id="drhQ2Closes"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Q3 Closes &middot; Jul / Aug / Sep</div>
+          <div class="chart-wrap drh-quad-wrap"><canvas id="drhQ3Closes"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Q4 Closes &middot; Oct / Nov / Dec</div>
+          <div class="chart-wrap drh-quad-wrap"><canvas id="drhQ4Closes"></canvas></div>
+        </div>
+      </div>
+      <div class="drh-section-label">2026 Category Mix by Quarter</div>
+      <div class="drh-quad-grid">
+        <div class="chart-card">
+          <div class="chart-title">Q1 Category Mix</div>
+          <div class="chart-wrap" style="height:240px"><canvas id="drhDonut"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Q2 Category Mix</div>
+          <div class="chart-wrap" style="height:240px"><canvas id="drhDonutQ2"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Q3 Category Mix</div>
+          <div class="chart-wrap" style="height:240px"><canvas id="drhDonutQ3"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Q4 Category Mix</div>
+          <div class="chart-wrap" style="height:240px"><canvas id="drhDonutQ4"></canvas></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  </div><!-- end #drhBuilderSections -->
 
   <!-- ── SECTION 3: MODEL HOME EXPERIENCE ── -->
   <div class="section">
@@ -618,16 +797,16 @@ const BUILDERS = [
     b26:[0,0,0,0,0,0,0,0,0,0,0,0] },
   { key:'maronda',       name:'Maronda Homes',
     b25:[14.961,27.474,59.284,72.374,114.938,100.662,96.734,104.300,75.401,97.734,69.060,76.887],
-    b26:[125.192,84.621,94.881,0,0,0,0,0,0,0,0,0] },
+    b26:[125.141,84.621,93.015,9.112,0,0,0,0,0,0,0,0] },
   { key:'stonemartin',   name:'Stone Martin Builders',
     b25:[63.719,76.387,64.622,73.992,50.473,69.293,71.561,49.168,58.903,53.400,46.328,29.848],
-    b26:[56.486,86.723,80.265,0,0,0,0,0,0,0,0,0] },
+    b26:[56.486,86.723,80.265,20.365,0,0,0,0,0,0,0,0] },
   { key:'hc_okc',        name:'Home Creations - OKC',
     b25:[0.321,0,1.764,5.144,9.184,11.082,14.477,11.515,10.812,11.208,18.342,9.170],
-    b26:[7.016,5.585,10.437,0,0,0,0,0,0,0,0,0] },
+    b26:[7.016,5.585,12.009,0.503,0,0,0,0,0,0,0,0] },
   { key:'candlelight',   name:'Candlelight Homes',
     b25:[0.950,3.325,3.984,1.992,5.478,1.701,14.442,21.858,9.900,12.650,4.400,2.750],
-    b26:[7.150,4.950,5.500,0,0,0,0,0,0,0,0,0] },
+    b26:[7.150,4.950,5.500,2.750,0,0,0,0,0,0,0,0] },
   { key:'hc_houston',    name:'Home Creations - Houston',
     b25:[1.938,4.132,7.894,3.705,6.886,7.043,3.282,3.542,8.110,4.878,6.034,0.948],
     b26:[1.620,0.669,0.530,0,0,0,0,0,0,0,0,0] },
@@ -677,14 +856,14 @@ const BUILDERS = [
 
 // __DATA_START__
 const DEFAULTS = {
-  dataVersion: 6,  // bump this whenever monthly/goals data changes to bust localStorage cache
+  dataVersion: 7,  // bump this whenever monthly/goals data changes to bust localStorage cache
   monthly: {
     // Bookings: full-year actuals from Justin Bookings Table row 58
-    bookings2026: [218.909, 206.701, 214.055, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    bookings2025: [88.1, 117.5, 148.4, 187.177, 211.8, 227.6, 240.345, 243.447, 188.344, 224.0, 162.8, 159.5],
+    bookings2026: [218.858, 206.701, 213.854, 33.418, 0, 0, 0, 0, 0, 0, 0, 0],
+    bookings2025: [88.104, 117.541, 148.386, 187.128, 211.729, 227.547, 240.187, 243.327, 188.220, 223.398, 161.607, 159.140],
     // Revenue: full-year actuals from Justin Bookings Table row 58
-    revenue2026:  [218.9, 206.7, 214.1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    revenue2025:  [88.1, 117.5, 148.4, 187.177, 211.8, 227.6, 240.345, 243.447, 188.344, 224.0, 162.8, 159.5],
+    revenue2026:  [218.858, 206.701, 213.854, 33.418, 0, 0, 0, 0, 0, 0, 0, 0],
+    revenue2025:  [88.104, 117.541, 148.386, 187.128, 211.729, 227.547, 240.187, 243.327, 188.220, 223.398, 161.607, 159.140],
   },
   goals: {
     aopBookings:       2616.5,  // 2026 AOP — BM row 59
@@ -1942,6 +2121,581 @@ function saveCustomPoint(isEdit) {
   if (isEdit && editCustomIdx !== null) D.customPoints[editCustomIdx] = pt;
   else D.customPoints.push(pt);
   saveData();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  LARGE BUILDER (DRH) DATA
+// ═══════════════════════════════════════════════════════════
+const DRH_DATA = {
+  labels27: [
+    'Jan 24','Feb 24','Mar 24','Apr 24','May 24','Jun 24','Jul 24','Aug 24','Sep 24','Oct 24','Nov 24','Dec 24',
+    'Jan 25','Feb 25','Mar 25','Apr 25','May 25','Jun 25','Jul 25','Aug 25','Sep 25','Oct 25','Nov 25','Dec 25',
+    'Jan 26','Feb 26','Mar 26'
+  ],
+  // 4SS — Smart Switch 4-pack bookings ($K)
+  fss:   [876.6,824.8,681.2,576.2,923.6,737.4,541.8,610.4,534.7,600.2,530.0,550.0,
+          603.2,624.8,625.6,795.4,739.4,566.4,495.4,406.0,359.8,287.8,135.3,113.1,
+          79.7,44.7,61.7],
+  // 1SS — Smart Switch 1-pack bookings ($K)
+  oss:   [0,0,0,174.3,916.2,330.8,1900.0,287.1,257.3,317.9,299.1,313.2,
+          338.2,338.7,352.8,457.8,432.7,322.5,279.8,212.2,224.3,326.9,375.1,457.1,
+          407.4,317.6,342.1],
+  // ITM — In-the-moment pack bookings ($K)
+  itm:   [152.3,176.6,162.2,120.4,164.3,54.0,62.2,64.5,60.8,77.5,43.3,53.8,
+          51.0,75.3,71.5,89.1,85.3,74.1,83.8,78.2,59.3,40.1,42.2,29.5,
+          47.3,39.3,45.7],
+  // Incentive/Spec ($K)
+  inc:   [112.8,58.3,53.3,30.9,42.9,11.5,22.6,20.2,37.7,34.6,19.1,26.8,
+          51.0,45.2,60.8,50.5,39.5,43.6,60.2,40.0,44.9,33.9,21.2,36.9,
+          44.2,47.5,27.0],
+  // Model home packs ($K)
+  mdl:   [21.6,18.2,19.4,14.4,12.7,18.9,25.2,20.8,17.8,13.9,13.8,19.8,
+          20.4,24.9,18.6,29.4,12.0,18.1,13.4,11.2,15.3,21.1,6.3,11.2,
+          5.9,4.3,7.3],
+  // Total Booked ($K)
+  total: [1163.3,1077.9,916.1,741.9,1143.5,821.8,651.8,715.9,651.0,726.2,606.2,650.4,
+          725.6,770.2,776.5,1006.3,886.1,711.5,687.5,564.0,493.9,418.9,218.9,206.7,
+          600.5,461.8,502.6],
+  // Home Starts MTD (units)
+  starts:[6374,7765,8655,9923,7759,7188,6753,7058,5987,5856,6159,7239,
+          6493,6410,7043,8906,8694,6458,5683,4481,4402,5212,5616,6527,
+          6120,5904,5288],
+  // Home Closes MTD (units)
+  closes:[4890,6539,9519,5895,7290,9194,7671,7388,8796,5558,5725,6852,
+          5052,5717,7852,6210,7534,9018,6652,6947,10336,5249,4950,7482,
+          4402,5669,8455],
+};
+
+// ═══════════════════════════════════════════════════════════
+//  BUILDER TYPE TOGGLE
+// ═══════════════════════════════════════════════════════════
+let activeBuilderType = 'medium';
+let drhRendered = false;
+const drhCharts = {};
+
+function setBuilderType(type) {
+  activeBuilderType = type;
+  document.getElementById('medBuilderSections').style.display = type === 'medium' ? '' : 'none';
+  document.getElementById('drhBuilderSections').style.display = type === 'large' ? '' : 'none';
+  const btnMed   = document.getElementById('btnMedBuilders');
+  const btnLarge = document.getElementById('btnLargeBuilders');
+  if (type === 'medium') {
+    btnMed.className   = 'btn btn-primary';
+    btnLarge.className = 'btn btn-ghost';
+  } else {
+    btnLarge.className = 'btn btn-primary';
+    btnMed.className   = 'btn btn-ghost';
+    if (!drhRendered) { renderDrhSection(); drhRendered = true; }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  DRH CHART RENDERING
+// ═══════════════════════════════════════════════════════════
+function renderDrhSection() {
+  renderDrhMetrics();
+  renderDrhCharts();
+}
+
+function renderDrhMetrics() {
+  const d = DRH_DATA;
+  const now = new Date();
+  const month = now.getMonth();  // 0-indexed
+  const day   = now.getDate();
+  const daysInMonth = new Date(now.getFullYear(), month + 1, 0).getDate();
+  const qIdx  = Math.floor(month / 3);
+  const qStart = qIdx * 3;
+
+  // Build 12-month 2026 / 2025 arrays from DRH_DATA.total
+  const b26 = Array.from({length:12}, (_,i) => { const si = 24+i; return si < d.total.length ? d.total[si] : 0; });
+  const b25 = d.total.slice(12, 24);
+
+  const ytdB26 = b26.slice(0, month+1).reduce((a,v)=>a+v, 0);
+  const ytdB25 = b25.slice(0, month+1).reduce((a,v)=>a+v, 0);
+  const yoyB   = ytdB25 > 0 ? (ytdB26-ytdB25)/ytdB25*100 : 0;
+
+  const qB26 = [0,1,2,3].map(q => b26.slice(q*3,q*3+3).reduce((a,v)=>a+v,0));
+  const qB25 = [0,1,2,3].map(q => b25.slice(q*3,q*3+3).reduce((a,v)=>a+v,0));
+
+  let daysElapsedQ = 0, totalDaysQ = 0;
+  for (let m = qStart; m < qStart+3; m++) {
+    const dim = new Date(now.getFullYear(), m+1, 0).getDate();
+    totalDaysQ += dim;
+    if (m < month) daysElapsedQ += dim;
+    else if (m === month) daysElapsedQ += day;
+  }
+  let dayOfYear = 0;
+  for (let m = 0; m < month; m++) dayOfYear += new Date(now.getFullYear(), m+1, 0).getDate();
+  dayOfYear += day;
+  const isLeap = (now.getFullYear()%4===0&&now.getFullYear()%100!==0)||now.getFullYear()%400===0;
+  const daysInYear = isLeap ? 366 : 365;
+  const extr = (v, e, t) => e > 0 ? Math.round(v/e*t) : 0;
+
+  const qCur = b26.slice(qStart, month+1).reduce((a,v)=>a+v, 0);
+  const est = {
+    monthEnd: extr(b26[month]||0, day, daysInMonth),
+    qEnd:     extr(qCur, daysElapsedQ, totalDaysQ),
+    yearEnd:  extr(ytdB26, dayOfYear, daysInYear),
+  };
+
+  function pctBar(pct, color) {
+    return `<div class="prog-wrap"><div class="prog-fill" style="width:${Math.min(pct,100)}%;background:${color}"></div></div>`;
+  }
+  function metricBlock(label, content) {
+    return `<div class="metrics-block"><div class="metrics-block-label">${label}</div>${content}</div>`;
+  }
+  function cardRow(cards, cls='') { return `<div class="metrics-grid ${cls}">${cards}</div>`; }
+  function subLabel(text) { return `<div class="metrics-sub-label">${text}</div>`; }
+  function card(label, val, valCls, sub, extra='') {
+    return `<div class="metric-card"><div class="metric-label">${label}</div><div class="metric-value ${valCls}">${val}</div><div class="metric-sub">${sub}</div>${extra}</div>`;
+  }
+  function cardCompact(label, val, valCls, sub, delta=null) {
+    const dh = delta !== null
+      ? `<div class="metric-sub xs" style="color:${delta>=0?'var(--teal)':'var(--pink)'};font-weight:700;margin-top:2px">${delta>=0?'+':''}${fcr(delta)}</div>`
+      : '';
+    return `<div class="metric-card compact"><div class="metric-label sm">${label}</div><div class="metric-value xs ${valCls}">${val}</div><div class="metric-sub xs">${sub}</div>${dh}</div>`;
+  }
+
+  const qName = QUARTERS[qIdx];
+
+  // Main bookings row
+  const bookingsMain =
+    card('2026 YTD Booked', '$'+Math.round(ytdB26*1000).toLocaleString(), 'sm', 'DRH Large Builder YTD') +
+    card('YoY vs 2025', (yoyB>=0?'+':'')+yoyB.toFixed(1)+'%', yoyB>=0?'pos':'neg', `2025 same period: ${fc(ytdB25)}`) +
+    card('Est. Month End', fn(est.monthEnd), 'sm', `${day} / ${daysInMonth} days elapsed`) +
+    card(`Est. ${qName} End`, fn(est.qEnd), 'sm', `${daysElapsedQ} / ${totalDaysQ} days elapsed`) +
+    card('Est. Year End', fn(est.yearEnd), 'sm', `Day ${dayOfYear} of ${daysInYear}`);
+
+  function daysTo(y, m, d_) {
+    const today = new Date(); today.setHours(0,0,0,0);
+    const target = new Date(y, m, d_); target.setHours(0,0,0,0);
+    return Math.max(0, Math.ceil((target-today)/86400000));
+  }
+  const QNAMES = ['Q1 26','Q2 26','Q3 26','Q4 26'];
+  let bookingsQtrly = '';
+  for (let q = 0; q < 4; q++) {
+    const qm0 = q*3, qSum = qB26[q], qSum25 = qB25[q];
+    const daysLeft = daysTo(now.getFullYear(), qm0+3, 0);
+    const isPast = q < qIdx, isCur = q === qIdx;
+    const val   = qSum > 0 ? fc(qSum) : '—';
+    const cls   = isPast ? 'pos' : isCur ? 'sm' : 'dim';
+    const sub   = isPast ? 'Completed ✓' : isCur ? `${daysLeft} days to Q end` : '—';
+    const delta = (isPast||isCur) && qSum > 0 ? qSum-qSum25 : null;
+    bookingsQtrly += cardCompact(QNAMES[q], val, cls, sub, delta);
+  }
+
+  const MLBLS = ['Jan 26','Feb 26','Mar 26','Apr 26','May 26','Jun 26','Jul 26','Aug 26','Sep 26','Oct 26','Nov 26','Dec 26'];
+  let bookingsMonthly = '';
+  for (let m = 0; m < 12; m++) {
+    const v26 = b26[m], v25 = b25[m];
+    const isPast = m < month, isCur = m === month;
+    const daysLeft = isCur ? daysInMonth-day : 0;
+    const val   = (isPast||isCur) && v26 > 0 ? fc(v26) : '—';
+    const cls   = isPast ? 'pos' : isCur ? 'sm' : 'dim';
+    const sub   = isPast ? 'Completed' : isCur ? `${daysLeft} days left` : '—';
+    const delta = (isPast||isCur) && v26 > 0 ? v26-v25 : null;
+    bookingsMonthly += cardCompact(MLBLS[m], val, cls, sub, delta);
+  }
+
+  // Revenue block — placeholder until data arrives
+  const revCards =
+    card('2026 YTD Revenue', '—', 'dim', 'Revenue data pending') +
+    card('% to AOP', '—', 'dim', 'AOP target pending') +
+    card('YoY vs 2025', '—', 'dim', 'Revenue data pending') +
+    card('Est. Month End', '—', 'dim', 'Revenue data pending') +
+    card('Est. Q End', '—', 'dim', 'Revenue data pending') +
+    card('Est. Year End', '—', 'dim', 'Revenue data pending');
+
+  document.getElementById('drhMetrics').innerHTML =
+    metricBlock('Bookings',
+      cardRow(bookingsMain) +
+      subLabel('Quarterly YTD') +
+      cardRow(bookingsQtrly, 'metrics-grid-4') +
+      subLabel('Monthly') +
+      cardRow(bookingsMonthly, 'metrics-grid-12')
+    ) +
+    '<div class="divider"></div>' +
+    metricBlock('Revenue', cardRow(revCards));
+}
+
+function drhMakeBar(id, labels, datasets, fmtFn, stacked, deltas) {
+  const ctx = document.getElementById(id).getContext('2d');
+  if (drhCharts[id]) drhCharts[id].destroy();
+  drhCharts[id] = new Chart(ctx, {
+    type: 'bar',
+    data: { labels, datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      layout: { padding: { top: deltas ? 22 : 4 } },
+      plugins: {
+        legend: { position:'top', labels:{ font:{size:11}, boxWidth:12, padding:8, color:'#6b8299' } },
+        tooltip: {
+          backgroundColor:'#1a2535', borderColor:'#1e3048', borderWidth:1,
+          titleColor:'#e2edf7', bodyColor:'#6b8299',
+          callbacks: { label: c => ` ${c.dataset.label}: ${fmtFn(c.raw)}` }
+        },
+        datalabels: deltas ? {
+          display: (ctx) => ctx.datasetIndex === datasets.length - 1 && ctx.dataset.data[ctx.dataIndex] > 0,
+          formatter: (value, ctx) => {
+            const d = deltas[ctx.dataIndex];
+            if (d === null || d === undefined) return '';
+            return (d >= 0 ? '+' : '') + fmtFn(d);
+          },
+          color: (ctx) => (deltas[ctx.dataIndex] ?? 0) >= 0 ? '#3ecfc6' : '#e8728a',
+          anchor:'end', align:'top', font:{ size:9, weight:'700' }, padding:{ bottom:2 }
+        } : { display: false }
+      },
+      scales: {
+        x: { stacked: !!stacked, grid:{display:false}, ticks:{font:{size:10},color:'#4a6278'}, border:{color:'#1e3048'} },
+        y: { stacked: !!stacked, grid:{color:'rgba(30,48,72,0.8)'}, ticks:{font:{size:11},color:'#4a6278',callback:v=>fmtFn(v)}, border:{color:'#1e3048'} }
+      }
+    }
+  });
+}
+
+function renderDrhCharts() {
+  const d = DRH_DATA;
+  const idx = Array.from({length:15},(_,i)=>i+12);
+  const lbl = idx.map(i=>d.labels27[i]);
+  const ttBase = { backgroundColor:'#1a2535', borderColor:'#1e3048', borderWidth:1, titleColor:'#e2edf7', bodyColor:'#6b8299' };
+
+  // ── MONTHLY BOOKINGS (2025 vs 2026, same style as Medium Builder) ──
+  {
+    const b25m = d.total.slice(12, 24);
+    const b26m = Array.from({length:12}, (_,i) => { const si=24+i; return si<d.total.length?d.total[si]:0; });
+    const deltas = b26m.map((v,i) => v > 0 ? v - b25m[i] : null);
+    const ctx = document.getElementById('drhMonthlyBookings').getContext('2d');
+    if (drhCharts['drhMonthlyBookings']) drhCharts['drhMonthlyBookings'].destroy();
+    drhCharts['drhMonthlyBookings'] = new Chart(ctx, {
+      type: 'bar',
+      data: { labels: MONTHS, datasets: [
+        { label:'2025', data:b25m, backgroundColor:'rgba(232,114,138,0.45)', borderRadius:4 },
+        { label:'2026', data:b26m, backgroundColor:'rgba(62,207,198,0.88)',  borderRadius:4 },
+      ]},
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        layout:{ padding:{ top:22 } },
+        plugins: {
+          legend:{ position:'top', labels:{ font:{size:11}, boxWidth:12, padding:8, color:'#6b8299' } },
+          tooltip: { ...ttBase, mode:'index', intersect:false, callbacks:{ label:c=>` ${c.dataset.label}: ${fc(c.raw)}` } },
+          datalabels: {
+            display: (ctx) => ctx.datasetIndex===1 && ctx.dataset.data[ctx.dataIndex]>0,
+            formatter: (v,ctx) => { const d2=deltas[ctx.dataIndex]; return d2==null?'':(d2>=0?'+':'')+fcr(d2); },
+            color: (ctx) => (deltas[ctx.dataIndex]??0)>=0?'#3ecfc6':'#e8728a',
+            anchor:'end', align:'top', font:{size:9,weight:'700'}
+          }
+        },
+        scales: {
+          x:{ grid:{display:false}, ticks:{font:{size:11},color:'#4a6278'}, border:{color:'#1e3048'} },
+          y:{ grid:{color:'rgba(30,48,72,0.8)'}, ticks:{font:{size:11},color:'#4a6278',callback:v=>fc(v)}, border:{color:'#1e3048'} }
+        }
+      }
+    });
+    const di = getDateInfo();
+    const el = document.getElementById('drhNoteMonthly');
+    if (el) el.textContent = `* ${MONTHS_FULL[di.month]} ${di.year} is partial — ${di.day} of ${di.daysInMonth} days`;
+  }
+
+  // ── MONTHLY REVENUE — placeholder ──
+  {
+    const b25m = d.total.slice(12, 24);
+    const r26m = new Array(12).fill(0);
+    const ctx = document.getElementById('drhMonthlyRevenue').getContext('2d');
+    if (drhCharts['drhMonthlyRevenue']) drhCharts['drhMonthlyRevenue'].destroy();
+    drhCharts['drhMonthlyRevenue'] = new Chart(ctx, {
+      type: 'bar',
+      data: { labels: MONTHS, datasets: [
+        { label:'2025 (ref)', data:b25m, backgroundColor:'rgba(232,114,138,0.2)', borderRadius:4 },
+        { label:'2026',       data:r26m, backgroundColor:'rgba(62,207,198,0.25)', borderRadius:4 },
+      ]},
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        plugins: {
+          legend:{ position:'top', labels:{ font:{size:11}, boxWidth:12, padding:8, color:'#6b8299' } },
+          tooltip:{ ...ttBase, callbacks:{ label:c=>c.datasetIndex===0?` ${c.dataset.label}: ${fc(c.raw)}`:' 2026: data pending' } },
+          datalabels:{ display:false }
+        },
+        scales: {
+          x:{ grid:{display:false}, ticks:{font:{size:11},color:'#4a6278'}, border:{color:'#1e3048'} },
+          y:{ grid:{color:'rgba(30,48,72,0.8)'}, ticks:{font:{size:11},color:'#4a6278',callback:v=>fc(v)}, border:{color:'#1e3048'} }
+        }
+      }
+    });
+  }
+
+  // ── QUARTERLY YOY HELPER ──
+  const qMonthLabels = [['Jan','Feb','Mar'],['Apr','May','Jun'],['Jul','Aug','Sep'],['Oct','Nov','Dec']];
+  function makeQtrYoy(canvasId, src, q, fmtFn) {
+    const b24 = [src[q*3],   src[q*3+1],   src[q*3+2]];
+    const b25 = [src[12+q*3],src[12+q*3+1],src[12+q*3+2]];
+    const b26 = q===0 ? [src[24],src[25],src[26]] : [0,0,0];
+    const ctx = document.getElementById(canvasId).getContext('2d');
+    if (drhCharts[canvasId]) drhCharts[canvasId].destroy();
+    drhCharts[canvasId] = new Chart(ctx, {
+      type:'bar',
+      data:{ labels: qMonthLabels[q], datasets:[
+        { label:'2024', data:b24, backgroundColor:'rgba(107,130,153,0.5)', borderRadius:3 },
+        { label:'2025', data:b25, backgroundColor:'rgba(88,166,255,0.7)',  borderRadius:3 },
+        { label:'2026', data:b26, backgroundColor: q===0?'rgba(62,207,198,0.85)':'rgba(62,207,198,0.2)', borderRadius:3 },
+      ]},
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        layout:{ padding:{ top:22, bottom:14 } },
+        plugins:{
+          legend:{ position:'top', labels:{ font:{size:9}, boxWidth:8, padding:5, color:'#6b8299' }, margin:14 },
+          tooltip:{ ...ttBase, mode:'index', intersect:false,
+            callbacks:{ label:c=>` ${c.dataset.label}: ${c.raw===0&&q>0?'—':fmtFn(c.raw)}` }
+          },
+          datalabels:{
+            display:true,
+            formatter:(v,ctx)=>{
+              if(v===0&&(ctx.datasetIndex===2&&q>0)) return '';
+              return fmtFn(v);
+            },
+            color:(ctx)=>['#8b949e','#58a6ff','#3ecfc6'][ctx.datasetIndex],
+            anchor:'end', align:'top', font:{size:8,weight:'700'},
+          }
+        },
+        scales:{
+          x:{
+            grid:{display:false},
+            ticks:{
+              font:{size:9}, color:'#4a6278',
+              callback(val, i) {
+                const mo = qMonthLabels[q][i];
+                return [mo, ['\'24','\'25','\'26'][0], ''];
+              }
+            },
+            border:{color:'#1e3048'}
+          },
+          y:{ grid:{color:'rgba(30,48,72,0.8)'}, ticks:{font:{size:9},color:'#4a6278',callback:v=>fmtFn(v)}, border:{color:'#1e3048'} }
+        }
+      },
+      plugins:[{
+        id:'yearLabels',
+        afterDraw(chart) {
+          const c = chart.ctx, xScale = chart.scales.x;
+          const metas = [0,1,2].map(i=>chart.getDatasetMeta(i));
+          const yBot = chart.chartArea.bottom + 2;
+          const yearColors = ['#8b949e','#58a6ff','#3ecfc6'];
+          const years = ['\'24','\'25','\'26'];
+          qMonthLabels[q].forEach((_, mi) => {
+            metas.forEach((meta, di) => {
+              const bar = meta.data[mi];
+              if (!bar) return;
+              c.save();
+              c.font = '700 8px system-ui,sans-serif';
+              c.fillStyle = yearColors[di];
+              c.textAlign = 'center';
+              c.textBaseline = 'top';
+              c.fillText(years[di], bar.x, yBot + 2);
+              c.restore();
+            });
+          });
+        }
+      }]
+    });
+  }
+
+  // Bookings Q1-Q4 YoY
+  makeQtrYoy('drhQ1Yoy', d.total,  0, fc);
+  makeQtrYoy('drhQ2Yoy', d.total,  1, fc);
+  makeQtrYoy('drhQ3Yoy', d.total,  2, fc);
+  makeQtrYoy('drhQ4Yoy', d.total,  3, fc);
+  // Starts Q1-Q4 YoY
+  makeQtrYoy('drhQ1Starts', d.starts, 0, fn);
+  makeQtrYoy('drhQ2Starts', d.starts, 1, fn);
+  makeQtrYoy('drhQ3Starts', d.starts, 2, fn);
+  makeQtrYoy('drhQ4Starts', d.starts, 3, fn);
+  // Closes Q1-Q4 YoY
+  makeQtrYoy('drhQ1Closes', d.closes, 0, fn);
+  makeQtrYoy('drhQ2Closes', d.closes, 1, fn);
+  makeQtrYoy('drhQ3Closes', d.closes, 2, fn);
+  makeQtrYoy('drhQ4Closes', d.closes, 3, fn);
+
+  // Stacked category — hover shows all categories + total, total label over each bar
+  {
+    const catSets = [
+      { label:'1SS',      data:idx.map(i=>d.oss[i]), backgroundColor:'rgba(62,207,198,0.85)',  stack:'s' },
+      { label:'4SS',      data:idx.map(i=>d.fss[i]), backgroundColor:'rgba(88,166,255,0.75)',  stack:'s' },
+      { label:'ITM',      data:idx.map(i=>d.itm[i]), backgroundColor:'rgba(244,168,67,0.85)',  stack:'s' },
+      { label:'Inc/Spec', data:idx.map(i=>d.inc[i]), backgroundColor:'rgba(232,114,138,0.8)',  stack:'s' },
+      { label:'Model',    data:idx.map(i=>d.mdl[i]), backgroundColor:'rgba(139,148,158,0.55)', stack:'s' },
+    ];
+    const ctx = document.getElementById('drhCatStack').getContext('2d');
+    if (drhCharts['drhCatStack']) drhCharts['drhCatStack'].destroy();
+    drhCharts['drhCatStack'] = new Chart(ctx, {
+      type: 'bar',
+      data: { labels: lbl, datasets: catSets },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        layout:{ padding:{ top:20 } },
+        plugins: {
+          legend:{ position:'top', labels:{ font:{size:11}, boxWidth:12, padding:8, color:'#6b8299' } },
+          tooltip: { ...ttBase, mode:'index', intersect:false,
+            callbacks: {
+              label: c => ` ${c.dataset.label}: ${fc(c.raw)}`,
+              afterBody: items => {
+                const total = items.reduce((s,c)=>s+c.raw,0);
+                return ['', ` Total: ${fc(total)}`];
+              }
+            }
+          },
+          datalabels: { display:false }
+        },
+        scales: {
+          x:{ stacked:true, grid:{display:false}, ticks:{font:{size:10},color:'#4a6278'}, border:{color:'#1e3048'} },
+          y:{ stacked:true, grid:{color:'rgba(30,48,72,0.8)'}, ticks:{font:{size:11},color:'#4a6278',callback:v=>fc(v)}, border:{color:'#1e3048'} }
+        }
+      },
+      plugins: [{
+        id: 'stackTotals',
+        afterDatasetsDraw(chart) {
+          const topMeta = chart.getDatasetMeta(catSets.length - 1);
+          if (!topMeta) return;
+          const c = chart.ctx;
+          idx.forEach((_, i) => {
+            const total = catSets.reduce((s,ds)=>s+(ds.data[i]||0),0);
+            const bar = topMeta.data[i];
+            if (!bar) return;
+            c.save();
+            c.font = 'bold 9px system-ui,sans-serif';
+            c.fillStyle = '#c9d1d9';
+            c.textAlign = 'center';
+            c.textBaseline = 'bottom';
+            c.fillText(fc(total), bar.x, chart.scales.y.getPixelForValue(total) - 4);
+            c.restore();
+          });
+        }
+      }]
+    });
+  }
+
+  // Chart 3: Starts & Closes — hover shows both + net
+  {
+    const ctx = document.getElementById('drhStartsCloses').getContext('2d');
+    if (drhCharts['drhStartsCloses']) drhCharts['drhStartsCloses'].destroy();
+    drhCharts['drhStartsCloses'] = new Chart(ctx, {
+      type: 'bar',
+      data: { labels: lbl, datasets: [
+        { label:'Starts', data:idx.map(i=>d.starts[i]), backgroundColor:'rgba(88,166,255,0.75)' },
+        { label:'Closes', data:idx.map(i=>d.closes[i]), backgroundColor:'rgba(62,207,198,0.75)' },
+      ]},
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        layout:{ padding:{ top:4 } },
+        plugins: {
+          legend:{ position:'top', labels:{ font:{size:11}, boxWidth:12, padding:8, color:'#6b8299' } },
+          tooltip: { ...ttBase, mode:'index', intersect:false,
+            callbacks: {
+              label: c => ` ${c.dataset.label}: ${fn(c.raw)}`,
+              afterBody: items => {
+                if (items.length < 2) return [];
+                const net = items[0].raw - items[1].raw;
+                return ['', ` Net: ${net>=0?'+':''}${fn(net)} (${net>=0?'starts lead':'closes lead'})`];
+              }
+            }
+          },
+          datalabels: { display:false }
+        },
+        scales: {
+          x:{ grid:{display:false}, ticks:{font:{size:10},color:'#4a6278'}, border:{color:'#1e3048'} },
+          y:{ grid:{color:'rgba(30,48,72,0.8)'}, ticks:{font:{size:11},color:'#4a6278',callback:v=>fn(v)}, border:{color:'#1e3048'} }
+        }
+      }
+    });
+  }
+
+  // Chart 4: Donut — hover shows all categories + total
+  {
+    const vals26 = [
+      d.oss[24]+d.oss[25]+d.oss[26],
+      d.fss[24]+d.fss[25]+d.fss[26],
+      d.itm[24]+d.itm[25]+d.itm[26],
+      d.inc[24]+d.inc[25]+d.inc[26],
+      d.mdl[24]+d.mdl[25]+d.mdl[26],
+    ];
+    const tot = vals26.reduce((a,b)=>a+b,0);
+    const catLbls = ['1SS','4SS','ITM','Inc/Spec','Model'];
+    const ctx = document.getElementById('drhDonut').getContext('2d');
+    if (drhCharts['drhDonut']) drhCharts['drhDonut'].destroy();
+    drhCharts['drhDonut'] = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: catLbls,
+        datasets: [{
+          data: vals26,
+          backgroundColor: ['rgba(62,207,198,0.88)','rgba(88,166,255,0.85)','rgba(244,168,67,0.88)','rgba(232,114,138,0.85)','rgba(139,148,158,0.6)'],
+          borderColor: '#1a2535', borderWidth: 2,
+        }]
+      },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        cutout: '58%',
+        plugins: {
+          legend:{ position:'right', labels:{ font:{size:12}, boxWidth:14, padding:12, color:'#8b949e' } },
+          tooltip: { ...ttBase,
+            callbacks: {
+              title: () => `2026 Q1 Total: ${fc(tot)}`,
+              label: () => catLbls.map((l,i) => ` ${l}: ${fc(vals26[i])} (${(vals26[i]/tot*100).toFixed(1)}%)`),
+            }
+          },
+          datalabels: {
+            display: true,
+            formatter: v => (v/tot*100).toFixed(0)+'%',
+            color: '#fff', font:{ size:11, weight:'700' },
+          }
+        }
+      }
+    });
+
+    // Q2 / Q3 / Q4 — placeholder donuts (data pending)
+    ['drhDonutQ2','drhDonutQ3','drhDonutQ4'].forEach((id, qi) => {
+      const qLabel = ['Q2','Q3','Q4'][qi];
+      const ctx = document.getElementById(id).getContext('2d');
+      if (drhCharts[id]) drhCharts[id].destroy();
+      drhCharts[id] = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['1SS','4SS','ITM','Inc/Spec','Model'],
+          datasets: [{
+            data: [1,1,1,1,1],
+            backgroundColor: [
+              'rgba(62,207,198,0.18)','rgba(88,166,255,0.18)',
+              'rgba(244,168,67,0.18)','rgba(232,114,138,0.18)','rgba(139,148,158,0.15)',
+            ],
+            borderColor: '#1a2535', borderWidth: 2,
+          }]
+        },
+        options: {
+          responsive:true, maintainAspectRatio:false,
+          cutout: '58%',
+          plugins: {
+            legend:{ position:'right', labels:{ font:{size:11}, boxWidth:12, padding:10, color:'rgba(139,148,158,0.45)' } },
+            tooltip:{ enabled:false },
+            datalabels:{ display:false }
+          }
+        },
+        plugins:[{
+          id:'pendingLabel'+qi,
+          afterDraw(chart) {
+            const {ctx:c, chartArea:{left,top,right,bottom}} = chart;
+            const cx = (left+right)/2, cy = (top+bottom)/2;
+            c.save();
+            c.font = 'bold 12px system-ui,sans-serif';
+            c.fillStyle = 'rgba(139,148,158,0.55)';
+            c.textAlign = 'center'; c.textBaseline = 'middle';
+            c.fillText('2026 '+qLabel, cx, cy-8);
+            c.font = '10px system-ui,sans-serif';
+            c.fillStyle = 'rgba(139,148,158,0.4)';
+            c.fillText('data pending', cx, cy+8);
+            c.restore();
+          }
+        }]
+      });
+    });
+  }
 }
 
 // ═══════════════════════════════════════════════════════════
