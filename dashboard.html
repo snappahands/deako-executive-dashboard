@@ -1197,13 +1197,14 @@ function renderCharts() {
   const deltaQtrB   = qB26.map((v,i) => v > 0 ? v - qB25[i] : null);
   const deltaQtrR   = qR26.map((v,i) => v > 0 ? v - qR25[i] : null);
 
+  const _g = D.goals;
   const aopLines = activeBuilder === 'all' ? [
-    { type:'line', label:'AOP (3+9)', data: g.monthlyAOP2026,
+    { type:'line', label:'AOP (3+9)', data: _g.monthlyAOP2026,
       borderColor:'rgba(244,168,67,0.9)', backgroundColor:'transparent',
       borderWidth:2, borderDash:[6,3], pointRadius:3, pointHoverRadius:5,
       pointBackgroundColor:'rgba(244,168,67,0.9)', tension:0.3, order:-1,
       datalabels:{display:false} },
-    { type:'line', label:'AOP (Investor)', data: g.monthlyAOPInvestor,
+    { type:'line', label:'AOP (Investor)', data: _g.monthlyAOPInvestor,
       borderColor:'rgba(232,114,138,0.9)', backgroundColor:'transparent',
       borderWidth:2, borderDash:[6,3], pointRadius:3, pointHoverRadius:5,
       pointBackgroundColor:'rgba(232,114,138,0.9)', tension:0.3, order:-1,
