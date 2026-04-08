@@ -10,22 +10,25 @@
 <script src="conv_data.js"></script>
 <script src="closes_data.js"></script>
 <script src="ratif_data.js"></script>
+<script src="ss1_data.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{height:100%;background:#0d1117;font-family:system-ui,-apple-system,sans-serif;color:#c9d1d9;overflow:hidden}
+:root{--bg:#0d1117;--bg-card:#161b22;--bg-hover:#1c2128;--border:#21262d;--text:#c9d1d9;--text-h:#e6edf3;--text-m:#8b949e;--text-d:#484f58}
+html,body{height:100%;background:var(--bg);font-family:system-ui,-apple-system,sans-serif;color:var(--text);overflow:hidden}
 body{display:flex;flex-direction:column;height:100vh}
+html.light{--bg:#ffffff;--bg-card:#ffffff;--bg-hover:#f0f2f5;--border:#d0d7de;--text:#1f2328;--text-h:#1f2328;--text-m:#656d76;--text-d:#8b949e}
 
 /* HEADER */
-#header{background:#161b22;border-bottom:1px solid #21262d;padding:10px 20px;flex-shrink:0;display:flex;align-items:center;gap:0}
+#header{background:var(--bg-card);border-bottom:1px solid var(--border);padding:10px 20px;flex-shrink:0;display:flex;align-items:center;gap:0}
 #header-title{width:160px;flex-shrink:0;padding-right:12px}
-#header h1{font-size:17px;font-weight:700;color:#e6edf3;letter-spacing:.02em;white-space:nowrap}
-.header-sub{font-size:11px;color:#8b949e;background:#0d1117;padding:2px 8px;border-radius:10px;font-weight:600}
+#header h1{font-size:17px;font-weight:700;color:var(--text-h);letter-spacing:.02em;white-space:nowrap}
+.header-sub{font-size:11px;color:var(--text-m);background:var(--bg);padding:2px 8px;border-radius:10px;font-weight:600}
 
 /* METRICS BAR */
 #metrics-bar{flex:1;display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:center}
-.hmetric{background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:7px 14px;display:flex;flex-direction:column;min-width:90px}
+.hmetric{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:7px 14px;display:flex;flex-direction:column;min-width:90px}
 .hmetric-label{font-size:10px;color:#8b949e;letter-spacing:.05em;text-transform:uppercase;margin-bottom:2px}
-.hmetric-value{font-size:18px;font-weight:800;color:#e6edf3;line-height:1}
+.hmetric-value{font-size:18px;font-weight:800;color:var(--text-h);line-height:1}
 .hmetric-sub{font-size:10px;color:#8b949e;margin-top:2px}
 .hmetric.teal .hmetric-value{color:#7ecfe0}
 .hmetric.green .hmetric-value{color:#3fb950}
@@ -34,16 +37,16 @@ body{display:flex;flex-direction:column;height:100vh}
 .hmetric.lift .hmetric-value{color:#3fb950;font-size:22px}
 
 /* VERSION */
-#version-badge{position:fixed;bottom:10px;right:14px;font-size:14px;font-weight:700;color:#7ecfe0;background:#0d1117;border:1px solid #21262d;border-radius:10px;padding:4px 12px;z-index:100;pointer-events:none}
+#version-badge{position:fixed;bottom:10px;right:14px;font-size:14px;font-weight:700;color:#7ecfe0;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:4px 12px;z-index:100;pointer-events:none}
 
 /* LAYOUT */
 #main{display:flex;flex:1;overflow:hidden}
 
 /* SIDEBAR */
-#sidebar{width:200px;flex-shrink:0;background:#161b22;border-right:1px solid #21262d;overflow-y:auto;padding:6px 0}
+#sidebar{width:200px;flex-shrink:0;background:var(--bg-card);border-right:1px solid var(--border);overflow-y:auto;padding:6px 0}
 .div-item{padding:8px 14px 8px 10px;cursor:pointer;border-left:3px solid transparent;transition:all .12s;font-size:12px;color:#8b949e;line-height:1.3}
-.div-item:hover{background:#1c2128;color:#c9d1d9}
-.div-item.active{background:#1c2128;border-left-color:#7ecfe0;color:#e6edf3;font-weight:600}
+.div-item:hover{background:var(--bg-hover);color:var(--text)}
+.div-item.active{background:var(--bg-hover);border-left-color:#7ecfe0;color:var(--text-h);font-weight:600}
 .div-item.cancelled{opacity:.5}
 .div-date{font-size:10px;color:#484f58;margin-top:2px}
 .div-itm-pill{display:inline-block;font-size:9px;font-weight:700;padding:1px 5px;border-radius:8px;margin-top:3px}
@@ -53,14 +56,14 @@ body{display:flex;flex-direction:column;height:100vh}
 .sidebar-section{padding:6px 14px 3px;font-size:10px;color:#484f58;letter-spacing:.06em;text-transform:uppercase;margin-top:4px}
 
 /* CONTENT */
-#content{flex:1;overflow-y:auto;padding:20px;background:#0d1117}
+#content{flex:1;overflow-y:auto;padding:20px;background:var(--bg)}
 
 /* OVERVIEW */
 .overview-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
-.chart-card{background:#161b22;border:1px solid #21262d;border-radius:10px;padding:16px}
+.chart-card{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:16px}
 .chart-card h3{font-size:13px;font-weight:700;color:#e6edf3;margin-bottom:12px;letter-spacing:.02em}
 .chart-wrap{position:relative;height:260px}
-.full-chart-card{background:#161b22;border:1px solid #21262d;border-radius:10px;padding:16px;margin-bottom:16px}
+.full-chart-card{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px}
 .full-chart-wrap{position:relative;height:300px}
 
 /* DIVISION DETAIL */
@@ -75,7 +78,7 @@ body{display:flex;flex-direction:column;height:100vh}
 .badge-virtual{background:#21262d;color:#8b949e;border:1px solid #30363d}
 
 .d-metrics{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
-.d-metric{background:#161b22;border:1px solid #21262d;border-radius:8px;padding:11px 14px;min-width:90px;flex:1;text-align:center}
+.d-metric{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:11px 14px;min-width:90px;flex:1;text-align:center}
 .d-metric-val{font-size:22px;font-weight:800;color:#e6edf3;line-height:1}
 .d-metric-label{font-size:10px;color:#8b949e;margin-top:4px;letter-spacing:.04em;text-transform:uppercase}
 .d-metric.teal .d-metric-val{color:#7ecfe0}
@@ -83,7 +86,7 @@ body{display:flex;flex-direction:column;height:100vh}
 .d-metric.purple .d-metric-val{color:#d2a8ff}
 
 /* ITM BEFORE/AFTER CARD */
-.itm-card{background:#161b22;border:1px solid #21262d;border-radius:8px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+.itm-card{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;gap:24px;flex-wrap:wrap}
 .itm-block{text-align:center}
 .itm-num{font-size:32px;font-weight:900;line-height:1}
 .itm-num.before{color:#8b949e}
@@ -97,7 +100,7 @@ body{display:flex;flex-direction:column;height:100vh}
 /* CARDS */
 .info-section{margin-bottom:14px}
 .info-section h4{font-size:11px;font-weight:700;color:#8b949e;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px}
-.info-card{background:#161b22;border:1px solid #21262d;border-radius:8px;padding:13px 15px;font-size:13px;line-height:1.6;color:#c9d1d9}
+.info-card{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:13px 15px;font-size:13px;line-height:1.6;color:var(--text)}
 .info-card.yellow{border-left:3px solid #e3b341}
 .info-card.red{border-left:3px solid #f85149}
 .info-card.teal{border-left:3px solid #7ecfe0}
@@ -113,14 +116,82 @@ body{display:flex;flex-direction:column;height:100vh}
 
 /* SUMMARY TABLE */
 .summary-table{width:100%;border-collapse:collapse;font-size:12px}
-.summary-table th{text-align:left;color:#8b949e;font-weight:600;padding:6px 10px;border-bottom:1px solid #21262d;font-size:10px;letter-spacing:.05em;text-transform:uppercase;background:#161b22}
-.summary-table td{padding:6px 10px;border-bottom:1px solid #21262d;color:#c9d1d9}
-.summary-table tr:hover td{background:#1c2128;cursor:pointer}
+.summary-table th{text-align:left;color:var(--text-m);font-weight:600;padding:6px 10px;border-bottom:1px solid var(--border);font-size:10px;letter-spacing:.05em;text-transform:uppercase;background:var(--bg-card)}
+.summary-table td{padding:6px 10px;border-bottom:1px solid var(--border);color:var(--text)}
+.summary-table tr:hover td{background:var(--bg-hover);cursor:pointer}
 .summary-table tr.cancelled-row td{opacity:.5}
 .td-lift{font-weight:700;color:#3fb950}
 .td-flat{color:#8b949e}
 .td-cancelled{color:#f85149}
 .two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+
+/* LIGHT THEME */
+html.light,html.light body,body.light{background:#f5f6f8 !important;color:#1f2328 !important}
+body.light #content{background:#f5f6f8 !important}
+body.light #header{background:#fff !important;border-bottom-color:#d0d7de !important}
+body.light #header h1{color:#1f2328 !important}
+body.light .header-sub{background:#eaeef2 !important;color:#656d76 !important}
+body.light #sidebar{background:#fff !important;border-right-color:#d0d7de !important}
+body.light .div-item{color:#656d76 !important}
+body.light .div-item:hover{background:#f0f2f5 !important;color:#1f2328 !important}
+body.light .div-item.active{background:#f0f2f5 !important;color:#1f2328 !important}
+body.light .sidebar-section{color:#656d76 !important}
+body.light .hmetric{background:#fff !important;border-color:#d0d7de !important}
+body.light .hmetric-label{color:#656d76 !important}
+body.light .hmetric-value{color:#1f2328 !important}
+body.light .hmetric-sub{color:#656d76 !important}
+body.light .full-chart-card,body.light .chart-card,body.light .info-card,body.light .itm-card,body.light .dd-assess,body.light .dd-metric,body.light .rm-stat,body.light .stat-card,body.light .metric-card{background:#fff !important;border-color:#d0d7de !important}
+body.light .full-chart-card h3,body.light .chart-card h3{color:#1f2328 !important}
+body.light .summary-table th{background:#f5f6f8 !important;color:#656d76 !important;border-color:#d0d7de !important}
+body.light .summary-table td{border-color:#eaeef2 !important;color:#1f2328 !important}
+body.light .summary-table tr:hover td{background:#f0f2f5 !important}
+body.light .rm-table th{background:#f5f6f8 !important;color:#656d76 !important;border-color:#d0d7de !important}
+body.light .rm-table td{border-color:#eaeef2 !important;color:#1f2328 !important}
+body.light .rm-table tr:hover td{background:#f0f2f5 !important}
+body.light .amb-table th{color:#656d76 !important;border-color:#d0d7de !important}
+body.light .amb-table td{color:#1f2328 !important;border-color:#eaeef2 !important}
+body.light .d-name{color:#1f2328 !important}
+body.light .d-meta{color:#656d76 !important}
+body.light .d-metric-val{color:#1f2328 !important}
+body.light .d-metric-label{color:#656d76 !important}
+body.light .dd-metric-val{color:#1f2328 !important}
+body.light .dd-metric-label{color:#656d76 !important}
+body.light .dd-assess p{color:#1f2328 !important}
+body.light .metric-label,body.light .rm-stat-label{color:#656d76 !important}
+body.light .period-btn{background:#eaeef2 !important;border-color:#d0d7de !important;color:#656d76 !important}
+body.light .period-tab{background:#eaeef2 !important;border-color:#d0d7de !important;color:#656d76 !important}
+body.light .rm-bar-wrap{background:#d0d7de !important}
+body.light #version-badge{background:#fff !important;border-color:#d0d7de !important;color:#1f6feb !important}
+body.light #themeToggle{background:#eaeef2 !important;border-color:#d0d7de !important;color:#1f2328 !important}
+body.light ::-webkit-scrollbar-track{background:#f5f6f8 !important}
+body.light ::-webkit-scrollbar-thumb{background:#d0d7de !important}
+
+/* ACTIVE FILTER GLOW */
+.filter-active{box-shadow:0 0 8px 2px rgba(126,207,224,0.6);font-weight:700 !important;color:#fff !important;background:#1f6feb !important;border-color:#1f6feb !important}
+.period-btn{border-radius:6px;padding:5px 12px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid #30363d;background:#21262d;color:#8b949e;transition:box-shadow .2s}
+.period-btn.active{box-shadow:0 0 10px 3px rgba(126,207,224,0.5);background:#1f6feb !important;color:#fff !important;border-color:#7ecfe0 !important;font-weight:700}
+.period-tab{border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid #30363d;background:#21262d;color:#8b949e;transition:box-shadow .2s}
+.period-tab.active{box-shadow:0 0 8px 2px rgba(126,207,224,0.5);background:#1f6feb !important;color:#fff !important;border-color:#7ecfe0 !important;font-weight:700}
+
+/* DIVISION DETAIL V2 */
+.dd-rank-badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;letter-spacing:.03em}
+.dd-rank-badge.top{background:#0d2b0d;color:#3fb950;border:1px solid #1a4d1a}
+.dd-rank-badge.mid{background:#2d1f00;color:#f0a500;border:1px solid #4a3200}
+.dd-rank-badge.low{background:#2d0d0d;color:#f85149;border:1px solid #4d1a1a}
+.dd-rank-badge.na{background:#21262d;color:#8b949e;border:1px solid #30363d}
+.dd-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:16px}
+.dd-metric{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:10px 12px;text-align:center}
+.dd-metric-val{font-size:20px;font-weight:800;line-height:1}
+.dd-metric-label{font-size:9px;color:#8b949e;text-transform:uppercase;letter-spacing:.05em;margin-top:4px}
+.dd-metric-rank{font-size:9px;font-weight:700;margin-top:3px}
+.dd-assess{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:16px 18px;margin-bottom:14px}
+.dd-assess h4{font-size:12px;font-weight:700;margin-bottom:8px;letter-spacing:.03em}
+.dd-assess p{font-size:12px;line-height:1.6;color:#c9d1d9;margin-bottom:6px}
+.dd-assess .flag{font-weight:700}
+.dd-assess .flag.red{color:#f85149}
+.dd-assess .flag.green{color:#3fb950}
+.dd-assess .flag.amber{color:#f0a500}
+.dd-assess .flag.muted{color:#8b949e}
 
 /* RAINMAKERS */
 .rm-controls{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
@@ -128,15 +199,15 @@ body{display:flex;flex-direction:column;height:100vh}
 .rm-controls input:focus{border-color:#7ecfe0}
 .rm-controls select{background:#161b22;border:1px solid #30363d;border-radius:6px;padding:6px 10px;color:#c9d1d9;font-size:13px;outline:none;cursor:pointer}
 .rm-stats{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
-.rm-stat{background:#161b22;border:1px solid #21262d;border-radius:8px;padding:9px 16px;text-align:center}
-.rm-stat-val{font-size:20px;font-weight:800;color:#e6edf3}
+.rm-stat{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:9px 16px;text-align:center}
+.rm-stat-val{font-size:20px;font-weight:800;color:var(--text-h)}
 .rm-stat-val.teal{color:#7ecfe0}
 .rm-stat-val.orange{color:#f0a500}
 .rm-stat-label{font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
 .rm-table{width:100%;border-collapse:collapse;font-size:12px}
-.rm-table th{text-align:left;color:#8b949e;font-weight:600;padding:7px 10px;border-bottom:1px solid #21262d;font-size:10px;letter-spacing:.05em;text-transform:uppercase;background:#161b22;position:sticky;top:0}
-.rm-table td{padding:6px 10px;border-bottom:1px solid #21262d;color:#c9d1d9;vertical-align:middle}
-.rm-table tr:hover td{background:#1c2128}
+.rm-table th{text-align:left;color:var(--text-m);font-weight:600;padding:7px 10px;border-bottom:1px solid var(--border);font-size:10px;letter-spacing:.05em;text-transform:uppercase;background:var(--bg-card);position:sticky;top:0}
+.rm-table td{padding:6px 10px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle}
+.rm-table tr:hover td{background:var(--bg-hover)}
 .rm-rank{color:#484f58;font-weight:700;font-size:11px;width:30px}
 .rm-rank.top3{color:#f0a500;font-size:13px}
 .rm-bar-wrap{width:80px;background:#21262d;border-radius:3px;height:6px;display:inline-block;vertical-align:middle;margin-left:6px}
@@ -163,9 +234,12 @@ body{display:flex;flex-direction:column;height:100vh}
 <body>
 
 <div id="header">
-  <div id="header-title">
-    <h1>Brian's Dashboard</h1>
-    <span class="header-sub">DR Horton · National Sales Training</span>
+  <div id="header-title" style="display:flex;align-items:center;gap:10px">
+    <div>
+      <h1>Brian's Dashboard</h1>
+      <span class="header-sub">DR Horton · National Sales Training</span>
+    </div>
+    <button id="themeToggle" onclick="toggleTheme()" style="background:transparent;border:none;cursor:pointer;min-width:40px;height:40px;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:0" title="Toggle light/dark mode"><svg width="28" height="36" viewBox="0 0 100 130" style="pointer-events:none"><path d="M50 0C45 0 42 8 38 15C34 22 28 30 22 35C16 40 8 38 2 42C0 44 0 46 2 48C8 52 16 55 22 60C28 65 32 72 36 82C40 92 44 105 46 115C48 122 49 128 50 130C51 128 52 122 54 115C56 105 60 92 64 82C68 72 72 65 78 60C84 55 92 52 98 48C100 46 100 44 98 42C92 38 84 40 78 35C72 30 66 22 62 15C58 8 55 0 50 0Z" fill="#8b949e"/><path d="M35 75C38 72 42 68 45 65C47 63 48 61 50 60C52 61 53 63 55 65C58 68 62 72 65 75C63 73 58 70 55 68C53 67 51 66 50 66C49 66 47 67 45 68C42 70 37 73 35 75Z" fill="#21262d"/><path d="M30 85C33 80 38 76 42 73L50 68L58 73C62 76 67 80 70 85C67 82 62 78 58 76L50 72L42 76C38 78 33 82 30 85Z" fill="#21262d"/></svg></button>
   </div>
   <div id="metrics-bar"></div>
 </div>
@@ -175,9 +249,39 @@ body{display:flex;flex-direction:column;height:100vh}
   <div id="content"></div>
 </div>
 
-<div id="version-badge">v4.6</div>
+<div id="version-badge">v6.4</div>
 
 <script>
+// Theme toggle — isolated so nothing can break it
+const _batHtml = '<svg width="28" height="36" viewBox="0 0 100 130" style="pointer-events:none"><path d="M50 0C45 0 42 8 38 15C34 22 28 30 22 35C16 40 8 38 2 42C0 44 0 46 2 48C8 52 16 55 22 60C28 65 32 72 36 82C40 92 44 105 46 115C48 122 49 128 50 130C51 128 52 122 54 115C56 105 60 92 64 82C68 72 72 65 78 60C84 55 92 52 98 48C100 46 100 44 98 42C92 38 84 40 78 35C72 30 66 22 62 15C58 8 55 0 50 0Z" fill="#8b949e"/><path d="M35 75C38 72 42 68 45 65C47 63 48 61 50 60C52 61 53 63 55 65C58 68 62 72 65 75C63 73 58 70 55 68C53 67 51 66 50 66C49 66 47 67 45 68C42 70 37 73 35 75Z" fill="#21262d"/><path d="M30 85C33 80 38 76 42 73L50 68L58 73C62 76 67 80 70 85C67 82 62 78 58 76L50 72L42 76C38 78 33 82 30 85Z" fill="#21262d"/></svg>';
+const _boltHtml = '<svg width="22" height="28" viewBox="0 0 16 20" style="pointer-events:none"><path d="M9.5 0L0 11.5h6L5 20l11-12.5H9.5z" fill="#f0a500"/></svg>';
+function toggleTheme(){
+  var el = document.documentElement;
+  el.classList.toggle('light');
+  var isLight = el.classList.contains('light');
+  var btn = document.getElementById('themeToggle');
+  if(btn){
+    btn.innerHTML = isLight ? _boltHtml : _batHtml;
+    btn.style.background = isLight ? '#eaeef2' : 'transparent';
+    btn.style.border = isLight ? '1px solid #d0d7de' : 'none';
+  }
+}
+</script>
+
+<script>
+// Global Chart.js tooltip defaults — fully opaque, no bleed-through
+try {
+  Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(22,27,34,1)';
+  Chart.defaults.plugins.tooltip.borderColor = '#30363d';
+  Chart.defaults.plugins.tooltip.borderWidth = 1;
+  Chart.defaults.plugins.tooltip.titleColor = '#e6edf3';
+  Chart.defaults.plugins.tooltip.bodyColor = '#c9d1d9';
+  Chart.defaults.plugins.tooltip.padding = 10;
+  Chart.defaults.plugins.tooltip.caretPadding = 6;
+  Chart.defaults.plugins.tooltip.cornerRadius = 6;
+  Chart.defaults.plugins.tooltip.boxPadding = 4;
+} catch(e) { console.warn('Chart tooltip defaults:', e); }
+
 const VISITS = [
   {
     division:'Northern VA', state:'VA', date:'09/23/2025',
@@ -192,7 +296,7 @@ const VISITS = [
   },
   {
     division:'Delaware', state:'DE', date:'10/01/2025',
-    preITM:0, postITM:0,
+    preITM:12, postITM:7,
     type:'Training', reps:14, certified:4,
     ambassadors:[
       {name:'Brett Black', email:'beblack@drhorton.com', phone:'980-238-9777'},
@@ -208,7 +312,7 @@ const VISITS = [
   },
   {
     division:'Fort Wayne', state:'IN', date:'10/20/2025',
-    preITM:0, postITM:1,
+    preITM:1, postITM:1,
     type:'PDP', reps:8, certified:2,
     ambassadors:[
       {name:'Kathy Klinger', email:'klklinger@drhorton.com', phone:'260-237-5077'},
@@ -257,7 +361,7 @@ const VISITS = [
   },
   {
     division:'Chicago', state:'IL', date:'11/03/2025',
-    preITM:7, postITM:8,
+    preITM:15, postITM:8,
     type:'PDP', reps:64, certified:9,
     ambassadors:[{name:'(contacting quiz completers)', email:'', phone:''}],
     modelHomes:['(all models closed — team went to Top Golf)'],
@@ -280,7 +384,7 @@ const VISITS = [
   },
   {
     division:'Northern Colorado', state:'CO', date:'11/19/2025',
-    preITM:0, postITM:2,
+    preITM:0, postITM:4,
     type:'Training', reps:15, certified:6,
     ambassadors:[
       {name:'Lisa Henry', email:'lhenry@drhorton.com', phone:'303-931-1882'},
@@ -297,7 +401,7 @@ const VISITS = [
   },
   {
     division:'Cincinnati', state:'OH', date:'12/15/2025',
-    preITM:1, postITM:1,
+    preITM:1, postITM:4,
     type:'PDP', reps:15, certified:2,
     ambassadors:[
       {name:'Laura Valangeon', email:'lkvalangeon@drhorton.com', phone:''},
@@ -314,7 +418,7 @@ const VISITS = [
   },
   {
     division:'ATL West', state:'GA', date:'01/07/2026',
-    preITM:4, postITM:7,
+    preITM:4, postITM:11,
     type:'PDP', reps:55, certified:13,
     ambassadors:[
       {name:'Lawanda Calhoun', email:'lcalhoun@drhorton.com', phone:'770-617-1474'},
@@ -331,7 +435,7 @@ const VISITS = [
   },
   {
     division:'Charlotte', state:'NC', date:'01/16/2026',
-    preITM:0, postITM:1,
+    preITM:5, postITM:5,
     type:'PDP', reps:50, certified:4,
     ambassadors:[],
     modelHomes:['3937 Coleman Dr'],
@@ -342,7 +446,7 @@ const VISITS = [
   },
   {
     division:'Baldwin', state:'AL', date:'02/02/2026',
-    preITM:5, postITM:7,
+    preITM:9, postITM:20,
     type:'Training', reps:35, certified:9,
     ambassadors:[],
     modelHomes:[],
@@ -351,7 +455,7 @@ const VISITS = [
   },
   {
     division:'Asheville', state:'NC', date:'02/04/2026',
-    preITM:0, postITM:4,
+    preITM:4, postITM:4,
     type:'Training', reps:9, certified:1,
     ambassadors:[],
     modelHomes:[],
@@ -385,7 +489,7 @@ const VISITS = [
   },
   {
     division:'Greenville', state:'SC', date:'03/06/2026',
-    preITM:null, postITM:null,
+    preITM:1, postITM:5,
     type:'Presentation', reps:70, certified:4,
     ambassadors:[],
     modelHomes:['4 Barred Owl Rd, Travelers Rest, SC 29690','4 Higbie Dr, Piedmont, SC 29673'],
@@ -416,12 +520,39 @@ const VISITS = [
     modelHomes:[],
     scenes:'', highlights:'', followUp:'', followUpNotes:'', issues:'', notes:'',
     status:'completed'
+  },
+  {
+    division:'Kansas City', state:'MO', date:'05/20/2026',
+    preITM:null, postITM:null,
+    type:'Training', reps:20, certified:0,
+    ambassadors:[],
+    modelHomes:[],
+    scenes:'', highlights:'', followUp:'', followUpNotes:'', issues:'', notes:'',
+    status:'scheduled'
+  },
+  {
+    division:'Charlotte North', state:'NC', date:'06/05/2026',
+    preITM:null, postITM:null,
+    type:'Training', reps:40, certified:0,
+    ambassadors:[],
+    modelHomes:[],
+    scenes:'', highlights:'', followUp:'', followUpNotes:'', issues:'', notes:'',
+    status:'scheduled'
+  },
+  {
+    division:'Charlotte South', state:'NC', date:'06/05/2026',
+    preITM:null, postITM:null,
+    type:'Training', reps:40, certified:0,
+    ambassadors:[],
+    modelHomes:[],
+    scenes:'', highlights:'', followUp:'', followUpNotes:'', issues:'', notes:'',
+    status:'scheduled'
   }
 ];
 
 /* ── COMPUTED TOTALS ── */
 function getTotals(){
-  const active = VISITS.filter(v=>v.status!=='cancelled');
+  const active = VISITS.filter(v=>v.status!=='cancelled' && v.status!=='scheduled');
   const withITM = active.filter(v=>v.preITM!==null && v.postITM!==null);
   const totalReps = active.reduce((s,v)=>s+(v.reps||0),0);
   const totalCert = active.reduce((s,v)=>s+(v.certified||0),0);
@@ -457,9 +588,21 @@ function renderSidebar(){
   <div class="div-item${selectedIdx==='conv'?' active':''}" onclick="showConvRates('monthly','')" style="font-weight:700;color:#7ecfe0;border-left-color:${selectedIdx==='conv'?'#7ecfe0':'transparent'}">📈 Conv. by Division</div>
   <div class="div-item${selectedIdx==='rainmakers'?' active':''}" onclick="showRainmakers()" style="font-weight:700;color:#f0a500;border-left-color:${selectedIdx==='rainmakers'?'#f0a500':'transparent'}">🏆 Rainmakers</div>
   <div class="div-item${selectedIdx==='divisions'?' active':''}" onclick="showDivisions()" style="font-weight:700;color:#d2a8ff;border-left-color:${selectedIdx==='divisions'?'#d2a8ff':'transparent'}">📋 Training Summary</div>
-  <a href="hst_analysis.html" target="_blank" class="div-item" style="font-weight:700;color:#8b949e;display:block;text-decoration:none;border-left-color:transparent">🔍 HST vs ITM Analysis</a>
+  <div class="div-item${selectedIdx==='summary'?' active':''}" onclick="showSummary()" style="font-weight:700;color:#f85149;border-left-color:${selectedIdx==='summary'?'#f85149':'transparent'}">📊 Performance Summary</div>
+  <div class="div-item${selectedIdx==='hst'?' active':''}" onclick="showHstAnalysis()" style="font-weight:700;color:#8b949e;border-left-color:${selectedIdx==='hst'?'#8b949e':'transparent'}">🔍 HST vs ITM Analysis</div>
   <div class="sidebar-section">Divisions</div>`;
-  VISITS.forEach((v,i)=>{
+  // Sort divisions by eligible homes (most to least)
+  const _latM = [...new Set((CONV_DATA?.yearly||[]).map(d=>d.p))].sort().pop();
+  const _yearE = {}; (CONV_DATA?.yearly||[]).filter(d=>d.p===_latM).forEach(d=>{_yearE[d.div]=d.e;});
+  const sortedVisitIdxs = VISITS.map((_,i)=>i).sort((a,b)=>{
+    const va=VISITS[a], vb=VISITS[b];
+    if(va.status==='cancelled'&&vb.status!=='cancelled') return 1;
+    if(vb.status==='cancelled'&&va.status!=='cancelled') return -1;
+    const ka=findDivKey(va.division), kb=findDivKey(vb.division);
+    const ea=ka?(_yearE[ka]||0):0, eb=kb?(_yearE[kb]||0):0;
+    return eb-ea;
+  });
+  sortedVisitIdxs.forEach(i=>{ const v=VISITS[i];
     const lift = v.preITM!==null && v.postITM!==null ? v.postITM - v.preITM : null;
     let pillHtml='';
     if(v.status==='cancelled'){
@@ -471,9 +614,11 @@ function renderSidebar(){
     } else {
       pillHtml=`<div><span class="div-itm-pill pill-flat">ITM ±0</span></div>`;
     }
+    const projH = PROJ_HOMES_DISPLAY[v.division] || null;
+    const projHtml = projH ? `<span style="font-size:9px;color:#7ecfe0;margin-left:4px">(${projH.toLocaleString()} homes)</span>` : '';
     const cls = ['div-item', v.status==='cancelled'?'cancelled':'', i===selectedIdx?'active':''].filter(Boolean).join(' ');
     sb.innerHTML+=`<div class="${cls}" onclick="selectVisit(${i})">
-      ${v.division}, ${v.state}
+      ${v.division}, ${v.state}${projHtml}
       <div class="div-date">${v.date||'Date TBD'}</div>
       ${pillHtml}
     </div>`;
@@ -487,109 +632,320 @@ function selectVisit(i){
   renderDetail(VISITS[i], i);
 }
 
+/* ── DIVISION KEY MAPPER ── */
+// Projected FY2026 Home Starts — from Holly's Sheet (STAYING + UNDECIDED divisions)
+const PROJ_HOMES_2026 = {
+  'greenville':1735,'greensboro':1525,'atlanta_west':1516,'charlotte_north':1173,
+  'baldwin':1144,'maryland':1037,'indianapolis':877,'raleigh_north':841,
+  'charlotte_south':782,'delaware':696,'north_colorado':639,'oregon':600,
+  'southern_colorado':566,'south_colorado':566,'cincinnati':545,'eastern_pa':538,
+  'asheville':441,'fort_wayne':401,'kansas_city':288,
+  // Divisions not in CONV_DATA but staying:
+  'las_vegas':1546,'raleigh_south':1134,'omaha':1000,'seattle':930,
+  'eastern_nc':535,'hawaii':430,'pacific_ridge':361,'inland_northwest':348,
+  'atlanta_central':333,'truland_baldwin':59
+};
+// Display-name version for sidebar/tables
+const PROJ_HOMES_DISPLAY = {
+  'Greenville':1735,'Las Vegas':1546,'Greensboro':1525,'Atlanta West':1516,
+  'Charlotte North':1173,'Baldwin':1144,'Raleigh South':1134,'Maryland':1037,
+  'Omaha':1000,'Seattle':930,'Indianapolis':877,'Raleigh North':841,
+  'Charlotte South':782,'Delaware':696,'Northern Colorado':639,'Oregon':600,
+  'Southern Colorado':566,'Cincinnati':545,'Eastern Pennsylvania':538,
+  'Eastern NC':535,'Asheville':441,'Hawaii':430,'Fort Wayne':401,
+  'Pacific Ridge':361,'Inland Northwest':348,'Atlanta Central':333,
+  'Kansas City':288,'Truland/Baldwin':59
+};
+
+const DIV_KEY_MAP = {
+  'Asheville':'asheville','ATL West':'atlanta_west','Baldwin':'baldwin',
+  'Charlotte':'charlotte_north','Cincinnati':'cincinnati','Delaware':'delaware',
+  'Fort Wayne':'fort_wayne','Greensboro':'greensboro','Greenville':'greenville',
+  'Indianapolis':'indianapolis','Northern Colorado':'north_colorado',
+  'Northern VA':'southern_colorado','Reno':'south_colorado','Chicago':'',
+  'Las Vegas':'','Melbourne':'','Central Valley':'','San Marcos':''
+};
+function findDivKey(name){
+  if(DIV_KEY_MAP[name]!==undefined) return DIV_KEY_MAP[name]||null;
+  const n=name.toLowerCase().replace(/[^a-z0-9]/g,'_').replace(/_+/g,'_').replace(/^_|_$/g,'');
+  const allDivs=[...new Set((CONV_DATA?.monthly||[]).map(d=>d.div))];
+  return allDivs.find(d=>d===n)||allDivs.find(d=>d.includes(n)||n.includes(d))||null;
+}
+function rankAmong(arr,val,desc=true){
+  const sorted=[...arr].sort((a,b)=>desc?b-a:a-b);
+  const idx=sorted.indexOf(val);
+  return idx>=0?idx+1:arr.length;
+}
+function rankClass(rank,total){
+  const pct=rank/total;
+  return pct<=0.25?'top':pct<=0.6?'mid':'low';
+}
+function trendDir(arr){
+  if(arr.length<3) return 'insufficient';
+  const half=Math.floor(arr.length/2);
+  const first=arr.slice(0,half).reduce((a,b)=>a+b,0)/half;
+  const second=arr.slice(half).reduce((a,b)=>a+b,0)/(arr.length-half);
+  const pctChange=first>0?((second-first)/first*100):0;
+  if(pctChange>10) return 'improving';
+  if(pctChange<-10) return 'declining';
+  return 'flat';
+}
+
 /* ── RENDER DETAIL ── */
 function renderDetail(v, idx){
+  const _ce = document.getElementById('content');
   const lift = v.preITM!==null && v.postITM!==null ? v.postITM - v.preITM : null;
   const liftPct = (lift!==null && v.preITM>0) ? Math.round(lift/v.preITM*100) : null;
+  const statusBadge = v.status==='cancelled'?'<span class="badge badge-cancelled">CANCELLED</span>':'<span class="badge badge-completed">COMPLETED</span>';
+  const typeBadge = v.type==='PDP'?'<span class="badge badge-pdp">PDP</span>':v.type==='Virtual'?'<span class="badge badge-virtual">VIRTUAL</span>':'';
+  const namedAmb = v.ambassadors.filter(a=>a.name&&!a.name.startsWith('('));
+  const mhList = v.modelHomes.filter(m=>m&&m.toLowerCase()!=='n/a'&&m.toLowerCase()!=='virtual / n/a');
 
-  const statusBadge = v.status==='cancelled'
-    ? '<span class="badge badge-cancelled">CANCELLED</span>'
-    : '<span class="badge badge-completed">COMPLETED</span>';
-  const typeBadge = v.type==='PDP'?'<span class="badge badge-pdp">PDP</span>':
-    v.type==='Virtual'?'<span class="badge badge-virtual">VIRTUAL</span>':'';
+  // ── Data lookups ──
+  const dk = findDivKey(v.division);
+  const convAll = dk ? CONV_DATA.monthly.filter(d=>d.div===dk).sort((a,b)=>a.p.localeCompare(b.p)) : [];
+  const closesAll = dk ? (CLOSES_DATA?.monthly||[]).filter(d=>d.div===dk).sort((a,b)=>a.p.localeCompare(b.p)) : [];
+  const ratifAll = dk ? (RATIF_DATA?.monthly||[]).filter(d=>d.div===dk).sort((a,b)=>a.p.localeCompare(b.p)) : [];
+  const hstAll = dk ? (typeof SS1_DATA!=='undefined'?(SS1_DATA?.monthly||[]):[]).filter(d=>d.div===dk).sort((a,b)=>a.p.localeCompare(b.p)) : [];
 
-  /* ITM block */
-  let itmHtml='';
-  if(v.preITM!==null && v.postITM!==null){
-    const liftDisplay = lift>0 ? `+${lift} (${liftPct!==null?'+'+liftPct+'%':'N/A'})` : lift===0 ? '±0' : `${lift}`;
-    const liftColor = lift>0?'#3fb950':lift<0?'#f85149':'#8b949e';
-    itmHtml=`<div class="itm-card">
+  // Totals
+  const totalPk = convAll.reduce((s,d)=>s+d.pk,0);
+  const totalE = convAll.reduce((s,d)=>s+d.e,0);
+  const avgConv = totalE>0?(totalPk/totalE*100):0;
+  const totalCl = closesAll.reduce((s,d)=>s+d.n,0);
+  const totalRat = ratifAll.reduce((s,d)=>s+d.n,0);
+  const totalHst = hstAll.reduce((s,d)=>s+d.n,0);
+
+  // Revenue/profit from DIV_PERF
+  const normDiv = s=>s.toLowerCase().replace(/[^a-z]/g,'');
+  const findPerf = arr => arr.find(d=>normDiv(d.div)===normDiv(v.division)) || arr.find(d=>normDiv(d.div).includes(normDiv(v.division).substring(0,5)));
+  const perfAll = findPerf(DIV_PERF.allTime||[]);
+  const perfY25 = findPerf(DIV_PERF.y2025||[]);
+  const perfL3 = findPerf(DIV_PERF.last3||[]);
+  const rev = perfAll ? perfAll.rev : 0;
+  const profit = perfAll ? perfAll.profit : 0;
+
+  // ── Rankings (latest yearly period) ──
+  const latestYear = (CONV_DATA?.yearly||[]).map(d=>d.p).sort().pop();
+  const yearlyRows = latestYear ? CONV_DATA.yearly.filter(d=>d.p===latestYear) : [];
+  const myYearly = yearlyRows.find(d=>d.div===dk);
+  const allPk = yearlyRows.map(d=>d.pk).sort((a,b)=>b-a);
+  const allConv = yearlyRows.map(d=>d.r).sort((a,b)=>b-a);
+  const allE = yearlyRows.map(d=>d.e).sort((a,b)=>b-a);
+  const nDivs = yearlyRows.length || 1;
+  const rankPk = myYearly ? allPk.indexOf(myYearly.pk)+1 : nDivs;
+  const rankConv = myYearly ? allConv.indexOf(myYearly.r)+1 : nDivs;
+  const rankE = myYearly ? allE.indexOf(myYearly.e)+1 : nDivs;
+  const overallRank = Math.round((rankPk+rankConv)/2);
+
+  // ── Before/After training analysis ──
+  const trainDate = v.date ? new Date(v.date) : null;
+  const trainP = trainDate ? trainDate.getFullYear()+'-'+String(trainDate.getMonth()+1).padStart(2,'0') : null;
+  const before = trainP ? convAll.filter(d=>d.p<trainP) : [];
+  const after = trainP ? convAll.filter(d=>d.p>=trainP) : [];
+  const avgConvBefore = before.length>0 ? (before.reduce((s,d)=>s+d.r,0)/before.length) : null;
+  const avgConvAfter = after.length>0 ? (after.reduce((s,d)=>s+d.r,0)/after.length) : null;
+  const avgPkBefore = before.length>0 ? (before.reduce((s,d)=>s+d.pk,0)/before.length) : null;
+  const avgPkAfter = after.length>0 ? (after.reduce((s,d)=>s+d.pk,0)/after.length) : null;
+  const convChange = avgConvBefore!==null&&avgConvAfter!==null ? avgConvAfter-avgConvBefore : null;
+  const pkChange = avgPkBefore!==null&&avgPkAfter!==null ? ((avgPkAfter-avgPkBefore)/Math.max(avgPkBefore,0.01)*100) : null;
+
+  // Recent trend (last 6 months)
+  const recent6 = convAll.slice(-6);
+  const trend = trendDir(recent6.map(d=>d.pk));
+  const trendConv = trendDir(recent6.map(d=>d.r));
+
+  // Rainmakers in this division
+  const divRainmakers = (typeof RAINMAKERS!=='undefined'?RAINMAKERS:[]).filter(r=>{
+    const rn=normDiv(r.d), vn=normDiv(v.division);
+    return rn===vn||rn.includes(vn.substring(0,5))||vn.includes(rn.substring(0,5));
+  }).sort((a,b)=>b.t-a.t).slice(0,8);
+
+  // ── Honest assessment ──
+  const issues = [];
+  const strengths = [];
+  const actions = [];
+
+  if(!dk || convAll.length===0){
+    issues.push('No conversion data found for this division — either not tracked or no eligible homes.');
+  } else {
+    // Conv rate assessment
+    if(avgConv>=3) strengths.push(`Strong overall conversion rate of ${avgConv.toFixed(2)}%.`);
+    else if(avgConv>=1.5) issues.push(`Conversion rate of ${avgConv.toFixed(2)}% is middling — room for improvement.`);
+    else issues.push(`Conversion rate of ${avgConv.toFixed(2)}% is critically low. Needs immediate attention.`);
+
+    // Training impact
+    if(convChange!==null){
+      if(convChange>0.5) strengths.push(`Training produced a measurable lift: conv rate went from ${avgConvBefore.toFixed(1)}% to ${avgConvAfter.toFixed(1)}% (+${convChange.toFixed(1)}pp).`);
+      else if(convChange>-0.3) issues.push(`Training impact is negligible: conv rate was ${avgConvBefore!==null?avgConvBefore.toFixed(1):'?'}% before, ${avgConvAfter!==null?avgConvAfter.toFixed(1):'?'}% after. No meaningful lift.`);
+      else issues.push(`Conversion rate DECLINED after training: ${avgConvBefore!==null?avgConvBefore.toFixed(1):'?'}% → ${avgConvAfter!==null?avgConvAfter.toFixed(1):'?'}%. Training did not stick — needs follow-up or retraining.`);
+    }
+    if(pkChange!==null){
+      if(pkChange>15) strengths.push(`Packs/month improved ${pkChange.toFixed(0)}% after training (${avgPkBefore.toFixed(1)} → ${avgPkAfter.toFixed(1)} avg/mo).`);
+      else if(pkChange<-15) issues.push(`Packs/month dropped ${Math.abs(pkChange).toFixed(0)}% after training (${avgPkBefore.toFixed(1)} → ${avgPkAfter.toFixed(1)} avg/mo). Volume is declining.`);
+    }
+
+    // Trend
+    if(trend==='declining') issues.push('Recent 6-month pack trend is declining.');
+    else if(trend==='improving') strengths.push('Recent 6-month pack trend is improving.');
+    if(trendConv==='declining') issues.push('Conversion rate is trending downward over the last 6 months.');
+
+    // Ranking
+    if(overallRank<=3) strengths.push(`Ranked #${overallRank} of ${nDivs} divisions overall — top performer.`);
+    else if(overallRank>nDivs*0.7) issues.push(`Ranked #${overallRank} of ${nDivs} — bottom third of all divisions.`);
+
+    // Eligible homes
+    if(myYearly && myYearly.e < 50) issues.push(`Very low eligible home count (${myYearly.e}) — limited opportunity in this market.`);
+
+    // HST
+    if(totalHst>totalPk*0.5 && totalHst>20) strengths.push(`Strong HST Direct adoption: ${totalHst} packs — supplementing traditional ITM.`);
+    else if(totalHst===0 && hstAll.length===0) actions.push('No HST Direct activity detected. Evaluate if HST program is applicable here.');
+  }
+
+  // Actions
+  if(v.certified===0 && v.reps>0) actions.push('Zero certifications from training — follow up on certification completion.');
+  if(namedAmb.length===0) actions.push('No ambassadors identified — assign local champions to sustain momentum.');
+  if(issues.length>strengths.length && trainP) actions.push('Consider scheduling a retraining visit — current metrics suggest the initial training has not held.');
+  if(mhList.length===0) actions.push('No model home experiences set up — this is a missed opportunity for passive selling.');
+
+  // ── Metric card helper ──
+  function mCard(label,val,color,rankNum,rankTotal){
+    const rc = rankNum&&rankTotal ? rankClass(rankNum,rankTotal) : 'na';
+    const rankHtml = rankNum&&rankTotal ? `<div class="dd-metric-rank ${rc}">#${rankNum} of ${rankTotal}</div>` : '';
+    return `<div class="dd-metric"><div class="dd-metric-val" style="color:${color}">${val}</div><div class="dd-metric-label">${label}</div>${rankHtml}</div>`;
+  }
+
+  // ── Chart labels & data ──
+  const chartLabels = convAll.map(d=>d.p.substring(2)); // 23-06 format
+  const chartConv = convAll.map(d=>d.r);
+  const chartPk = convAll.map(d=>d.pk);
+  const chartClMap = {}; closesAll.forEach(d=>{chartClMap[d.p]=d.n;});
+  const chartCl = convAll.map(d=>chartClMap[d.p]||0);
+  const chartHstMap = {}; hstAll.forEach(d=>{chartHstMap[d.p]=d.n;});
+  const chartHst = convAll.map(d=>chartHstMap[d.p]||0);
+  const trainIdx = trainP ? convAll.findIndex(d=>d.p>=trainP) : -1;
+
+  _ce.innerHTML = `
+    <div class="d-header" style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <div>
+        <div class="d-name">${v.division}, ${v.state}</div>
+        <div class="d-meta">${v.date||'Date TBD'} · ${v.type} · ${v.reps||0} reps trained · ${v.certified||0} certified · ${namedAmb.length} ambassadors</div>
+        <div class="d-badges" style="margin-top:6px">${statusBadge}${typeBadge}</div>
+      </div>
+      <div class="dd-rank-badge ${dk?rankClass(overallRank,nDivs):'na'}">${dk?`#${overallRank} of ${nDivs} divisions`:'No division data'}</div>
+    </div>
+
+    <div class="dd-metrics">
+      ${mCard('Packs Sold (All Time)',totalPk.toLocaleString(),'#1f6feb',rankPk,nDivs)}
+      ${mCard('Revenue',rev?fmtK(rev):'—','#3fb950')}
+      ${mCard('Profit',profit?fmtK(profit):'—','#3fb950')}
+      ${mCard('Conv Rate',avgConv.toFixed(2)+'%','#f0a500',rankConv,nDivs)}
+      ${mCard('Eligible Homes',totalE.toLocaleString(),'#7ecfe0',rankE,nDivs)}
+      ${mCard('Closes',totalCl.toLocaleString(),'#f0a500')}
+      ${mCard('Ratifications',totalRat.toLocaleString(),'#7ecfe0')}
+      ${mCard('HST Direct',totalHst.toLocaleString(),'#f778ba')}
+      ${dk && PROJ_HOMES_2026[dk] ? mCard("Proj. Homes '26",PROJ_HOMES_2026[dk].toLocaleString(),'#d2a8ff') : ''}
+    </div>
+
+    ${v.preITM!==null&&v.postITM!==null?`<div class="itm-card">
       <div class="itm-block"><div class="itm-num before">${v.preITM}</div><div class="itm-label">Pre-Visit ITM</div></div>
       <div class="itm-arrow">→</div>
       <div class="itm-block"><div class="itm-num after">${v.postITM}</div><div class="itm-label">Post-Visit ITM</div></div>
       <div style="flex:1"></div>
-      <div class="itm-lift"><div class="itm-lift-val" style="color:${liftColor}">${liftDisplay}</div><div class="itm-lift-label">ITM Change</div></div>
-    </div>`;
-  }
+      <div class="itm-lift"><div class="itm-lift-val" style="color:${lift>0?'#3fb950':lift<0?'#f85149':'#8b949e'}">${lift>0?`+${lift} (+${liftPct}%)`:lift===0?'±0':lift}</div><div class="itm-lift-label">ITM Change</div></div>
+    </div>`:''}
 
-  /* Ambassadors */
-  let ambHtml='';
-  const namedAmb = v.ambassadors.filter(a=>a.name&&!a.name.startsWith('('));
-  if(namedAmb.length>0){
-    ambHtml=`<div class="info-section">
-      <h4>Ambassadors (${namedAmb.length})</h4>
-      <div class="info-card purple">
-        <table class="amb-table">
-          <tr><th>Name</th><th>Email</th><th>Phone</th></tr>
-          ${namedAmb.map(a=>`<tr><td>${a.name}</td><td>${a.email||'—'}</td><td>${a.phone||'—'}</td></tr>`).join('')}
-        </table>
-      </div>
-    </div>`;
-  }
-
-  /* Model homes */
-  const mhList = v.modelHomes.filter(m=>m&&m.toLowerCase()!=='n/a'&&m.toLowerCase()!=='virtual / n/a');
-  const mhHtml = mhList.length>0 ? `<div class="info-section">
-    <h4>Model Homes (${mhList.length})</h4>
-    <div class="info-card teal">${mhList.map(m=>`<div>📍 ${m}</div>`).join('')}</div>
-  </div>`:'';
-
-  /* Scenes */
-  const scenesHtml = v.scenes&&v.scenes!=='n/a'&&v.scenes!=='n' ? `<div class="info-section">
-    <h4>Scenes / Setups Achieved</h4>
-    <div class="info-card green">${v.scenes}</div>
-  </div>`:'';
-
-  /* Highlights */
-  const hlHtml = v.highlights ? `<div class="info-section">
-    <h4>Highlights</h4>
-    <div class="info-card yellow">${v.highlights}</div>
-  </div>`:'';
-
-  /* Follow-up */
-  const fuHtml = (v.followUp||v.followUpNotes) ? `<div class="info-section">
-    <h4>Follow-Up</h4>
-    <div class="info-card" style="border-left:3px solid #79c0ff">
-      ${v.followUp?`<div><strong>${v.followUp}</strong></div>`:''}
-      ${v.followUpNotes?`<div style="color:#8b949e;margin-top:4px;font-size:12px">${v.followUpNotes}</div>`:''}
+    ${convAll.length>0?`
+    <div class="full-chart-card">
+      <h3>Conversion Rate Trend <span style="font-size:10px;font-weight:400;color:#484f58;margin-left:8px">${v.date?'Vertical line = training date':''}</span></h3>
+      <div style="position:relative;height:240px"><canvas id="ddConvChart"></canvas></div>
     </div>
-  </div>`:'';
+    <div class="full-chart-card">
+      <h3>Monthly Packs, Closes &amp; HST Direct</h3>
+      <div style="position:relative;height:240px"><canvas id="ddPacksChart"></canvas></div>
+    </div>`:'<div class="info-card" style="margin-bottom:14px;border-left:3px solid #f85149;color:#f85149;font-weight:700">No conversion data found for this division in the dataset.</div>'}
 
-  /* Issues */
-  const issueHtml = v.issues ? `<div class="info-section">
-    <h4>Issues</h4>
-    <div class="info-card red">${v.issues}</div>
-  </div>`:'';
+    ${divRainmakers.length>0?`<div class="full-chart-card">
+      <h3>Top Performers in ${v.division}</h3>
+      <table class="summary-table">
+        <tr><th>#</th><th>Name</th><th>Community</th><th>Total Packs</th><th>Last 3 Mo</th></tr>
+        ${divRainmakers.map((r,i)=>`<tr>
+          <td style="color:#484f58;font-weight:700">#${i+1}</td>
+          <td><strong>${r.n}</strong></td>
+          <td style="color:#8b949e">${r.cm||'—'}</td>
+          <td style="color:#3fb950;font-weight:700">${r.t}</td>
+          <td>${r.l3||0}</td>
+        </tr>`).join('')}
+      </table>
+    </div>`:''}
 
-  document.getElementById('content').innerHTML = `
-    <div class="d-header">
-      <div class="d-name">${v.division}, ${v.state}</div>
-      <div class="d-meta">${v.date||'Date TBD'} · ${v.type}</div>
-      <div class="d-badges">${statusBadge}${typeBadge}</div>
+    <div class="dd-assess" style="border-left:3px solid ${issues.length>strengths.length?'#f85149':strengths.length>issues.length?'#3fb950':'#f0a500'}">
+      <h4 style="color:${issues.length>strengths.length?'#f85149':strengths.length>issues.length?'#3fb950':'#f0a500'}">HONEST ASSESSMENT — ${v.division}</h4>
+      ${strengths.length>0?`<div style="margin-bottom:8px"><div style="font-size:10px;color:#3fb950;font-weight:700;text-transform:uppercase;margin-bottom:4px">Strengths</div>${strengths.map(s=>`<p class="flag green">+ ${s}</p>`).join('')}</div>`:''}
+      ${issues.length>0?`<div style="margin-bottom:8px"><div style="font-size:10px;color:#f85149;font-weight:700;text-transform:uppercase;margin-bottom:4px">Issues</div>${issues.map(s=>`<p class="flag red">- ${s}</p>`).join('')}</div>`:''}
+      ${actions.length>0?`<div><div style="font-size:10px;color:#f0a500;font-weight:700;text-transform:uppercase;margin-bottom:4px">Recommended Actions</div>${actions.map(s=>`<p class="flag amber">→ ${s}</p>`).join('')}</div>`:''}
+      ${strengths.length===0&&issues.length===0?'<p class="flag muted">Insufficient data to assess this division.</p>':''}
     </div>
 
-    <div class="d-metrics">
-      <div class="d-metric teal"><div class="d-metric-val">${v.reps||0}</div><div class="d-metric-label">Reps Reached</div></div>
-      <div class="d-metric green"><div class="d-metric-val">${v.certified||0}</div><div class="d-metric-label">Certified</div></div>
-      <div class="d-metric purple"><div class="d-metric-val">${namedAmb.length}</div><div class="d-metric-label">Ambassadors</div></div>
-      <div class="d-metric"><div class="d-metric-val">${mhList.length||0}</div><div class="d-metric-label">Model Homes</div></div>
-    </div>
-
-    ${itmHtml}
-    ${hlHtml}
-    ${ambHtml}
-    ${mhHtml}
-    ${scenesHtml}
-    ${fuHtml}
-    ${issueHtml}
+    ${v.highlights?`<div class="info-section"><h4>Highlights</h4><div class="info-card yellow">${v.highlights}</div></div>`:''}
+    ${namedAmb.length>0?`<div class="info-section"><h4>Ambassadors (${namedAmb.length})</h4><div class="info-card purple"><table class="amb-table"><tr><th>Name</th><th>Email</th><th>Phone</th></tr>${namedAmb.map(a=>`<tr><td>${a.name}</td><td>${a.email||'—'}</td><td>${a.phone||'—'}</td></tr>`).join('')}</table></div></div>`:''}
+    ${(v.followUp||v.followUpNotes)?`<div class="info-section"><h4>Follow-Up</h4><div class="info-card" style="border-left:3px solid #79c0ff">${v.followUp?`<div><strong>${v.followUp}</strong></div>`:''}${v.followUpNotes?`<div style="color:#8b949e;margin-top:4px;font-size:12px">${v.followUpNotes}</div>`:''}</div></div>`:''}
+    ${v.issues?`<div class="info-section"><h4>Issues</h4><div class="info-card red">${v.issues}</div></div>`:''}
   `;
+
+  // ── Charts ──
+  if(convAll.length>0){
+    const ttBase={backgroundColor:'rgba(28,33,40,1)',borderColor:'#30363d',borderWidth:1,titleColor:'#e6edf3',bodyColor:'#c9d1d9',padding:10};
+    // Conv rate chart with training marker
+    new Chart(document.getElementById('ddConvChart'),{
+      type:'line',
+      data:{labels:chartLabels,datasets:[
+        {label:'Conv Rate %',data:chartConv,borderColor:'#3fb950',backgroundColor:'rgba(63,185,80,0.1)',fill:true,tension:0.3,pointRadius:3,pointBackgroundColor:'#3fb950',pointStyle:'line'},
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{labels:{color:'#8b949e',usePointStyle:true}},tooltip:{...ttBase,mode:'index',intersect:false},datalabels:{display:false}},
+        scales:{x:{ticks:{color:'#8b949e',font:{size:9},maxTicksLimit:15},grid:{color:'#21262d'}},y:{ticks:{color:'#8b949e',callback:v=>v+'%'},grid:{color:'#21262d'},beginAtZero:true}}
+      },
+      plugins:[{id:'trainLine',afterDraw(chart){
+        if(trainIdx<0) return;
+        const x=chart.scales.x.getPixelForTick(trainIdx);
+        const{top,bottom}=chart.chartArea;
+        const c=chart.ctx;
+        c.save(); c.strokeStyle='#f0a500'; c.lineWidth=2; c.setLineDash([6,4]);
+        c.beginPath(); c.moveTo(x,top); c.lineTo(x,bottom); c.stroke();
+        c.fillStyle='#f0a500'; c.font='bold 9px system-ui'; c.textAlign='center';
+        c.fillText('TRAINED',x,top-4); c.restore();
+      }}]
+    });
+    // Packs + closes + HST chart
+    new Chart(document.getElementById('ddPacksChart'),{
+      type:'bar',
+      data:{labels:chartLabels,datasets:[
+        {label:'Packs Sold',data:chartPk,backgroundColor:'rgba(31,111,235,0.75)',borderRadius:3},
+        {label:'Closes',data:chartCl,backgroundColor:'rgba(240,165,0,0.6)',borderRadius:3},
+        {label:'HST Direct',data:chartHst,backgroundColor:'rgba(247,120,186,0.7)',borderRadius:3},
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{labels:{color:'#8b949e'}},tooltip:{...ttBase,mode:'index',intersect:false},datalabels:{display:false}},
+        scales:{x:{ticks:{color:'#8b949e',font:{size:9},maxTicksLimit:15},grid:{color:'#21262d'}},y:{ticks:{color:'#8b949e'},grid:{color:'#21262d'},beginAtZero:true}}
+      },
+      plugins:[{id:'trainLine2',afterDraw(chart){
+        if(trainIdx<0) return;
+        const x=chart.scales.x.getPixelForTick(trainIdx);
+        const{top,bottom}=chart.chartArea;
+        const c=chart.ctx;
+        c.save(); c.strokeStyle='#f0a500'; c.lineWidth=2; c.setLineDash([6,4]);
+        c.beginPath(); c.moveTo(x,top); c.lineTo(x,bottom); c.stroke(); c.restore();
+      }}]
+    });
+  }
 }
 
 /* ── RENDER OVERVIEW (default) ── */
 /* ── REPORT CARD DATA (exact from HEX PDF) ── */
 const REPORT_CARD = {
-  last3: { totalPacks:367, itmPacks:147, revenue:210000, profit:54400, convRateAll:1.65, convRateITM:0.82 },
-  allTime: { totalPacks:7257, itmPacks:3276, revenue:5700000, profit:1500000, convRateAll:3.08, convRateITM:1.78 },
+  last3: { totalPacks:367, itmPacks:147, revenue:209952, profit:54388, convRateAll:1.65, convRateITM:0.82 },
+  allTime: { totalPacks:7262, itmPacks:3278, revenue:5700183, profit:1464923, convRateAll:3.08, convRateITM:1.78 },
   projections: { eligibleHomes:506, projRevenue:882700, projProfit:226900, ratifiedHomes:6268, projRevTotal:10900000, projProfitTotal:2800000 }
 };
 
@@ -671,49 +1027,47 @@ const DPUP_MONTHLY = {
           'Jan 24','Feb 24','Mar 24','Apr 24','May 24','Jun 24','Jul 24','Aug 24','Sep 24','Oct 24','Nov 24','Dec 24',
           'Jan 25','Feb 25','Mar 25','Apr 25','May 25','Jun 25','Jul 25','Aug 25','Sep 25','Oct 25','Nov 25','Dec 25',
           'Jan 26','Feb 26','Mar 26','Apr 26'],
-  // Exact monthly totals: 187,174,217,388,258,262,200,195,200,163,326,234 | 259,164,207,101,141,152,197,178,131,154,185,203 | 204,221,165,181,214,194,172,153,95,119,123,133 | 111,9
-  ITM:      [88,82,102,148,114,119,94,92,94,76,153,110,
-             122,77,97,48,66,71,92,84,61,72,87,96,
-             97,103,77,85,101,91,81,72,45,56,57,62,
-             53,5,null,null],
-  spec:     [71,66,82,100,85,88,76,74,76,62,124,89,
-             98,62,79,38,54,58,75,68,50,59,70,77,
-             77,84,63,69,81,74,65,58,36,45,47,51,
-             42,3,null,null],
-  incentive:[6,5,7,90,35,28,6,6,6,5,10,7,
-             8,5,6,3,4,5,6,5,4,5,6,6,
-             6,7,5,5,6,6,5,5,3,4,4,4,
-             3,0,null,null],
-  model:    [22,21,26,50,24,27,24,23,24,20,39,28,
-             31,20,25,12,17,18,24,21,16,18,22,24,
-             24,27,20,22,26,23,21,18,11,14,15,16,
-             13,1,null,null],
+  ITM:      [30,22,95,83,136,102,102,104,101,94,69,65,
+             118,115,134,88,119,51,75,85,75,101,65,67,
+             59,93,78,96,85,76,95,106,65,54,48,38,
+             51,44,52,6],
+  spec:     [5,4,38,42,55,39,91,61,57,43,56,64,
+             154,77,74,49,76,22,30,32,68,43,41,53,
+             85,73,92,85,55,76,98,42,65,45,28,38,
+             52,32,21,4],
+  incentive:[0,14,5,0,1,181,36,23,16,2,16,17,
+             25,16,17,3,0,1,5,2,22,11,5,1,
+             5,1,2,1,3,2,2,29,20,14,9,26,
+             9,48,25,2],
+  model:    [12,3,49,49,25,66,29,74,26,56,59,17,
+             29,26,34,24,12,27,31,33,31,23,20,32,
+             36,35,32,39,22,27,19,17,22,40,10,17,
+             11,9,13,2],
   hstDirect:[null,null,null,null,null,null,null,null,null,null,null,null,
              103,121,159,90,129,141,101,118,135,142,125,100,
              119,126,159,157,153,183,94,128,145,126,124,88,
-             124,111,150,9]
+             124,111,150,10]
 };
 
 /* ── ITM MONTHLY REVENUE/PROFIT/CONV (revenue/profit derived from ITM packs × $1,740/$458 per pack; conv rates from HEX PDF labels) ── */
 const ITM_MONTHLY = {
   labels: DPUP_MONTHLY.labels,
-  // Revenue = ITM packs × $1,740 avg; Profit = ITM packs × $458 avg (derived from all-time: $5.7M/$1.5M ÷ 3,276 packs)
-  revenue:[146160,135720,170520,243600,191400,200100,156600,153120,156600,127020,255780,182700,
-           203580,128760,161820,78300,109620,118320,154860,139200,102660,120060,144420,158280,
-           160080,172260,128760,140940,167040,151380,134010,120006,74820,93960,95700,104400,
-           87000,6960,null,null],
-  profit: [38472,35724,44884,64120,50380,52670,41220,40304,41220,33434,67326,48090,
-           53586,33892,42594,20610,28854,31144,40762,36640,27022,31602,38014,41678,
-           42136,45342,33892,37098,43968,39846,35266,31602,19694,24732,25190,27480,
-           22900,1832,null,null],
-  // Conversion rates: labeled values from HEX PDF; estimates noted with ~
-  convRate:[4.2,6.3,4.4,3.0,3.3,1.8,2.0,3.2,2.9,2.5,2.5,1.9,
-            1.8,1.1,2.2,2.0,3.0,1.5,2.6,2.8,2.3,2.5,2.2,1.5,
-            3.4,1.6,1.4,0.9,1.7,1.2,1.5,1.5,1.3,1.2,1.0,0.9,
-            1.0,0.5,null,null]
+  revenue:[63882,49860,205641,175401,271854,210168,210168,224136,197874,191673,134541,111627,
+           239886,241533,251739,169308,241011,82485,119574,122067,95751,129045,84441,87417,
+           82713,121392,115053,146028,139029,120534,134505,126372,95820,65031,68103,47463,
+           76500,60228,73224,8424],
+  profit: [16303,12705,52459,44772,69493,53681,53681,57183,50596,48957,34416,28661,
+           61294,61662,64449,43325,61587,21220,30783,31618,24934,33679,22032,22793,
+           21519,31692,29791,37729,35850,31126,34836,33131,24793,16983,17650,12323,
+           19780,15595,19014,2178],
+  convRate:[2.5,1.6,5.9,4.6,7.4,5.0,4.5,4.2,3.9,2.1,1.8,1.4,
+            1.7,1.8,2.0,1.4,2.1,0.9,1.4,1.6,1.7,2.0,1.4,1.5,
+            1.0,1.8,1.2,1.4,1.4,1.4,1.6,1.8,1.4,1.1,1.0,0.8,
+            0.9,0.8,0.8,0.9]
 };
 
 function fmtK(v){ return v>=1000000?'$'+(v/1000000).toFixed(1)+'M':v>=1000?'$'+(v/1000).toFixed(v>=100000?0:1)+'K':'$'+v; }
+function fmtDiv(d){ return d.replace(/_/g,' ').replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase()); }
 
 function renderDivTable(tab){
   const data = DIV_PERF[tab];
@@ -979,6 +1333,8 @@ function showDivisions(){
           const repsCtx = v.reps ? ` / ${v.reps} reps` : '';
           const liftDisplay = v.status==='cancelled'
             ? `<span class="td-cancelled">Cancelled</span>`
+            : v.status==='scheduled'
+            ? `<span style="color:#f0883e;font-weight:600">Scheduled</span>`
             : lift===null?'<span class="td-flat">—</span>'
             : lift>0?`<span class="td-lift">+${lift}${repsCtx}</span>`
             : `<span class="td-flat">±0${repsCtx}</span>`;
@@ -1012,17 +1368,32 @@ function showConvRates(period, value){
 function renderConvRates(period, value){
   // period = 'yearly'|'quarterly'|'monthly'   value = '2025'|'2025-Q1'|'2025-01' etc.
   const src = CONV_DATA[period === 'yearly' ? 'yearly' : period === 'quarterly' ? 'quarterly' : 'monthly'];
-  const latestMonth = [...new Set(CONV_DATA.monthly.map(d=>d.p))].sort().pop();
+  const _allMonths = [...new Set(CONV_DATA.monthly.map(d=>d.p))].sort();
+  const _now = new Date();
+  const _curP = _now.getFullYear()+'-'+String(_now.getMonth()+1).padStart(2,'0');
+  const latestMonth = _allMonths[_allMonths.length-1]===_curP && _allMonths.length>1 ? _allMonths[_allMonths.length-2] : _allMonths[_allMonths.length-1];
+  // Last completed quarter
+  const _allQtrs = [...new Set((CONV_DATA.quarterly||[]).map(d=>d.p))].sort();
+  const _curQ = _now.getFullYear()+'-'+String(Math.floor(_now.getMonth()/3)*3+1).padStart(2,'0');
+  const latestQtr = _allQtrs[_allQtrs.length-1]===_curQ && _allQtrs.length>1 ? _allQtrs[_allQtrs.length-2] : _allQtrs[_allQtrs.length-1];
+  // Last completed year
+  const _allYrs = [...new Set((CONV_DATA.yearly||[]).map(d=>d.p))].sort();
+  const _curY = String(_now.getFullYear());
+  const latestYear = _allYrs[_allYrs.length-1]===_curY && _allYrs.length>1 ? _allYrs[_allYrs.length-2] : _allYrs[_allYrs.length-1];
   const _ce = document.getElementById('content');
   const _sv = _ce.scrollTop;
 
   // Period options
   const allPeriods = [...new Set(src.map(d=>d.p))].sort();
 
+  // Default to last completed period if no value provided
+  if(period === 'monthly' && !value) value = latestMonth;
+  if(period === 'quarterly' && !value) value = latestQtr;
+  if(period === 'yearly' && !value) value = latestYear;
+
   // For monthly: show per-division trend for selected division
   // For yearly/quarterly: show all divisions for selected period
 
-  const fmtDiv = d => d.replace(/_/g,' ').replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
   const fmtPeriod = p => {
     if(period==='yearly') return p.substring(0,4);
     if(period==='quarterly'){
@@ -1044,8 +1415,8 @@ function renderConvRates(period, value){
         ${[...allPeriods].reverse().map(p=>`<option value="${p}"${p===value?' selected':''}>${fmtPeriod(p)}</option>`).join('')}
        </select>
        <span style="color:#484f58;font-size:12px;margin:0 2px">|</span>
-       ${displayMonths.map((p,idx)=>{const isYoy=showYoy&&idx===0;const isActive=p===value;const sep=(showYoy&&idx===1)?'<span style="color:#30363d;margin:0 3px;font-size:11px">|</span>':'';return sep+`<button onmouseenter="renderConvRates('monthly','${p}')" onclick="renderConvRates('monthly','${p}')" style="background:${isActive?'#1f6feb':isYoy?'#161b22':'#21262d'};border:${isActive?'none':isYoy?'1px solid #e3b34188':'1px solid #30363d'};border-radius:6px;padding:4px 8px;color:${isActive?'#fff':isYoy?'#e3b341':'#8b949e'};font-size:10px;font-weight:600;cursor:pointer;white-space:nowrap">${fmtMonthShort(p)}${isYoy?' ↩':''}</button>`;}).join('')}`
-    : allPeriods.map(p=>`<button onmouseenter="renderConvRates('${period}','${p}')" onclick="renderConvRates('${period}','${p}')" style="background:${p===value?'#1f6feb':'#21262d'};border:${p===value?'none':'1px solid #30363d'};border-radius:6px;padding:4px 10px;color:${p===value?'#fff':'#8b949e'};font-size:11px;font-weight:600;cursor:pointer">${fmtPeriod(p)}</button>`).join('');
+       ${displayMonths.map((p,idx)=>{const isYoy=showYoy&&idx===0;const isActive=p===value;const sep=(showYoy&&idx===1)?'<span style="color:#30363d;margin:0 3px;font-size:11px">|</span>':'';return sep+`<button class="period-tab${isActive?' active':''}" onclick="renderConvRates('monthly','${p}')" style="${isYoy&&!isActive?'border-color:#e3b34188;color:#e3b341;background:#161b22;':''}white-space:nowrap;font-size:10px;padding:4px 8px">${fmtMonthShort(p)}${isYoy?' ↩':''}</button>`;}).join('')}`
+    : allPeriods.map(p=>`<button class="period-tab${p===value?' active':''}" onclick="renderConvRates('${period}','${p}')">${fmtPeriod(p)}</button>`).join('');
 
   if(period === 'monthly' && value && !/^\d{4}-\d{2}$/.test(value)){
     // division picker + that division's trend chart
@@ -1061,8 +1432,8 @@ function renderConvRates(period, value){
       </div>
       <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center">
         <button style="background:#1f6feb;border:none;border-radius:6px;padding:5px 12px;color:#fff;font-size:11px;font-weight:600;cursor:pointer">Monthly</button>
-        <button onclick="renderConvRates('quarterly','2026-01')" onmouseenter="renderConvRates('quarterly','2026-01')" style="background:#21262d;border:1px solid #30363d;border-radius:6px;padding:5px 12px;color:#8b949e;font-size:11px;font-weight:600;cursor:pointer">Quarterly</button>
-        <button onclick="renderConvRates('yearly','2026')" onmouseenter="renderConvRates('yearly','2026')" style="background:#21262d;border:1px solid #30363d;border-radius:6px;padding:5px 12px;color:#8b949e;font-size:11px;font-weight:600;cursor:pointer">Yearly</button>
+        <button class="period-btn" onclick="renderConvRates('quarterly','${latestQtr}')">Quarterly</button>
+        <button class="period-btn" onclick="renderConvRates('yearly','${latestYear}')">Yearly</button>
         <span style="color:#484f58;font-size:12px;margin:0 4px">|</span>
         <select id="conv-div-sel" onchange="renderConvRates('monthly',this.value)" style="background:#161b22;border:1px solid #30363d;border-radius:6px;padding:5px 10px;color:#c9d1d9;font-size:12px;cursor:pointer">
           ${divs.map(d=>`<option value="${d}"${d===selDiv?' selected':''}>${fmtDiv(d)}</option>`).join('')}
@@ -1120,7 +1491,6 @@ function renderConvRates(period, value){
   }
 
   // Monthly (all-divs), Yearly, or Quarterly — all divisions for selected period
-  if(period === 'monthly' && !value) value = latestMonth;
 
   // Build maps before sort so sort keys can reference them
   const closesSrc = (CLOSES_DATA||{})[period==='yearly'?'yearly':period==='quarterly'?'quarterly':'monthly'] || [];
@@ -1130,12 +1500,44 @@ function renderConvRates(period, value){
   const ratifSrc = (RATIF_DATA||{})[period==='yearly'?'yearly':period==='quarterly'?'quarterly':'monthly'] || [];
   const ratifMap = {}; ratifSrc.forEach(r=>{ ratifMap[r.div+'|'+r.p]=r.n; });
   const getRatif = div => ratifMap[div+'|'+value] || null;
+  // HST Direct — global aggregate from DPUP_MONTHLY.hstDirect (not per-division)
+  const _hstLabels = DPUP_MONTHLY.labels;
+  const _hstVals   = DPUP_MONTHLY.hstDirect;
+  let totalHstCalc = 0;
+  if (period === 'monthly') {
+    // value is like '2026-03', labels are like 'Mar 26'
+    const mi = _hstLabels.findIndex(l => {
+      const [mon,yr] = l.split(' ');
+      const mIdx = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].indexOf(mon);
+      const full = '20' + yr + '-' + String(mIdx+1).padStart(2,'0');
+      return full === value;
+    });
+    if (mi >= 0 && _hstVals[mi] != null) totalHstCalc = _hstVals[mi];
+  } else if (period === 'quarterly') {
+    // value is like '2026-01' (Q1 start month)
+    const qYear = value.substring(0,4);
+    const qMonth = parseInt(value.substring(5,7));
+    const qIdx = Math.floor((qMonth-1)/3);
+    const months = [qIdx*3, qIdx*3+1, qIdx*3+2];
+    months.forEach(mi => {
+      const label = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][mi] + ' ' + qYear.substring(2);
+      const idx = _hstLabels.indexOf(label);
+      if (idx >= 0 && _hstVals[idx] != null) totalHstCalc += _hstVals[idx];
+    });
+  } else if (period === 'yearly') {
+    // value is like '2026'
+    const yr = value.substring(2);
+    _hstLabels.forEach((l, i) => {
+      if (l.endsWith(yr) && _hstVals[i] != null) totalHstCalc += _hstVals[i];
+    });
+  }
 
   const getDivSortVal = d => {
     if(divSortBy==='e')      return d.e;
     if(divSortBy==='r')      return d.r;
     if(divSortBy==='ratif')  return ratifMap[d.div+'|'+value]||0;
     if(divSortBy==='closes') return closesMap[d.div+'|'+value]||0;
+    if(divSortBy==='proj')   return PROJ_HOMES_2026[d.div]||0;
     return d.pk; // 'pk' default
   };
   const rows = src.filter(d=>d.p===value).sort((a,b)=>getDivSortVal(b)-getDivSortVal(a));
@@ -1144,47 +1546,52 @@ function renderConvRates(period, value){
   const avgRate     = totalE>0 ? (totalPk/totalE*100).toFixed(2) : 0;
   const totalRatif  = rows.reduce((s,d)=>s+(ratifMap[d.div+'|'+value]||0),0);
   const totalCloses = rows.reduce((s,d)=>s+(closesMap[d.div+'|'+value]||0),0);
+  const totalHst    = totalHstCalc;
 
   _ce.innerHTML = `
+    <div style="position:sticky;top:0;z-index:50;background:#0d1117;padding-bottom:10px">
     <div style="margin-bottom:14px">
       <div style="font-size:22px;font-weight:700;color:#7ecfe0">📈 Conversion Rate by Division</div>
       <div style="font-size:13px;color:#8b949e;margin-top:3px">Eligible homes, packs sold, and ITM conversion rate · ${fmtPeriod(value)}</div>
     </div>
     <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center">
-      <button onclick="renderConvRates('monthly','${period==='monthly'?value:latestMonth}')" onmouseenter="renderConvRates('monthly','${period==='monthly'?value:latestMonth}')" style="background:${period==='monthly'?'#1f6feb':'#21262d'};border:${period==='monthly'?'none':'1px solid #30363d'};border-radius:6px;padding:5px 12px;color:${period==='monthly'?'#fff':'#8b949e'};font-size:11px;font-weight:600;cursor:pointer">Monthly</button>
-      <button onclick="renderConvRates('quarterly','${period==='quarterly'?value:'2026-01'}')" onmouseenter="renderConvRates('quarterly','${period==='quarterly'?value:'2026-01'}')" style="background:${period==='quarterly'?'#1f6feb':'#21262d'};border:${period==='quarterly'?'none':'1px solid #30363d'};border-radius:6px;padding:5px 12px;color:${period==='quarterly'?'#fff':'#8b949e'};font-size:11px;font-weight:600;cursor:pointer">Quarterly</button>
-      <button onclick="renderConvRates('yearly','${period==='yearly'?value:'2026'}')" onmouseenter="renderConvRates('yearly','${period==='yearly'?value:'2026'}')" style="background:${period==='yearly'?'#1f6feb':'#21262d'};border:${period==='yearly'?'none':'1px solid #30363d'};border-radius:6px;padding:5px 12px;color:${period==='yearly'?'#fff':'#8b949e'};font-size:11px;font-weight:600;cursor:pointer">Yearly</button>
+      <button class="period-btn${period==='monthly'?' active':''}" onclick="renderConvRates('monthly','${period==='monthly'?value:latestMonth}')">Monthly</button>
+      <button class="period-btn${period==='quarterly'?' active':''}" onclick="renderConvRates('quarterly','${period==='quarterly'?value:latestQtr}')">Quarterly</button>
+      <button class="period-btn${period==='yearly'?' active':''}" onclick="renderConvRates('yearly','${period==='yearly'?value:latestYear}')">Yearly</button>
       <span style="color:#484f58;font-size:12px;margin:0 4px">|</span>
       ${periodTabs}
     </div>
     <div class="rm-stats" style="margin-bottom:16px">
       <div class="rm-stat"><div class="rm-stat-val" style="color:#8b949e">${rows.length}</div><div class="rm-stat-label">Divisions</div></div>
-      <div class="rm-stat" style="cursor:pointer;${divSortBy==='e'?'border-color:#7ecfe0;':''}" onclick="divSortBy='e';renderConvRates('${period}','${value}')" title="Sort by Eligible Homes"><div class="rm-stat-val teal">${totalE.toLocaleString()}</div><div class="rm-stat-label">Eligible Homes${divSortBy==='e'?' ↓':''}</div></div>
-      <div class="rm-stat" style="cursor:pointer;${divSortBy==='pk'?'border-color:#1f6feb;':''}" onclick="divSortBy='pk';renderConvRates('${period}','${value}')" title="Sort by Packs Sold"><div class="rm-stat-val" style="color:#1f6feb">${totalPk.toLocaleString()}</div><div class="rm-stat-label">Packs Sold${divSortBy==='pk'?' ↓':''}</div></div>
-      <div class="rm-stat" style="cursor:pointer;${divSortBy==='r'?'border-color:#3fb950;':''}" onclick="divSortBy='r';renderConvRates('${period}','${value}')" title="Sort by Conv. Rate"><div class="rm-stat-val" style="color:#3fb950">${avgRate}%</div><div class="rm-stat-label">Conv. Rate%${divSortBy==='r'?' ↓':''}</div></div>
-      <div class="rm-stat" style="cursor:pointer;${divSortBy==='ratif'?'border-color:#7ecfe0;':''}" onclick="divSortBy='ratif';renderConvRates('${period}','${value}')" title="Sort by Ratifications"><div class="rm-stat-val" style="color:#7ecfe0">${totalRatif.toLocaleString()}</div><div class="rm-stat-label">Ratifications${divSortBy==='ratif'?' ↓':''}</div></div>
-      <div class="rm-stat" style="cursor:pointer;${divSortBy==='closes'?'border-color:#d2a8ff;':''}" onclick="divSortBy='closes';renderConvRates('${period}','${value}')" title="Sort by Closes"><div class="rm-stat-val" style="color:#d2a8ff">${totalCloses.toLocaleString()}</div><div class="rm-stat-label">Closes${divSortBy==='closes'?' ↓':''}</div></div>
+      <div class="rm-stat" style="cursor:pointer;${divSortBy==='e'?'border-color:#7ecfe0;box-shadow:0 0 8px 2px rgba(126,207,224,0.4);':''}" onclick="divSortBy='e';renderConvRates('${period}','${value}')" title="Sort by Eligible Homes"><div class="rm-stat-val teal">${totalE.toLocaleString()}</div><div class="rm-stat-label">Eligible Homes${divSortBy==='e'?' ↓':''}</div></div>
+      <div class="rm-stat" style="cursor:pointer;${divSortBy==='pk'?'border-color:#1f6feb;box-shadow:0 0 8px 2px rgba(31,111,235,0.4);':''}" onclick="divSortBy='pk';renderConvRates('${period}','${value}')" title="Sort by Packs Sold"><div class="rm-stat-val" style="color:#1f6feb">${totalPk.toLocaleString()}</div><div class="rm-stat-label">Packs Sold${divSortBy==='pk'?' ↓':''}</div></div>
+      <div class="rm-stat" style="cursor:pointer;${divSortBy==='r'?'border-color:#3fb950;box-shadow:0 0 8px 2px rgba(63,185,80,0.4);':''}" onclick="divSortBy='r';renderConvRates('${period}','${value}')" title="Sort by Conv. Rate"><div class="rm-stat-val" style="color:#3fb950">${avgRate}%</div><div class="rm-stat-label">Conv. Rate%${divSortBy==='r'?' ↓':''}</div></div>
+      <div class="rm-stat" style="cursor:pointer;${divSortBy==='ratif'?'border-color:#7ecfe0;box-shadow:0 0 8px 2px rgba(126,207,224,0.4);':''}" onclick="divSortBy='ratif';renderConvRates('${period}','${value}')" title="Sort by Ratifications"><div class="rm-stat-val" style="color:#7ecfe0">${totalRatif.toLocaleString()}</div><div class="rm-stat-label">Ratifications${divSortBy==='ratif'?' ↓':''}</div></div>
+      <div class="rm-stat" style="cursor:pointer;${divSortBy==='closes'?'border-color:#f0a500;box-shadow:0 0 8px 2px rgba(240,165,0,0.4);':''}" onclick="divSortBy='closes';renderConvRates('${period}','${value}')" title="Sort by Closes"><div class="rm-stat-val" style="color:#f0a500">${totalCloses.toLocaleString()}</div><div class="rm-stat-label">Closes${divSortBy==='closes'?' ↓':''}</div></div>
+      <div class="rm-stat" title="HST Direct Sell Packs (all divisions)"><div class="rm-stat-val" style="color:#f778ba">${totalHst.toLocaleString()}</div><div class="rm-stat-label">HST Direct</div></div>
+    </div>
     </div>
     <div class="full-chart-card">
-      <h3>${fmtPeriod(value)} — All Divisions <span style="font-size:10px;font-weight:400;color:#484f58;margin-left:8px">sorted by ${divSortBy==='e'?'eligible homes':divSortBy==='r'?'conv. rate':divSortBy==='ratif'?'ratifications':divSortBy==='closes'?'closes':'packs sold'} · click a bar to see monthly detail</span></h3>
+      <h3>${fmtPeriod(value)} — All Divisions <span style="font-size:10px;font-weight:400;color:#484f58;margin-left:8px">sorted by ${divSortBy==='e'?'eligible homes':divSortBy==='r'?'conv. rate':divSortBy==='ratif'?'ratifications':divSortBy==='closes'?'closes':divSortBy==='proj'?'proj. homes':'packs sold'} · click a bar to see monthly detail</span></h3>
       <div style="position:relative;height:320px"><canvas id="convDivChart"></canvas></div>
     </div>
     <div class="full-chart-card">
-      <h3>Division Pipeline — ${fmtPeriod(value)} <span style="font-size:10px;font-weight:400;color:#484f58;margin-left:8px">Eligible pool · Ratifications · Closes · Packs Sold — sorted by ${divSortBy==='e'?'eligible homes':divSortBy==='r'?'conv. rate':divSortBy==='ratif'?'ratifications':divSortBy==='closes'?'closes':'packs sold'}</span></h3>
+      <h3>Division Pipeline — ${fmtPeriod(value)} <span style="font-size:10px;font-weight:400;color:#484f58;margin-left:8px">Eligible pool · Ratifications · Closes · Packs Sold — sorted by ${divSortBy==='e'?'eligible homes':divSortBy==='r'?'conv. rate':divSortBy==='ratif'?'ratifications':divSortBy==='closes'?'closes':divSortBy==='proj'?'proj. homes':'packs sold'}</span></h3>
       <div style="position:relative;height:580px"><canvas id="pipelineChart"></canvas></div>
     </div>
     <div class="full-chart-card">
       <h3 style="margin-bottom:12px">Division Breakdown — ${fmtPeriod(value)}</h3>
       <table class="summary-table">
-        <tr><th>#</th><th>Division</th><th style="cursor:pointer" onclick="divSortBy='e';renderConvRates('${period}','${value}')">${divSortBy==='e'?'↓ ':''}<span style="color:${divSortBy==='e'?'#7ecfe0':'inherit'}">Eligible Homes</span></th><th style="cursor:pointer" onclick="divSortBy='pk';renderConvRates('${period}','${value}')">${divSortBy==='pk'?'↓ ':''}<span style="color:${divSortBy==='pk'?'#1f6feb':'inherit'}">Packs Sold</span></th><th style="cursor:pointer" onclick="divSortBy='r';renderConvRates('${period}','${value}')">${divSortBy==='r'?'↓ ':''}<span style="color:${divSortBy==='r'?'#3fb950':'inherit'}">Conv. Rate %</span></th><th style="cursor:pointer" onclick="divSortBy='ratif';renderConvRates('${period}','${value}')">${divSortBy==='ratif'?'↓ ':''}<span style="color:${divSortBy==='ratif'?'#7ecfe0':'inherit'}">Ratifications</span></th><th style="cursor:pointer" onclick="divSortBy='closes';renderConvRates('${period}','${value}')">${divSortBy==='closes'?'↓ ':''}<span style="color:${divSortBy==='closes'?'#d2a8ff':'inherit'}">Home Closes</span></th></tr>
-        ${rows.map((d,i)=>{ const cl=getCloses(d.div); const rf=getRatif(d.div); return `<tr style="cursor:pointer" onclick="renderConvRates('monthly','${d.div}')">
+        <tr><th>#</th><th>Division</th><th style="cursor:pointer" onclick="divSortBy='proj';renderConvRates('${period}','${value}')">${divSortBy==='proj'?'↓ ':''}<span style="color:${divSortBy==='proj'?'#d2a8ff':'inherit'}">Proj. Homes '26</span></th><th style="cursor:pointer" onclick="divSortBy='e';renderConvRates('${period}','${value}')">${divSortBy==='e'?'↓ ':''}<span style="color:${divSortBy==='e'?'#7ecfe0':'inherit'}">Eligible Homes</span></th><th style="cursor:pointer" onclick="divSortBy='pk';renderConvRates('${period}','${value}')">${divSortBy==='pk'?'↓ ':''}<span style="color:${divSortBy==='pk'?'#1f6feb':'inherit'}">Packs Sold</span></th><th style="cursor:pointer" onclick="divSortBy='r';renderConvRates('${period}','${value}')">${divSortBy==='r'?'↓ ':''}<span style="color:${divSortBy==='r'?'#3fb950':'inherit'}">Conv. Rate %</span></th><th style="cursor:pointer" onclick="divSortBy='ratif';renderConvRates('${period}','${value}')">${divSortBy==='ratif'?'↓ ':''}<span style="color:${divSortBy==='ratif'?'#7ecfe0':'inherit'}">Ratifications</span></th><th style="cursor:pointer" onclick="divSortBy='closes';renderConvRates('${period}','${value}')">${divSortBy==='closes'?'↓ ':''}<span style="color:${divSortBy==='closes'?'#f0a500':'inherit'}">Home Closes</span></th></tr>
+        ${rows.map((d,i)=>{ const cl=getCloses(d.div); const rf=getRatif(d.div); const ph=PROJ_HOMES_2026[d.div]||null; return `<tr style="cursor:pointer" onclick="renderConvRates('monthly','${d.div}')">
           <td style="color:#484f58;font-weight:700">#${i+1}</td>
           <td><strong>${fmtDiv(d.div)}</strong></td>
+          <td style="color:#d2a8ff;font-weight:700">${ph!=null?ph.toLocaleString():'—'}</td>
           <td style="color:#8b949e">${d.e.toLocaleString()}</td>
           <td style="color:#1f6feb;font-weight:700">${d.pk}</td>
           <td style="color:${d.r>=5?'#3fb950':d.r>=2?'#f0a500':'#f85149'};font-weight:700">${d.r.toFixed(2)}%</td>
           <td style="color:#7ecfe0">${rf!=null?rf.toLocaleString():'—'}</td>
-          <td style="color:#7ecfe0;font-weight:700">${cl!=null?cl.toLocaleString():'—'}</td>
+          <td style="color:#f0a500;font-weight:700">${cl!=null?cl.toLocaleString():'—'}</td>
         </tr>`;}).join('')}
       </table>
     </div>`;
@@ -1244,7 +1651,7 @@ function renderConvRates(period, value){
       datasets:[
         {label:'Eligible Homes', data:pipE,  backgroundColor:'#1f6feb', borderWidth:0, barPercentage:0.75, categoryPercentage:0.85, hidden:pipelineHidden.has('Eligible Homes')},
         {label:'Ratifications',  data:pipR,  backgroundColor:'#7ecfe0', borderWidth:0, barPercentage:0.75, categoryPercentage:0.85, hidden:pipelineHidden.has('Ratifications')},
-        {label:'Closes',         data:pipCl, backgroundColor:'#d2a8ff', borderWidth:0, barPercentage:0.75, categoryPercentage:0.85, hidden:pipelineHidden.has('Closes')},
+        {label:'Closes',         data:pipCl, backgroundColor:'#f0a500', borderWidth:0, barPercentage:0.75, categoryPercentage:0.85, hidden:pipelineHidden.has('Closes')},
         {label:'Packs Sold',     data:pipPk, backgroundColor:'#3fb950', borderWidth:0, barPercentage:0.75, categoryPercentage:0.85, hidden:pipelineHidden.has('Packs Sold')}
       ]
     },
@@ -1285,6 +1692,266 @@ function renderConvRates(period, value){
       }
     }
   });
+}
+
+function showHstAnalysis(){
+  selectedIdx = 'hst';
+  renderSidebar();
+  document.getElementById('content').innerHTML = '<iframe src="hst_analysis.html" style="width:100%;height:100%;border:none;background:var(--bg)"></iframe>';
+}
+
+function showSummary(){
+  selectedIdx = 'summary';
+  renderSidebar();
+  renderSummary();
+}
+
+function renderSummary(){
+  const _ce = document.getElementById('content');
+
+  // ── Aggregate all divisions from latest yearly data ──
+  const latestYear = (CONV_DATA?.yearly||[]).map(d=>d.p).sort().pop() || '2025';
+  const yearRows = CONV_DATA.yearly.filter(d=>d.p===latestYear).sort((a,b)=>b.pk-a.pk);
+  const totalPk = yearRows.reduce((s,d)=>s+d.pk,0);
+  const totalE = yearRows.reduce((s,d)=>s+d.e,0);
+  const avgConv = totalE>0?(totalPk/totalE*100):0;
+
+  // Closes & ratifs for latest year
+  const clYear = (CLOSES_DATA?.yearly||[]).filter(d=>d.p===latestYear);
+  const clMap = {}; clYear.forEach(d=>{clMap[d.div]=d.n;});
+  const ratYear = (RATIF_DATA?.yearly||[]).filter(d=>d.p===latestYear);
+  const ratMap = {}; ratYear.forEach(d=>{ratMap[d.div]=d.n;});
+  const hstYear = (typeof SS1_DATA!=='undefined'?(SS1_DATA?.yearly||[]):[]).filter(d=>d.p===latestYear);
+  const hstMap = {}; hstYear.forEach(d=>{hstMap[d.div]=d.n;});
+
+  // ── Total closes by period (aggregate all divisions) ──
+  const closesMonthlyAll = (CLOSES_DATA?.monthly||[]);
+  const allClosePeriods = [...new Set(closesMonthlyAll.map(d=>d.p))].sort();
+  const closesByPeriod = {};
+  closesMonthlyAll.forEach(d=>{ closesByPeriod[d.p] = (closesByPeriod[d.p]||0) + d.n; });
+  const last12ClosePeriods = allClosePeriods.slice(-12);
+  const last3ClosePeriods = allClosePeriods.slice(-3);
+  const totalClosesL12 = last12ClosePeriods.reduce((s,p)=>s+(closesByPeriod[p]||0),0);
+  const totalClosesL3 = last3ClosePeriods.reduce((s,p)=>s+(closesByPeriod[p]||0),0);
+
+  // ── Program analysis from DPUP_MONTHLY ──
+  const labels = DPUP_MONTHLY.labels;
+  const progData = {};
+  ['ITM','spec','incentive','model','hstDirect'].forEach(k=>{
+    const arr = DPUP_MONTHLY[k]||[];
+    const valid = arr.filter(v=>v!==null);
+    const last12 = valid.slice(-12);
+    const prev12 = valid.slice(-24,-12);
+    const l12sum = last12.reduce((a,b)=>a+b,0);
+    const p12sum = prev12.reduce((a,b)=>a+b,0);
+    const yoy = p12sum>0?((l12sum-p12sum)/p12sum*100):0;
+    const trend = trendDir(last12);
+    const avg = last12.length>0?(l12sum/last12.length):0;
+    const last3sum = valid.slice(-3).reduce((a,b)=>a+b,0);
+    const convL12 = totalClosesL12>0 ? (l12sum/totalClosesL12*100) : 0;
+    const convL3 = totalClosesL3>0 ? (last3sum/totalClosesL3*100) : 0;
+    progData[k] = {total:valid.reduce((a,b)=>a+b,0), last12:l12sum, prev12:p12sum, yoy, trend, avg, last3:last3sum, convL12, convL3};
+  });
+
+  // ── Revenue/profit analysis ──
+  const revAll = ITM_MONTHLY.revenue.filter(v=>v!==null);
+  const profAll = ITM_MONTHLY.profit.filter(v=>v!==null);
+  const revL12 = revAll.slice(-12).reduce((a,b)=>a+b,0);
+  const revP12 = revAll.slice(-24,-12).reduce((a,b)=>a+b,0);
+  const revYoy = revP12>0?((revL12-revP12)/revP12*100):0;
+  const profL12 = profAll.slice(-12).reduce((a,b)=>a+b,0);
+
+  // ── Build division ranking table ──
+  const divRows = yearRows.map((d,i)=>{
+    const cl = clMap[d.div]||0;
+    const rat = ratMap[d.div]||0;
+    const hst = hstMap[d.div]||0;
+    const score = d.pk*2 + d.r*10 + (hst>0?5:0); // composite score
+    return {...d, cl, rat, hst, rank:i+1, score};
+  }).sort((a,b)=>b.score-a.score);
+  divRows.forEach((d,i)=>d.compositeRank=i+1);
+  divRows.sort((a,b)=>b.pk-a.pk); // back to packs sort for display
+
+  // ── Identify problems and strengths ──
+  const topDivs = divRows.filter(d=>d.pk>=divRows[0].pk*0.3).slice(0,5);
+  const bottomDivs = divRows.filter(d=>d.pk>0).slice(-5).reverse();
+  const zeroDivs = divRows.filter(d=>d.pk===0);
+  const decliningDivs = divRows.filter(d=>{
+    const monthly = CONV_DATA.monthly.filter(m=>m.div===d.div).sort((a,b)=>a.p.localeCompare(b.p));
+    return trendDir(monthly.slice(-6).map(m=>m.pk))==='declining';
+  });
+
+  // ── Program health cards ──
+  function progCard(name, key, color){
+    const p = progData[key];
+    if(!p) return '';
+    const trendIcon = p.trend==='improving'?'↑':p.trend==='declining'?'↓':'→';
+    const trendColor = p.trend==='improving'?'#3fb950':p.trend==='declining'?'#f85149':'#f0a500';
+    const yoyColor = p.yoy>5?'#3fb950':p.yoy<-5?'#f85149':'#f0a500';
+    const convL12Color = p.convL12>=2?'#3fb950':p.convL12>=1?'#f0a500':'#f85149';
+    const convL3Color = p.convL3>=2?'#3fb950':p.convL3>=1?'#f0a500':'#f85149';
+    return `<div style="background:#161b22;border:1px solid #21262d;border-radius:8px;padding:14px 16px;border-top:3px solid ${color}">
+      <div style="font-size:13px;font-weight:700;color:${color};margin-bottom:8px">${name}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11px">
+        <div><span style="color:#8b949e">Last 12mo:</span> <strong>${p.last12.toLocaleString()}</strong></div>
+        <div><span style="color:#8b949e">Avg/mo:</span> <strong>${p.avg.toFixed(1)}</strong></div>
+        <div><span style="color:#8b949e">YoY:</span> <strong style="color:${yoyColor}">${p.yoy>=0?'+':''}${p.yoy.toFixed(0)}%</strong></div>
+        <div><span style="color:#8b949e">Trend:</span> <strong style="color:${trendColor}">${trendIcon} ${p.trend}</strong></div>
+        <div><span style="color:#8b949e">Last 3mo:</span> <strong>${p.last3}</strong></div>
+        <div><span style="color:#8b949e">All-time:</span> <strong>${p.total.toLocaleString()}</strong></div>
+      </div>
+      <div style="border-top:1px solid #21262d;margin-top:8px;padding-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11px">
+        <div><span style="color:#8b949e">Conv (12mo):</span> <strong style="color:${convL12Color}">${p.convL12.toFixed(2)}%</strong></div>
+        <div><span style="color:#8b949e">Conv (3mo):</span> <strong style="color:${convL3Color}">${p.convL3.toFixed(2)}%</strong></div>
+      </div>
+      <div style="font-size:9px;color:#484f58;margin-top:4px">Packs ÷ Total Closes (${totalClosesL12.toLocaleString()} L12 / ${totalClosesL3.toLocaleString()} L3)</div>
+    </div>`;
+  }
+
+  // ── Honest program assessment ──
+  // Context: 125 divisions / ~86K homes in 2023-2025. Lost ~10 divs Oct-Dec 2025.
+  // Went from 125 → 27 divisions on Jan 1, 2026 (~78% reduction).
+  // Volume declines are EXPECTED. Conversion rates are the real signal.
+  const progIssues = [];
+  const progStrengths = [];
+  const context = [];
+
+  // Division reduction context — always show this
+  context.push('Division footprint dropped from 125 → 27 on Jan 1, 2026 (~78% reduction, ~86K homes → ~22K). Volume declines across all programs are expected and do NOT indicate program failure.');
+
+  // Evaluate trends in context of the contraction
+  // For volume metrics, only flag if per-division rate is declining
+  const activeDivCount = yearRows.length || 27;
+  const priorDivCount = 125;
+  const contractionRatio = activeDivCount / priorDivCount;
+
+  // ITM
+  if(progData.ITM.last3 > 0) {
+    const perDivRate3 = progData.ITM.last3 / 3 / activeDivCount;
+    const perDivRate12 = progData.ITM.last12 / 12 / (progData.ITM.prev12 > 0 ? priorDivCount : activeDivCount);
+    if(progData.ITM.convL3 > progData.ITM.convL12) progStrengths.push(`ITM conversion rate is improving: ${progData.ITM.convL3.toFixed(2)}% (last 3mo) vs ${progData.ITM.convL12.toFixed(2)}% (last 12mo) — the remaining divisions are converting better.`);
+    else if(progData.ITM.convL3 < progData.ITM.convL12 * 0.8) progIssues.push(`ITM conversion rate declining even within remaining divisions: ${progData.ITM.convL3.toFixed(2)}% (3mo) vs ${progData.ITM.convL12.toFixed(2)}% (12mo).`);
+  }
+  if(progData.ITM.yoy < -50) progStrengths.push(`ITM volume down ${Math.abs(progData.ITM.yoy).toFixed(0)}% YoY — but this is largely explained by the 78% division reduction, not program weakness.`);
+  else if(progData.ITM.yoy > -30 && progData.ITM.yoy < 0) progStrengths.push(`ITM only down ${Math.abs(progData.ITM.yoy).toFixed(0)}% YoY despite losing 78% of divisions — the remaining 27 divisions are carrying disproportionate weight. Strong per-division performance.`);
+
+  // HST Direct
+  if(progData.hstDirect.last12 > progData.ITM.last12) progStrengths.push('HST Direct still outpacing ITM in volume — the direct-sell channel continues to deliver even with fewer divisions.');
+  if(progData.hstDirect.convL3 > 0) progStrengths.push(`HST Direct conversion: ${progData.hstDirect.convL3.toFixed(2)}% (3mo). This channel reaches buyers who never attend ITM events.`);
+
+  // Spec
+  if(progData.spec.convL3 > progData.spec.convL12) progStrengths.push(`Spec pack conversion improving: ${progData.spec.convL3.toFixed(2)}% (3mo) vs ${progData.spec.convL12.toFixed(2)}% (12mo).`);
+  else if(progData.spec.last3 === 0) progIssues.push('Spec packs have gone to zero in the last 3 months — are remaining divisions not building specs, or are they not being captured?');
+
+  // Model
+  if(progData.model.last3 > 0) progStrengths.push(`Model home packs still active (${progData.model.last3} last 3mo) — passive selling infrastructure is intact in remaining divisions.`);
+  else progIssues.push('Model home packs at zero — the passive selling channel needs attention in the 27 remaining divisions.');
+
+  // Incentive
+  if(progData.incentive.last3 > progData.ITM.last3 * 0.3) progStrengths.push(`Incentive program contributing meaningfully (${progData.incentive.last3} packs last 3mo) — builder incentives are driving sales.`);
+
+  // Revenue — expected to decline with division loss
+  if(revYoy < -50) context.push(`Revenue down ${Math.abs(revYoy).toFixed(0)}% YoY — expected given 78% fewer divisions. Focus metric: revenue per division, not total revenue.`);
+  else if(revYoy < 0 && revYoy >= -50) progStrengths.push(`Revenue only down ${Math.abs(revYoy).toFixed(0)}% YoY despite 78% division reduction — remaining divisions are pulling above their weight.`);
+
+  // Conversion rate — the real signal
+  if(avgConv > 1.5) progStrengths.push(`Overall conversion rate of ${avgConv.toFixed(2)}% across remaining divisions — this is the metric that matters post-contraction.`);
+  else if(avgConv < 1.0) progIssues.push(`Overall conversion rate of ${avgConv.toFixed(2)}% is low — even with concentrated divisions, packs-per-close needs improvement.`);
+
+  // Division health
+  if(zeroDivs.length > 0) progIssues.push(`${zeroDivs.length} of ${activeDivCount} remaining divisions have ZERO packs in ${latestYear} — with only 27 divisions, every one counts.`);
+  if(decliningDivs.length > activeDivCount * 0.4) progIssues.push(`${decliningDivs.length} of ${activeDivCount} divisions trending down — that is ${Math.round(decliningDivs.length/activeDivCount*100)}% of the remaining footprint.`);
+
+  _ce.innerHTML = `
+    <div style="margin-bottom:18px">
+      <div style="font-size:22px;font-weight:700;color:#f85149">📊 Performance Summary — Brutally Honest</div>
+      <div style="font-size:13px;color:#8b949e;margin-top:3px">All programs, all divisions · Data through ${labels[labels.length-1]} · ${latestYear} focus</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:18px">
+      ${progCard('ITM','ITM','#3fb950')}
+      ${progCard('Spec','spec','#1f6feb')}
+      ${progCard('Incentive','incentive','#d2a8ff')}
+      ${progCard('Model Home','model','#7ecfe0')}
+      ${progCard('HST Direct','hstDirect','#f778ba')}
+    </div>
+
+    ${context.length>0?`<div class="dd-assess" style="border-left:3px solid #f0a500;margin-bottom:14px">
+      <h4 style="color:#f0a500;font-size:11px">CONTEXT: DIVISION CONTRACTION</h4>
+      ${context.map(s=>`<p style="font-size:11px;color:var(--text-m);margin-bottom:4px">${s}</p>`).join('')}
+    </div>`:''}
+
+    <div class="dd-assess" style="border-left:3px solid ${progIssues.length>progStrengths.length?'#f85149':'#3fb950'};margin-bottom:12px">
+      <h4 style="color:${progIssues.length>progStrengths.length?'#f85149':'#3fb950'}">HEALTH CHECK</h4>
+      ${(()=>{
+        const all = progStrengths.map(s=>`<p class="flag green" style="font-size:11px">+ ${s}</p>`).concat(progIssues.map(s=>`<p class="flag red" style="font-size:11px">- ${s}</p>`));
+        const half = Math.ceil(all.length/2);
+        return `<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div>${all.slice(0,half).join('')}</div>
+          <div>${all.slice(half).join('')}</div>
+        </div>`;
+      })()}
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px;align-items:start">
+      <div class="dd-assess" style="border-left:3px solid #f85149;margin-bottom:0">
+        <h4 style="color:#f85149">NEEDS ATTENTION</h4>
+        ${decliningDivs.length>0?decliningDivs.map(d=>{
+          const monthly = CONV_DATA.monthly.filter(m=>m.div===d.div).sort((a,b)=>a.p.localeCompare(b.p));
+          const last6 = monthly.slice(-6);
+          const avgPk = last6.length>0?(last6.reduce((s,m)=>s+m.pk,0)/last6.length).toFixed(1):'?';
+          return `<p class="flag red" style="font-size:11px">- <strong>${fmtDiv(d.div)}</strong>: ${avgPk} pk/mo, ${d.r.toFixed(2)}%</p>`;
+        }).join(''):'<p class="flag muted" style="font-size:11px">No declining divisions detected.</p>'}
+      </div>
+      <div class="dd-assess" style="border-left:3px solid #3fb950;margin-bottom:0">
+        <h4 style="color:#3fb950">TOP PERFORMERS</h4>
+        ${topDivs.length>0?topDivs.map(d=>`<p class="flag green" style="font-size:11px">+ <strong>${fmtDiv(d.div)}</strong>: ${d.pk} pk, ${d.r.toFixed(2)}%${d.hst>0?' · HST:'+d.hst:''}</p>`).join(''):'<p class="flag muted" style="font-size:11px">No standout performers.</p>'}
+      </div>
+    </div>
+
+    <div class="full-chart-card" style="margin-bottom:18px">
+      <h3>Division Rankings — ${latestYear} <span style="font-size:10px;font-weight:400;color:#484f58">Sorted by packs sold · Color = conversion rate tier</span></h3>
+      <table class="summary-table">
+        <tr><th>#</th><th>Division</th><th style="color:#d2a8ff">Proj. Homes '26</th><th>Packs</th><th>Conv %</th><th>Eligible</th><th>Closes</th><th>Ratifs</th><th>HST</th><th>Verdict</th></tr>
+        ${divRows.filter(d=>d.pk>0||d.e>20).map((d,i)=>{
+          const convColor = d.r>=3?'#3fb950':d.r>=1.5?'#f0a500':'#f85149';
+          const monthly = CONV_DATA.monthly.filter(m=>m.div===d.div).sort((a,b)=>a.p.localeCompare(b.p));
+          const t = trendDir(monthly.slice(-6).map(m=>m.pk));
+          const tIcon = t==='improving'?'<span style="color:#3fb950">↑</span>':t==='declining'?'<span style="color:#f85149">↓</span>':'<span style="color:#8b949e">→</span>';
+          const ph = PROJ_HOMES_2026[d.div]||null;
+          const verdict = d.r>=3&&t!=='declining'?'<span style="color:#3fb950;font-weight:700">Strong</span>':
+            d.r>=1.5&&t!=='declining'?'<span style="color:#f0a500;font-weight:700">OK</span>':
+            d.pk===0?'<span style="color:#f85149;font-weight:700">Dead</span>':
+            t==='declining'?'<span style="color:#f85149;font-weight:700">Declining</span>':
+            '<span style="color:#f85149;font-weight:700">Weak</span>';
+          return `<tr>
+            <td style="color:#484f58;font-weight:700">#${i+1}</td>
+            <td><strong>${fmtDiv(d.div)}</strong> ${tIcon}</td>
+            <td style="color:#d2a8ff;font-weight:700">${ph!=null?ph.toLocaleString():'—'}</td>
+            <td style="color:#1f6feb;font-weight:700">${d.pk}</td>
+            <td style="color:${convColor};font-weight:700">${d.r.toFixed(2)}%</td>
+            <td style="color:#8b949e">${d.e.toLocaleString()}</td>
+            <td style="color:#f0a500">${d.cl||'—'}</td>
+            <td style="color:#7ecfe0">${d.rat||'—'}</td>
+            <td style="color:#f778ba">${d.hst||'—'}</td>
+            <td>${verdict}</td>
+          </tr>`;
+        }).join('')}
+      </table>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px">
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+        <div style="font-size:13px;font-weight:700;color:#3fb950;margin-bottom:6px">ITM Revenue (Last 12mo)</div>
+        <div style="font-size:26px;font-weight:800;color:var(--text-h)">${fmtK(revL12)}</div>
+        <div style="font-size:11px;color:${revYoy>=0?'#3fb950':'#f85149'};font-weight:700;margin-top:4px">${revYoy>=0?'+':''}${revYoy.toFixed(0)}% YoY</div>
+      </div>
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px 16px">
+        <div style="font-size:13px;font-weight:700;color:#3fb950;margin-bottom:6px">ITM Profit (Last 12mo)</div>
+        <div style="font-size:26px;font-weight:800;color:var(--text-h)">${fmtK(profL12)}</div>
+        <div style="font-size:11px;color:#8b949e;margin-top:4px">Avg conv rate: ${avgConv.toFixed(2)}%</div>
+      </div>
+    </div>
+  `;
 }
 
 function showRainmakers(){
