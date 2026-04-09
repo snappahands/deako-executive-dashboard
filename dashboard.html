@@ -491,7 +491,7 @@
   <div class="header-right">
     <div class="header-date" id="headerDate"></div>
     <div class="header-period" id="headerPeriod"></div>
-    <div style="font-size:11px;color:var(--teal);margin-top:4px;letter-spacing:.04em;font-weight:700">v4.3</div>
+    <div style="font-size:11px;color:var(--teal);margin-top:4px;letter-spacing:.04em;font-weight:700">v4.4</div>
   </div>
 </header>
 
@@ -2711,18 +2711,11 @@ function renderDrhCharts() {
       { label:'Inc/Spec', data:idx.map(i=>d.inc[i]), backgroundColor:'rgba(232,114,138,0.8)',  stack:'s' },
       { label:'Model',    data:idx.map(i=>d.mdl[i]), backgroundColor:'rgba(139,148,158,0.55)', stack:'s' },
     ];
-    const hstLine = {
-      type:'line', label:'HST Direct (packs)', data:idx.map(i=>d.hst[i]),
-      borderColor:'#f778ba', backgroundColor:'rgba(247,120,186,0.15)',
-      borderWidth:2, pointRadius:3, pointHoverRadius:5,
-      pointBackgroundColor:'#f778ba', tension:0.3, fill:true,
-      yAxisID:'y1', order:-1, datalabels:{display:false}
-    };
     const ctx = document.getElementById('drhCatStack').getContext('2d');
     if (drhCharts['drhCatStack']) drhCharts['drhCatStack'].destroy();
     drhCharts['drhCatStack'] = new Chart(ctx, {
       type: 'bar',
-      data: { labels: lbl, datasets: [...catSets, hstLine] },
+      data: { labels: lbl, datasets: catSets },
       options: {
         responsive:true, maintainAspectRatio:false,
         layout:{ padding:{ top:20 } },
@@ -2730,13 +2723,10 @@ function renderDrhCharts() {
           legend:{ position:'top', labels:{ font:{size:11}, boxWidth:12, padding:8, color:'#6b8299' } },
           tooltip: { ...ttBase, mode:'index', intersect:false,
             callbacks: {
-              label: c => {
-                if (c.dataset.yAxisID === 'y1') return ` ${c.dataset.label}: ${c.raw} packs`;
-                return ` ${c.dataset.label}: ${fc(c.raw)}`;
-              },
+              label: c => ` ${c.dataset.label}: ${fc(c.raw)}`,
               afterBody: items => {
-                const total = items.filter(c=>!c.dataset.yAxisID).reduce((s,c)=>s+c.raw,0);
-                return ['', ` Total Booked: ${fc(total)}`];
+                const total = items.reduce((s,c)=>s+c.raw,0);
+                return ['', ` Total: ${fc(total)}`];
               }
             }
           },
@@ -2744,8 +2734,7 @@ function renderDrhCharts() {
         },
         scales: {
           x:{ stacked:true, grid:{display:false}, ticks:{font:{size:10},color:'#4a6278'}, border:{color:'#1e3048'} },
-          y:{ stacked:true, grid:{color:'rgba(30,48,72,0.8)'}, ticks:{font:{size:11},color:'#4a6278',callback:v=>fc(v)}, border:{color:'#1e3048'} },
-          y1:{ position:'right', grid:{display:false}, ticks:{font:{size:10},color:'#f778ba',callback:v=>v+' pk'}, border:{color:'#1e3048'}, title:{display:true,text:'HST Direct Packs',color:'#f778ba',font:{size:10}} }
+          y:{ stacked:true, grid:{color:'rgba(30,48,72,0.8)'}, ticks:{font:{size:11},color:'#4a6278',callback:v=>fc(v)}, border:{color:'#1e3048'} }
         }
       },
       plugins: [{
