@@ -491,7 +491,7 @@
   <div class="header-right">
     <div class="header-date" id="headerDate"></div>
     <div class="header-period" id="headerPeriod"></div>
-    <div style="font-size:11px;color:var(--teal);margin-top:4px;letter-spacing:.04em;font-weight:700">v4.2</div>
+    <div style="font-size:11px;color:var(--teal);margin-top:4px;letter-spacing:.04em;font-weight:700">v4.3</div>
   </div>
 </header>
 
@@ -2329,6 +2329,10 @@ const DRH_DATA = {
   mdl:   [21.6,18.2,19.4,14.4,12.7,18.9,25.2,20.8,17.8,13.9,13.8,19.8,
           20.4,24.9,18.6,29.4,12.0,18.1,13.4,11.2,15.3,21.1,6.3,11.2,
           5.9,4.3,7.3,0.8],
+  // HST Direct (pack counts — not $K)
+  hst:   [103,121,159,90,129,141,101,118,135,142,125,100,
+          119,126,159,157,153,183,94,128,145,126,124,88,
+          124,111,150,31],
   // Total Booked ($K)
   total: [1163.3,1077.9,916.1,741.9,1143.5,821.8,651.8,715.9,651.0,726.2,606.2,650.4,
           725.6,770.2,776.5,1006.3,886.1,711.5,687.5,564.0,493.9,418.9,218.9,206.7,
@@ -2707,11 +2711,18 @@ function renderDrhCharts() {
       { label:'Inc/Spec', data:idx.map(i=>d.inc[i]), backgroundColor:'rgba(232,114,138,0.8)',  stack:'s' },
       { label:'Model',    data:idx.map(i=>d.mdl[i]), backgroundColor:'rgba(139,148,158,0.55)', stack:'s' },
     ];
+    const hstLine = {
+      type:'line', label:'HST Direct (packs)', data:idx.map(i=>d.hst[i]),
+      borderColor:'#f778ba', backgroundColor:'rgba(247,120,186,0.15)',
+      borderWidth:2, pointRadius:3, pointHoverRadius:5,
+      pointBackgroundColor:'#f778ba', tension:0.3, fill:true,
+      yAxisID:'y1', order:-1, datalabels:{display:false}
+    };
     const ctx = document.getElementById('drhCatStack').getContext('2d');
     if (drhCharts['drhCatStack']) drhCharts['drhCatStack'].destroy();
     drhCharts['drhCatStack'] = new Chart(ctx, {
       type: 'bar',
-      data: { labels: lbl, datasets: catSets },
+      data: { labels: lbl, datasets: [...catSets, hstLine] },
       options: {
         responsive:true, maintainAspectRatio:false,
         layout:{ padding:{ top:20 } },
@@ -2719,10 +2730,13 @@ function renderDrhCharts() {
           legend:{ position:'top', labels:{ font:{size:11}, boxWidth:12, padding:8, color:'#6b8299' } },
           tooltip: { ...ttBase, mode:'index', intersect:false,
             callbacks: {
-              label: c => ` ${c.dataset.label}: ${fc(c.raw)}`,
+              label: c => {
+                if (c.dataset.yAxisID === 'y1') return ` ${c.dataset.label}: ${c.raw} packs`;
+                return ` ${c.dataset.label}: ${fc(c.raw)}`;
+              },
               afterBody: items => {
-                const total = items.reduce((s,c)=>s+c.raw,0);
-                return ['', ` Total: ${fc(total)}`];
+                const total = items.filter(c=>!c.dataset.yAxisID).reduce((s,c)=>s+c.raw,0);
+                return ['', ` Total Booked: ${fc(total)}`];
               }
             }
           },
@@ -2730,7 +2744,8 @@ function renderDrhCharts() {
         },
         scales: {
           x:{ stacked:true, grid:{display:false}, ticks:{font:{size:10},color:'#4a6278'}, border:{color:'#1e3048'} },
-          y:{ stacked:true, grid:{color:'rgba(30,48,72,0.8)'}, ticks:{font:{size:11},color:'#4a6278',callback:v=>fc(v)}, border:{color:'#1e3048'} }
+          y:{ stacked:true, grid:{color:'rgba(30,48,72,0.8)'}, ticks:{font:{size:11},color:'#4a6278',callback:v=>fc(v)}, border:{color:'#1e3048'} },
+          y1:{ position:'right', grid:{display:false}, ticks:{font:{size:10},color:'#f778ba',callback:v=>v+' pk'}, border:{color:'#1e3048'}, title:{display:true,text:'HST Direct Packs',color:'#f778ba',font:{size:10}} }
         }
       },
       plugins: [{
@@ -2799,9 +2814,10 @@ function renderDrhCharts() {
       d.itm[24]+d.itm[25]+d.itm[26],
       d.inc[24]+d.inc[25]+d.inc[26],
       d.mdl[24]+d.mdl[25]+d.mdl[26],
+      d.hst[24]+d.hst[25]+d.hst[26],
     ];
     const tot = vals26.reduce((a,b)=>a+b,0);
-    const catLbls = ['1SS','4SS','ITM','Inc/Spec','Model'];
+    const catLbls = ['1SS','4SS','ITM','Inc/Spec','Model','HST Direct (pks)'];
     const ctx = document.getElementById('drhDonut').getContext('2d');
     if (drhCharts['drhDonut']) drhCharts['drhDonut'].destroy();
     drhCharts['drhDonut'] = new Chart(ctx, {
@@ -2810,7 +2826,7 @@ function renderDrhCharts() {
         labels: catLbls,
         datasets: [{
           data: vals26,
-          backgroundColor: ['rgba(62,207,198,0.88)','rgba(88,166,255,0.85)','rgba(244,168,67,0.88)','rgba(232,114,138,0.85)','rgba(139,148,158,0.6)'],
+          backgroundColor: ['rgba(62,207,198,0.88)','rgba(88,166,255,0.85)','rgba(244,168,67,0.88)','rgba(232,114,138,0.85)','rgba(139,148,158,0.6)','rgba(247,120,186,0.85)'],
           borderColor: '#1a2535', borderWidth: 2,
         }]
       },
@@ -2821,8 +2837,8 @@ function renderDrhCharts() {
           legend:{ position:'right', labels:{ font:{size:12}, boxWidth:14, padding:12, color:'#8b949e' } },
           tooltip: { ...ttBase,
             callbacks: {
-              title: () => `2026 Q1 Total: ${fc(tot)}`,
-              label: () => catLbls.map((l,i) => ` ${l}: ${fc(vals26[i])} (${(vals26[i]/tot*100).toFixed(1)}%)`),
+              title: () => `2026 Q1 Mix`,
+              label: () => catLbls.map((l,i) => ` ${l}: ${l.includes('HST')?vals26[i]+' packs':fc(vals26[i])} (${(vals26[i]/tot*100).toFixed(1)}%)`),
             }
           },
           datalabels: {
@@ -2843,6 +2859,7 @@ function renderDrhCharts() {
         (d.itm[q2Start]||0)+(d.itm[q2Start+1]||0)+(d.itm[q2Start+2]||0),
         (d.inc[q2Start]||0)+(d.inc[q2Start+1]||0)+(d.inc[q2Start+2]||0),
         (d.mdl[q2Start]||0)+(d.mdl[q2Start+1]||0)+(d.mdl[q2Start+2]||0),
+        (d.hst[q2Start]||0)+(d.hst[q2Start+1]||0)+(d.hst[q2Start+2]||0),
       ];
       const q2Tot = q2Vals.reduce((a,b)=>a+b,0);
       const ctx2 = document.getElementById('drhDonutQ2').getContext('2d');
@@ -2853,7 +2870,7 @@ function renderDrhCharts() {
           labels: catLbls,
           datasets: [{
             data: q2Vals,
-            backgroundColor: ['rgba(62,207,198,0.88)','rgba(88,166,255,0.85)','rgba(244,168,67,0.88)','rgba(232,114,138,0.85)','rgba(139,148,158,0.6)'],
+            backgroundColor: ['rgba(62,207,198,0.88)','rgba(88,166,255,0.85)','rgba(244,168,67,0.88)','rgba(232,114,138,0.85)','rgba(139,148,158,0.6)','rgba(247,120,186,0.85)'],
             borderColor: '#1a2535', borderWidth: 2,
           }]
         },
@@ -2864,8 +2881,8 @@ function renderDrhCharts() {
             legend:{ position:'right', labels:{ font:{size:12}, boxWidth:14, padding:12, color:'#8b949e' } },
             tooltip: { ...ttBase,
               callbacks: {
-                title: () => `2026 Q2 Total: ${fc(q2Tot)} (partial)`,
-                label: () => catLbls.map((l,i) => ` ${l}: ${fc(q2Vals[i])} (${(q2Vals[i]/q2Tot*100).toFixed(1)}%)`),
+                title: () => `2026 Q2 Mix (partial)`,
+                label: () => catLbls.map((l,i) => ` ${l}: ${l.includes('HST')?q2Vals[i]+' packs':fc(q2Vals[i])} (${(q2Vals[i]/q2Tot*100).toFixed(1)}%)`),
               }
             },
             datalabels: {
@@ -2886,12 +2903,12 @@ function renderDrhCharts() {
       drhCharts[id] = new Chart(ctx, {
         type: 'doughnut',
         data: {
-          labels: ['1SS','4SS','ITM','Inc/Spec','Model'],
+          labels: ['1SS','4SS','ITM','Inc/Spec','Model','HST Direct'],
           datasets: [{
-            data: [1,1,1,1,1],
+            data: [1,1,1,1,1,1],
             backgroundColor: [
               'rgba(62,207,198,0.18)','rgba(88,166,255,0.18)',
-              'rgba(244,168,67,0.18)','rgba(232,114,138,0.18)','rgba(139,148,158,0.15)',
+              'rgba(244,168,67,0.18)','rgba(232,114,138,0.18)','rgba(139,148,158,0.15)','rgba(247,120,186,0.18)',
             ],
             borderColor: '#1a2535', borderWidth: 2,
           }]

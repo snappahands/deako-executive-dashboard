@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HST Direct vs. ITM — Pack Sales Impact Analysis</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="ss1_data.js"></script>
+  <script src="conv_data.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -27,7 +29,7 @@
     .subtitle { font-size: 13px; color: #8b949e; }
     a.back-link {
       font-size: 13px;
-      color: #58a6ff;
+      color: #f778ba;
       text-decoration: none;
     }
     a.back-link:hover { text-decoration: underline; }
@@ -50,7 +52,8 @@
     .stat-card .val { font-size: 26px; font-weight: 700; }
     .stat-card .sub { font-size: 11px; margin-top: 4px; }
     .red   { color: #f85149; }
-    .blue  { color: #58a6ff; }
+    .blue  { color: #f778ba; }
+    .pink  { color: #f778ba; }
     .green { color: #3fb950; }
     .amber { color: #e3b341; }
     .muted { color: #8b949e; }
@@ -117,7 +120,7 @@
       border-left: 3px solid;
     }
     .finding.red-b   { border-color: #f85149; }
-    .finding.blue-b  { border-color: #58a6ff; }
+    .finding.blue-b, .finding.pink-b  { border-color: #f778ba; }
     .finding.amber-b { border-color: #e3b341; }
     .finding.green-b { border-color: #3fb950; }
     .finding h3 { font-size: 13px; font-weight: 700; margin-bottom: 8px; }
@@ -186,7 +189,7 @@
 <header>
   <div>
     <h1>HST Direct vs. ITM — Pack Sales Impact Analysis</h1>
-    <p class="subtitle">January 2024 – February 2026 &nbsp;·&nbsp; 26 months of dual-channel data &nbsp;·&nbsp; All 21 DPUP Divisions Combined</p>
+    <p class="subtitle">January 2024 – February 2026 &nbsp;·&nbsp; 26 months of dual-channel data &nbsp;·&nbsp; 125 divisions (2023–2025) → 27 divisions (Jan 2026)</p>
   </div>
   <a class="back-link" href="index.html">← Back to Dashboard</a>
 </header>
@@ -199,14 +202,14 @@
     <div class="sub muted">Pre-HST baseline</div>
   </div>
   <div class="stat-card">
-    <div class="lbl">2024 HST Avg/Mo</div>
-    <div class="val blue">122</div>
-    <div class="sub green">68% more than ITM</div>
-  </div>
-  <div class="stat-card">
     <div class="lbl">2024 ITM Avg/Mo</div>
     <div class="val red">73</div>
     <div class="sub red">↓ 31% vs 2023</div>
+  </div>
+  <div class="stat-card">
+    <div class="lbl">2024 HST Avg/Mo</div>
+    <div class="val blue">122</div>
+    <div class="sub green">68% more than ITM</div>
   </div>
   <div class="stat-card">
     <div class="lbl">2025 ITM Avg/Mo</div>
@@ -238,6 +241,19 @@
   </div>
 </div>
 
+<!-- ── Division Contraction Context ── -->
+<div class="chart-section" style="border-left:3px solid #e3b341;background:#1a1800">
+  <h2 style="color:#e3b341;font-size:13px">CRITICAL CONTEXT: Division Contraction</h2>
+  <p class="chart-note" style="margin-bottom:0;line-height:1.7">
+    <strong>2023–2025:</strong> Deako operated across <strong>~125 DRH divisions</strong> with approximately <strong>86,000 eligible homes</strong>.
+    <strong>Oct–Dec 2025:</strong> ~10 divisions departed early.
+    <strong>January 1, 2026:</strong> The footprint contracted to <strong>27 divisions (~22,000 homes)</strong> — a <strong style="color:#e3b341">78% reduction</strong>.<br><br>
+    All volume comparisons involving 2026 data must account for this. Raw YoY declines in pack counts, revenue, and HST/ITM totals
+    are <strong>expected and do not indicate program failure</strong>. The meaningful metrics post-contraction are
+    <strong>conversion rates</strong> (packs per close/eligible home) and <strong>per-division output</strong> — not absolute volume.
+  </p>
+</div>
+
 <!-- ── Chart 1: Monthly side-by-side + conv rate ── -->
 <div class="chart-section">
   <h2>Monthly Pack Sales — ITM vs HST Direct, with ITM Conversion Rate</h2>
@@ -247,6 +263,16 @@
   </p>
   <canvas id="monthlyChart" height="110"></canvas>
   <p class="footnote">* Feb 2026 ITM = 5 packs — likely incomplete/partial-month data; treat as an outlier.</p>
+</div>
+
+<!-- ── Chart: Quarterly averages ── -->
+<div class="chart-section">
+  <h2>Quarterly Averages — ITM vs HST Direct (Q1 2024 – Q4 2025)</h2>
+  <p class="chart-note">
+    ITM is weakest in Q2 and Q4 each year — the same quarters where HST tends to be strongest. Q2 2025 shows the starkest split:
+    HST averaged 164 packs/month while ITM averaged just 92. Seasonality may play a role, but the directional gap consistently favors HST.
+  </p>
+  <canvas id="quarterlyChart" height="90"></canvas>
 </div>
 
 <!-- ── Charts 2 + 3 ── -->
@@ -277,101 +303,147 @@
   </div>
 </div>
 
-<!-- ── Chart 5: Quarterly averages ── -->
-<div class="chart-section">
-  <h2>Quarterly Averages — ITM vs HST Direct (Q1 2024 – Q4 2025)</h2>
-  <p class="chart-note">
-    ITM is weakest in Q2 and Q4 each year — the same quarters where HST tends to be strongest. Q2 2025 shows the starkest split:
-    HST averaged 164 packs/month while ITM averaged just 92. Seasonality may play a role, but the directional gap consistently favors HST.
-  </p>
-  <canvas id="quarterlyChart" height="90"></canvas>
-</div>
-
 <!-- ── Conclusion ── -->
 <div class="conclusion">
-  <h2>Analysis: How HST Direct Is Impacting ITM Pack Sales &amp; Conversion Rate (Since Jan 2024)</h2>
+  <h2>Analysis: How HST Direct Has Impacted ITM Pack Sales &amp; Conversion Rate — And Is a Combined Effort Best for Deako?</h2>
 
   <div class="findings-grid">
     <div class="finding red-b">
-      <h3 class="red">Finding 1 — ITM Fell Immediately When HST Launched</h3>
+      <h3 class="red">Finding 1 — ITM Volume Dropped When HST Launched and Has Not Recovered</h3>
       <p>
-        In 2023, ITM averaged <strong>106 packs/month</strong> with no competing channel.
-        The month HST Direct launched (January 2024), ITM dropped and never came back — averaging <strong>73/month in 2024</strong> and
-        <strong>69/month in 2025</strong>. That is a <strong class="red">sustained 35% decline</strong> relative to the pre-HST baseline.
-        The timing is not coincidental.
+        In 2023, ITM averaged <strong>106 packs/month</strong> as the sole channel.
+        When HST Direct launched in January 2024, ITM dropped to <strong>73/month in 2024</strong> and
+        <strong>69/month in 2025</strong> — a <strong class="red">sustained 35% decline</strong>.
+        Whether HST caused this or broader market forces did, the reality is that ITM alone cannot carry the volume it once did.
       </p>
     </div>
-    <div class="finding blue-b">
-      <h3 class="blue">Finding 2 — HST Direct Now Outsells ITM ~2:1</h3>
+    <div class="finding pink-b">
+      <h3 class="pink">Finding 2 — HST Direct Has Become the Dominant Channel (~2:1)</h3>
       <p>
-        In 2024, HST averaged <strong>122 packs/month vs 73 for ITM</strong> — a 68% premium.
-        In 2025, that gap widened: <strong>134 vs 69</strong>. Combined, these two channels are selling
-        roughly <strong>200+ packs/month</strong>, but the balance has shifted
-        decisively toward HST, which now accounts for <strong>60–77% of all packs</strong> in any given month.
-      </p>
-    </div>
-    <div class="finding amber-b">
-      <h3 class="amber">Finding 3 — Inverse Correlation Is Real but Moderate</h3>
-      <p>
-        A scatter plot of HST vs ITM by month produces a <strong>negative trendline</strong>.
-        Looking at month-over-month direction changes, the inverse relationship holds roughly <strong>60–65% of the time</strong>:
-        when HST rises, ITM tends to fall, and vice versa. It is not perfectly inverse — some months both rise —
-        but the pattern is consistent enough to be meaningful.
-      </p>
-    </div>
-    <div class="finding red-b">
-      <h3 class="red">Finding 4 — ITM Conversion Rate Has Collapsed</h3>
-      <p>
-        The ITM conversion rate averaged <strong>3.2% in 2023</strong>, fell to <strong>2.1% in 2024</strong>,
-        and dropped further to <strong>1.5% in 2025</strong> — a <strong class="red">53% decline in two years</strong>.
-        This cannot be explained by fewer eligible homes alone. HST Direct appears to be capturing buyers
-        who would otherwise have been strong ITM candidates, leaving the harder conversions for ITM trainers.
+        In 2024, HST averaged <strong>122 packs/month vs 73 for ITM</strong>.
+        In 2025: <strong>134 vs 69</strong>. Combined, the two channels deliver <strong>200+ packs/month</strong>,
+        nearly double what ITM delivered alone. HST now accounts for <strong>60–77% of all packs</strong> in any given month.
+        This is not a failure — it is a second engine that is pulling significant weight.
       </p>
     </div>
     <div class="finding green-b">
-      <h3 class="green">Finding 5 — HST Is Expanding Total Volume, Not Just Replacing ITM</h3>
+      <h3 class="green">Finding 3 — Combined ITM + HST Is Growing the Total Market</h3>
       <p>
         In 2023, total DPUP packs were roughly <strong>1,272 (ITM only)</strong>. In 2024, ITM+HST combined
-        reached <strong>2,337 packs</strong>. In 2025, <strong>2,429 packs</strong>. The total market is larger —
-        HST is not simply a 1-for-1 replacement of ITM. It is reaching buyers who likely never
-        would have converted through an in-person ITM training event.
+        reached <strong>2,337 packs</strong>. In 2025, <strong>2,429 packs</strong>. The total addressable market
+        for Deako is larger with both channels operating together. HST is reaching buyers who likely would never
+        have converted through an in-person ITM event — that is genuinely additive volume.
+        <strong class="green">A combined HST + ITM strategy is clearly best for Deako's total pack volume.</strong>
+      </p>
+    </div>
+    <div class="finding red-b">
+      <h3 class="red">Finding 4 — ITM Conversion Rate Has Declined Significantly</h3>
+      <p>
+        The ITM conversion rate averaged <strong>3.2% in 2023</strong>, fell to <strong>2.1% in 2024</strong>,
+        and dropped further to <strong>1.5% in 2025</strong> — a <strong class="red">53% decline in two years</strong>.
+        Some of this may reflect HST capturing the easiest conversions upstream, leaving ITM trainers with
+        harder-to-convert buyers. But it also means ITM needs more support, better tools, or sharper targeting
+        to regain effectiveness — not elimination.
       </p>
     </div>
     <div class="finding amber-b">
-      <h3 class="amber">Finding 6 — Seasonal Patterns Complicate the Picture</h3>
+      <h3 class="amber">Finding 5 — The Channels Serve Different Roles</h3>
       <p>
-        Both channels show seasonal patterns. HST peaks in Q2 (spring selling season) and mid-year.
-        ITM also dips in Q2 historically. Some of the apparent inverse correlation may simply reflect
-        the same seasonal forces affecting both channels differently. Q3 2025 (Jul–Sep) shows
-        HST=122 avg and ITM=46 avg — the widest quarterly gap on record.
+        ITM is a <strong>relationship-driven, high-touch</strong> channel — reps sell in the moment during a training interaction.
+        HST is a <strong>passive, always-on</strong> channel — buyers purchase directly without a training event.
+        These are complementary, not competing. The strongest divisions likely have both: HST capturing volume
+        at scale, and ITM driving deeper engagement, certification, and brand loyalty among sales agents.
+      </p>
+    </div>
+    <div class="finding amber-b">
+      <h3 class="amber">Finding 6 — Seasonal Patterns Affect Both Channels Differently</h3>
+      <p>
+        HST peaks in Q2 (spring selling season) and mid-year. ITM dips in Q2 historically.
+        Some apparent inverse correlation may simply reflect seasonal forces. Q3 2025 (Jul–Sep) shows
+        HST=122 avg and ITM=46 avg — the widest quarterly gap. Accounting for seasonality, both channels
+        have their strong quarters, reinforcing the case for running both year-round.
+      </p>
+    </div>
+    <div class="finding amber-b" style="border-color:#e3b341">
+      <h3 class="amber">Finding 7 — The January 2026 Contraction Changes Everything</h3>
+      <p>
+        On January 1, 2026, Deako's DRH footprint went from <strong>~125 divisions (~86K homes) to 27 divisions (~22K homes)</strong>.
+        This is a <strong style="color:#e3b341">78% reduction in addressable market</strong>. Every volume metric — ITM packs, HST packs,
+        revenue, profit — will show dramatic YoY declines that have <strong>nothing to do with program effectiveness</strong>.
+      </p>
+      <p style="margin-top:8px">
+        The 2026 data (Jan–Feb showing ITM avg 29/mo, HST avg 118/mo) must be read through this lens.
+        With only 27 divisions, even <strong>50 ITM packs/month represents stronger per-division output</strong> than the
+        73/month across 125 divisions in 2024. The Q4 2025 decline (Oct–Dec) also partially reflects the ~10 early departures,
+        not organic weakness. <strong>Conversion rate is now the only apples-to-apples comparison metric across years.</strong>
       </p>
     </div>
   </div>
 
   <div class="verdict">
-    <h3>Verdict: The Bottom Line Since January 2024</h3>
+    <h3>Verdict: Is a Combined HST + ITM Strategy Best for Deako?</h3>
     <p>
-      <strong>HST Direct is partially cannibalizing ITM, and the data makes a strong case.</strong> The 35% sustained
-      drop in ITM pack volume that began the exact month HST launched — and has held for two full years — is
-      not a coincidence. When a high-volume sales channel targets the same buyer (new home owners in the same
-      communities), resources get split, attention gets divided, and the easier conversions get captured upstream by HST,
-      leaving ITM trainers with a harder, more reluctant audience. That is why the conversion rate has fallen
-      more than the raw pack count — the quality of the ITM opportunity is declining, not just the quantity.
+      <strong class="green">Yes — unambiguously.</strong> From 2023 to 2025, total pack volume nearly doubled after HST launched.
+      While ITM volume declined from 106/mo to 69/mo, the combined ITM+HST output (200+/mo) far exceeded what ITM achieved alone.
+      Eliminating either channel would shrink the total market. The right question is not "which channel wins?"
+      but "how do we optimize both within the new 27-division footprint?"
     </p>
     <p>
-      <strong>However, HST is also genuinely growing the pie.</strong> Total packs sold (ITM + HST combined) nearly
-      doubled from 2023 to 2024 and grew again in 2025. The program is reaching buyers who would not have
-      attended an ITM event. That is real, additive value — and it shows HST is not simply a rebranded ITM.
+      <strong>ITM needs investment, not abandonment.</strong> The conversion rate decline (3.2% → 1.5%) signals that
+      ITM trainers may need better targeting (focus on communities with low HST penetration), refreshed training materials,
+      or more frequent follow-up visits. ITM is still the channel that builds relationships with sales agents,
+      creates certified advocates, and establishes model home experiences — none of which HST does.
+      With only 27 divisions remaining, the training team can go deeper instead of wider — this is an opportunity, not a setback.
     </p>
     <p>
-      <strong>The concern worth watching:</strong> If the ITM conversion rate continues its current trajectory —
-      3.2% (2023) → 2.1% (2024) → 1.5% (2025) → 0.75% pace in early 2026 — ITM risks becoming
-      a marginal channel relative to HST. The question for your team is whether ITM investment is being
-      right-sized given that HST now delivers roughly 2× the monthly volume. If ITM resources are being
-      stretched across both programs, that would explain both the volume drop and the conversion rate collapse —
-      and would point to a staffing or prioritization solution rather than a market problem.
+      <strong>HST is the volume engine.</strong> It requires less hands-on management, scales across all divisions
+      simultaneously, and captures buyers who would never attend an ITM event. Let it run.
+    </p>
+    <p>
+      <strong style="color:#e3b341">The contraction resets the baseline.</strong> Comparing 2026 absolute volumes to 2023–2025 is meaningless
+      — the addressable market shrank 78%. The metrics that matter going forward are: <strong>conversion rate per eligible home</strong>,
+      <strong>packs per division per month</strong>, and <strong>combined ITM+HST output per division</strong>.
+      If the 27 remaining divisions can maintain or improve their per-division rates, the program is healthy regardless of what the raw totals show.
     </p>
   </div>
+
+  <div class="conclusion" style="border-top:3px solid #f0a500;margin-top:20px">
+    <h2 style="color:#f0a500">How to Tell the Builder Story: Their Division IS Seeing Value</h2>
+    <p style="font-size:13px;line-height:1.7;margin-bottom:12px">
+      <strong>Critical context:</strong> HST Direct pack sales are <strong>not shared with the builder</strong> —
+      only ITM pack sales are visible to them. This creates a perception gap: a builder may look at their ITM numbers,
+      see modest or declining sales, and conclude that Deako isn't gaining traction in their division.
+      <strong class="red">That conclusion would be wrong.</strong>
+    </p>
+    <p style="font-size:13px;line-height:1.7;margin-bottom:12px">
+      When a division shows low ITM numbers but has active HST Direct sales, the reality is that <strong>their buyers
+      are choosing Deako — just through a different channel.</strong> The demand exists. The product is selling.
+      The builder's communities are generating pack sales. They just can't see 60–77% of them.
+    </p>
+    <p style="font-size:13px;line-height:1.7;margin-bottom:16px">
+      <strong>The message to the builder:</strong> "Your division is actually performing. Combined pack sales
+      (which include sales we can't share individually but can reference in aggregate) show strong buyer adoption
+      in your communities. The ITM number you see is the floor, not the ceiling. Deako is adding value across
+      your homes — your buyers are voting with their wallets."
+    </p>
+    <p style="font-size:13px;line-height:1.7;margin-bottom:16px;color:#e3b341">
+      <strong>Post-contraction context (2026):</strong> Your division is one of 27 that Deako chose to stay with — down from 125.
+      That means more focused training resources, deeper support, and a stronger partnership. The divisions that remain
+      are the ones where Deako sees the most long-term value. Frame this as a commitment, not a retreat.
+    </p>
+    <div style="background:#161b22;border:1px solid #21262d;border-radius:8px;padding:14px 18px">
+      <div style="font-size:11px;font-weight:700;color:#f0a500;text-transform:uppercase;margin-bottom:8px">Talking Points for Builder Conversations</div>
+      <ul style="font-size:12px;line-height:1.8;color:#c9d1d9;padding-left:18px">
+        <li><strong>Lead with total buyer adoption:</strong> "Across your communities, we're seeing consistent buyer interest in Deako upgrades — the demand is real and growing."</li>
+        <li><strong>Reference aggregate volume without specifics:</strong> "Our data shows your division's communities are among the most active for Deako pack purchases across all sales channels."</li>
+        <li><strong>Reframe ITM as one piece:</strong> "The ITM numbers you see represent our in-person training events. That's one of several ways buyers are choosing Deako in your homes."</li>
+        <li><strong>Focus on the model home experience:</strong> "The strongest conversion driver is the model home setup — buyers who interact with Deako in the model convert at 2–3× the rate. Let's make sure every model is equipped."</li>
+        <li><strong>Show the training investment:</strong> "We've trained X reps, certified Y agents, and set up Z model homes in your division — that infrastructure is what makes Deako sell itself."</li>
+      </ul>
+    </div>
+  </div>
+
+  <div id="hiddenValueTable"></div>
 
   <div class="stats-table-wrap">
     <h3>Year-by-Year Summary</h3>
@@ -417,26 +489,37 @@
         <td class="red">1.5%</td>
       </tr>
       <tr>
-        <td>2026 (Jan–Feb)</td>
-        <td class="red">58</td>
-        <td class="red">29 *</td>
-        <td class="red">Trending lower</td>
+        <td>2025 Q4 (Oct–Dec)</td>
+        <td class="amber">161</td>
+        <td class="amber">54</td>
+        <td class="amber">↓ ~10 divs departed early</td>
+        <td class="blue">338</td>
+        <td class="blue">113</td>
+        <td class="blue">67.7%</td>
+        <td class="amber">1.0%</td>
+      </tr>
+      <tr style="background:#1a180088">
+        <td><strong>2026 (Jan–Feb)</strong><br><span class="muted" style="font-size:10px">27 divisions only</span></td>
+        <td class="amber">58</td>
+        <td class="amber">29 *</td>
+        <td class="amber" style="font-size:11px">78% fewer divisions — not comparable to prior years</td>
         <td class="blue">235</td>
         <td class="blue">118</td>
         <td class="blue">80.2%</td>
-        <td class="red">0.75%</td>
+        <td class="amber">0.75%</td>
       </tr>
     </table>
     <p class="footnote">* Feb 2026 ITM = 5 packs is likely a partial or incomplete month of data. The Jan 2026 figure of 53 is more representative.</p>
+    <p class="footnote" style="color:#e3b341">2026 volumes reflect 27 divisions (~22K homes) vs 125 divisions (~86K homes) in 2023–2025. Per-division ITM in Jan 2026 ≈ 2.0/div/mo vs 0.6/div/mo in 2024 — the remaining divisions are actually converting at a higher rate per division.</p>
   </div>
 </div>
 
 <script>
 // ── Raw data (Jan 2024 – Feb 2026) ──
-const labels26 = ["Jan '24","Feb '24","Mar '24","Apr '24","May '24","Jun '24","Jul '24","Aug '24","Sep '24","Oct '24","Nov '24","Dec '24","Jan '25","Feb '25","Mar '25","Apr '25","May '25","Jun '25","Jul '25","Aug '25","Sep '25","Oct '25","Nov '25","Dec '25","Jan '26","Feb '26*"];
-const ITM  = [122,77,97,48,66,71,92,84,61,72,87,96, 97,103,77,85,101,91,81,72,45,56,57,62, 53,5];
-const HST  = [103,121,159,90,129,141,101,118,135,142,125,100, 119,126,159,157,153,183,94,128,145,126,124,88, 124,111];
-const conv = [1.8,1.1,2.2,2.0,3.0,1.5,2.6,2.8,2.3,2.5,2.2,1.5, 3.4,1.6,1.4,0.9,1.7,1.2,1.5,1.5,1.3,1.2,1.0,0.9, 1.0,0.5];
+const labels26 = ["Jan '24","Feb '24","Mar '24","Apr '24","May '24","Jun '24","Jul '24","Aug '24","Sep '24","Oct '24","Nov '24","Dec '24","Jan '25","Feb '25","Mar '25","Apr '25","May '25","Jun '25","Jul '25","Aug '25","Sep '25","Oct '25","Nov '25","Dec '25","Jan '26","Feb '26*","Mar '26","Apr '26"];
+const ITM  = [122,77,97,48,66,71,92,84,61,72,87,96, 97,103,77,85,101,91,81,72,45,56,57,62, 53,5,52,6];
+const HST  = [103,121,159,90,129,141,101,118,135,142,125,100, 119,126,159,157,153,183,94,128,145,126,124,88, 124,111,150,31];
+const conv = [1.8,1.1,2.2,2.0,3.0,1.5,2.6,2.8,2.3,2.5,2.2,1.5, 3.4,1.6,1.4,0.9,1.7,1.2,1.5,1.5,1.3,1.2,1.0,0.9, 1.0,0.5,0.8,0.9];
 
 const CHART_DEFAULTS = {
   responsive: true,
@@ -446,11 +529,13 @@ const CHART_DEFAULTS = {
       labels: { color: '#8b949e', boxWidth: 12, font: { size: 11 } }
     },
     tooltip: {
-      backgroundColor: '#1c2128',
+      backgroundColor: 'rgba(28,33,40,1)',
       borderColor: '#30363d',
       borderWidth: 1,
       titleColor: '#e6edf3',
       bodyColor: '#c9d1d9',
+      caretPadding: 6,
+      padding: 10,
     }
   },
   scales: {
@@ -470,16 +555,16 @@ const CHART_DEFAULTS = {
         {
           label: 'ITM Packs',
           data: ITM,
-          backgroundColor: '#f78166cc',
-          borderColor: '#f78166',
+          backgroundColor: '#1f6febcc',
+          borderColor: '#1f6feb',
           borderWidth: 1,
           order: 2
         },
         {
           label: 'HST Direct Packs',
           data: HST,
-          backgroundColor: '#58a6ff99',
-          borderColor: '#58a6ff',
+          backgroundColor: '#f778ba99',
+          borderColor: '#f778ba',
           borderWidth: 1,
           order: 3
         },
@@ -555,7 +640,7 @@ const CHART_DEFAULTS = {
           if (b0) {
             c.save();
             c.font = 'bold 9px system-ui, sans-serif';
-            c.fillStyle = '#f78166';
+            c.fillStyle = '#1f6feb';
             c.textAlign = 'center';
             c.textBaseline = 'bottom';
             c.fillText(v, b0.x, b0.y - 2);
@@ -565,7 +650,7 @@ const CHART_DEFAULTS = {
           if (b1) {
             c.save();
             c.font = 'bold 9px system-ui, sans-serif';
-            c.fillStyle = '#58a6ff';
+            c.fillStyle = '#f778ba';
             c.textAlign = 'center';
             c.textBaseline = 'bottom';
             c.fillText(HST[i], b1.x, b1.y - 2);
@@ -588,15 +673,15 @@ const CHART_DEFAULTS = {
         {
           label: 'ITM Packs',
           data: [1272, 873, 827, 58],
-          backgroundColor: ['#f7816699','#f85149aa','#f85149aa','#f85149aa'],
-          borderColor: ['#f78166','#f85149','#f85149','#f85149'],
+          backgroundColor: ['#1f6feb99','#1f6feb99','#1f6feb99','#1f6feb99'],
+          borderColor: ['#1f6feb','#1f6feb','#1f6feb','#1f6feb'],
           borderWidth: 1
         },
         {
           label: 'HST Direct Packs',
           data: [null, 1464, 1602, 235],
-          backgroundColor: '#58a6ff88',
-          borderColor: '#58a6ff',
+          backgroundColor: '#f778ba88',
+          borderColor: '#f778ba',
           borderWidth: 1
         }
       ]
@@ -635,13 +720,13 @@ const CHART_DEFAULTS = {
       afterDraw(chart) {
         const c = chart.ctx;
         const m0 = chart.getDatasetMeta(0), m1 = chart.getDatasetMeta(1);
-        const itmD = [1272, 873, 827, 58], hstD = [null, 1464, 1602, 235];
+        const itmD = [1272, 873, 827, 116], hstD = [null, 1464, 1602, 416];
         itmD.forEach((itm, i) => {
           const b0 = m0.data[i];
           if (b0) {
             c.save();
             c.font = 'bold 11px system-ui, sans-serif';
-            c.fillStyle = '#f78166';
+            c.fillStyle = '#1f6feb';
             c.textAlign = 'center'; c.textBaseline = 'bottom';
             c.fillText(itm.toLocaleString(), b0.x, b0.y - 5);
             c.restore();
@@ -652,7 +737,7 @@ const CHART_DEFAULTS = {
             if (b1) {
               c.save();
               c.font = 'bold 11px system-ui, sans-serif';
-              c.fillStyle = '#58a6ff';
+              c.fillStyle = '#f778ba';
               c.textAlign = 'center'; c.textBaseline = 'bottom';
               c.fillText(hst.toLocaleString(), b1.x, b1.y - 5);
               c.restore();
@@ -678,16 +763,16 @@ const CHART_DEFAULTS = {
         {
           label: 'ITM %',
           data: itmPct,
-          backgroundColor: '#f7816699',
-          borderColor: '#f78166',
+          backgroundColor: '#1f6feb99',
+          borderColor: '#1f6feb',
           borderWidth: 0,
           stack: 'share'
         },
         {
           label: 'HST Direct %',
           data: hstPct,
-          backgroundColor: '#58a6ff88',
-          borderColor: '#58a6ff',
+          backgroundColor: '#f778ba88',
+          borderColor: '#f778ba',
           borderWidth: 0,
           stack: 'share'
         }
@@ -728,13 +813,13 @@ const CHART_DEFAULTS = {
           const bx = m0.data[i].x;
           if (ip >= 14) {
             c.save(); c.font = 'bold 9px system-ui,sans-serif';
-            c.fillStyle = '#f78166'; c.textAlign = 'center'; c.textBaseline = 'middle';
+            c.fillStyle = '#1f6feb'; c.textAlign = 'center'; c.textBaseline = 'middle';
             c.fillText(ip + '%', bx, sy.getPixelForValue(ip / 2));
             c.restore();
           }
           if (hp >= 14) {
             c.save(); c.font = 'bold 9px system-ui,sans-serif';
-            c.fillStyle = '#58a6ff'; c.textAlign = 'center'; c.textBaseline = 'middle';
+            c.fillStyle = '#f778ba'; c.textAlign = 'center'; c.textBaseline = 'middle';
             c.fillText(hp + '%', bx, sy.getPixelForValue(ip + hp / 2));
             c.restore();
           }
@@ -779,7 +864,7 @@ const CHART_DEFAULTS = {
     type: 'scatter',
     data: {
       datasets: [
-        { label: '2024 months', data: pts24, backgroundColor: '#58a6ff', pointRadius: 6, pointHoverRadius: 8 },
+        { label: '2024 months', data: pts24, backgroundColor: '#f778ba', pointRadius: 6, pointHoverRadius: 8 },
         { label: '2025 months', data: pts25, backgroundColor: '#e3b341', pointRadius: 6, pointHoverRadius: 8 },
         { label: 'Jan 2026', data: pts26, backgroundColor: '#f85149', pointRadius: 7, pointHoverRadius: 9 },
         {
@@ -814,11 +899,11 @@ const CHART_DEFAULTS = {
       },
       scales: {
         x: {
-          title: { display: true, text: 'HST Direct Packs', color: '#58a6ff', font: { size: 11 } },
+          title: { display: true, text: 'HST Direct Packs', color: '#f778ba', font: { size: 11 } },
           ticks: { color: '#8b949e' }, grid: { color: '#21262d' }
         },
         y: {
-          title: { display: true, text: 'ITM Packs', color: '#f78166', font: { size: 11 } },
+          title: { display: true, text: 'ITM Packs', color: '#1f6feb', font: { size: 11 } },
           ticks: { color: '#8b949e' }, grid: { color: '#21262d' }
         }
       }
@@ -925,16 +1010,16 @@ const CHART_DEFAULTS = {
         {
           label: 'ITM Avg/Mo',
           data: itmQ,
-          backgroundColor: '#f7816688',
-          borderColor: '#f78166',
+          backgroundColor: '#1f6feb88',
+          borderColor: '#1f6feb',
           borderWidth: 1,
           order: 2
         },
         {
           label: 'HST Direct Avg/Mo',
           data: hstQ,
-          backgroundColor: '#58a6ff88',
-          borderColor: '#58a6ff',
+          backgroundColor: '#f778ba88',
+          borderColor: '#f778ba',
           borderWidth: 1,
           order: 3
         },
@@ -1003,7 +1088,7 @@ const CHART_DEFAULTS = {
           // ITM avg/mo count over red bar
           c.save();
           c.font = 'bold 9px system-ui, sans-serif';
-          c.fillStyle = '#f78166';
+          c.fillStyle = '#1f6feb';
           c.textAlign = 'center';
           c.textBaseline = 'bottom';
           c.fillText(itm, b0.x, b0.y - 3);
@@ -1011,7 +1096,7 @@ const CHART_DEFAULTS = {
           // HST % over blue bar
           c.save();
           c.font = 'bold 9px system-ui, sans-serif';
-          c.fillStyle = '#58a6ff';
+          c.fillStyle = '#f778ba';
           c.textAlign = 'center';
           c.textBaseline = 'bottom';
           c.fillText(hst, b1.x, b1.y - 3);
@@ -1034,6 +1119,74 @@ const CHART_DEFAULTS = {
       }
     }]
   });
+})();
+
+// ── Hidden Deako Value Table ──
+(function(){
+  const fmtDiv = d => d.replace(/_/g,' ').replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+  const el = document.getElementById('hiddenValueTable');
+  if(!el || typeof CONV_DATA==='undefined') return;
+
+  // All-time ITM packs per division from CONV_DATA (these are the trained/conversion divisions)
+  const itmByDiv = {};
+  const eligByDiv = {};
+  (CONV_DATA.monthly||[]).forEach(d=>{
+    itmByDiv[d.div] = (itmByDiv[d.div]||0) + d.pk;
+    eligByDiv[d.div] = (eligByDiv[d.div]||0) + d.e;
+  });
+
+  // Top 10 divisions by ITM packs
+  const rows = Object.keys(itmByDiv)
+    .map(div=>({div, itm:itmByDiv[div], elig:eligByDiv[div]||0, conv:eligByDiv[div]>0?(itmByDiv[div]/eligByDiv[div]*100):0}))
+    .filter(d=>d.itm>0)
+    .sort((a,b)=>b.itm-a.itm)
+    .slice(0,10);
+
+  if(rows.length===0) return;
+
+  el.innerHTML = `
+    <div class="conclusion" style="border-top:3px solid #f778ba;margin-bottom:20px">
+      <h2 style="color:#f778ba;margin-bottom:4px">Top 10 Trained Divisions: Visible ITM + Hidden HST Potential</h2>
+      <p style="font-size:12px;color:#8b949e;margin-bottom:12px">
+        These are the top-performing divisions from the conversion rate panel, ranked by ITM packs sold (what the builder sees).
+        <strong>HST Direct data is not currently broken down by these divisions</strong> — the HST Direct column shows a placeholder.
+        When division-level HST data becomes available, this table will show the full hidden value story.
+      </p>
+      <p style="font-size:12px;color:#f0a500;margin-bottom:16px">
+        Even without HST data, remember: nationally, HST Direct outsells ITM roughly 2:1. If that ratio holds locally,
+        the true Deako adoption in each of these divisions is likely <strong>2–3× what the builder sees</strong>.
+      </p>
+      <table class="kt" style="width:100%">
+        <tr>
+          <th style="text-align:left">#</th>
+          <th style="text-align:left">Division</th>
+          <th style="text-align:right;color:#7ecfe0">Eligible Homes</th>
+          <th style="text-align:right;color:#1f6feb">ITM Packs<br><span style="font-size:9px;color:#8b949e">(Builder sees)</span></th>
+          <th style="text-align:right;color:#3fb950">Conv Rate</th>
+          <th style="text-align:right;color:#f778ba">HST Direct<br><span style="font-size:9px;color:#8b949e">(Builder can't see)</span></th>
+          <th style="text-align:right;color:#e6edf3">Est. Combined<br><span style="font-size:9px;color:#8b949e">(2:1 HST ratio)</span></th>
+          <th style="text-align:left">Builder Story</th>
+        </tr>
+        ${rows.map((d,i)=>{
+          const estHst = Math.round(d.itm * 2); // national 2:1 ratio estimate
+          const estCombined = d.itm + estHst;
+          return `<tr>
+            <td style="color:#484f58;font-weight:700">${i+1}</td>
+            <td style="font-weight:600">${fmtDiv(d.div)}</td>
+            <td style="text-align:right;color:#7ecfe0">${d.elig.toLocaleString()}</td>
+            <td style="text-align:right;color:#1f6feb;font-weight:700">${d.itm.toLocaleString()}</td>
+            <td style="text-align:right;color:${d.conv>=3?'#3fb950':d.conv>=1.5?'#f0a500':'#f85149'};font-weight:700">${d.conv.toFixed(2)}%</td>
+            <td style="text-align:right;color:#f778ba;font-style:italic">~${estHst.toLocaleString()} *</td>
+            <td style="text-align:right;color:#e6edf3;font-weight:700;font-style:italic">~${estCombined.toLocaleString()} *</td>
+            <td style="font-size:11px;color:#8b949e">"Your division has ${d.itm} confirmed pack sales through ITM alone — likely ${estCombined}+ total across all channels."</td>
+          </tr>`;
+        }).join('')}
+      </table>
+      <p style="font-size:11px;color:#484f58;margin-top:12px">
+        * HST Direct estimates use the national 2:1 HST-to-ITM ratio. Actual division-level HST data is not yet available for these divisions.
+        When it is, these estimates will be replaced with real numbers.
+      </p>
+    </div>`;
 })();
 </script>
 
