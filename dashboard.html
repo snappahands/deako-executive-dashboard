@@ -491,7 +491,7 @@
   <div class="header-right">
     <div class="header-date" id="headerDate"></div>
     <div class="header-period" id="headerPeriod"></div>
-    <div style="font-size:11px;color:var(--teal);margin-top:4px;letter-spacing:.04em;font-weight:700">v3.9</div>
+    <div style="font-size:11px;color:var(--teal);margin-top:4px;letter-spacing:.04em;font-weight:700">v4.0</div>
   </div>
 </header>
 
@@ -1115,18 +1115,20 @@ function renderHeader() {
 // ═══════════════════════════════════════════════════════════
 //  CHARTS
 // ═══════════════════════════════════════════════════════════
-function makeBar(id, labels, ds, fmt, deltas, lines) {
+function makeBar(id, labels, ds, fmt, deltas, lines, aopDeltas) {
   const ctx = document.getElementById(id).getContext('2d');
   if (charts[id]) charts[id].destroy();
   const lastIdx = ds.length - 1;
   const allDs = lines ? [...ds, ...lines] : ds;
+  const hasAopDeltas = aopDeltas && aopDeltas.aop39;
+  const bottomPad = hasAopDeltas ? 74 : deltas ? 44 : 4;
   charts[id] = new Chart(ctx, {
     type: 'bar',
     data: { labels, datasets: allDs },
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      layout: { padding: { top: 4, bottom: deltas ? 44 : 4 } },
+      layout: { padding: { top: 4, bottom: bottomPad } },
       plugins: {
         legend: {
           position:'top',
@@ -1148,7 +1150,14 @@ function makeBar(id, labels, ds, fmt, deltas, lines) {
               const d = deltas[i];
               if (d === null || d === undefined) return [];
               const sign = d >= 0 ? '+' : '';
-              return ['', ` YoY Delta: ${sign}${fmt==='$' ? fcr(d) : Math.round(d).toLocaleString()}`];
+              const lines = ['', ` YoY Delta: ${sign}${fmt==='$' ? fcr(d) : Math.round(d).toLocaleString()}`];
+              if (hasAopDeltas) {
+                const d39 = aopDeltas.aop39[i];
+                const dInv = aopDeltas.investor[i];
+                if (d39 !== null) lines.push(` vs 3+9: ${d39>=0?'+':''}${fcr(d39)}`);
+                if (dInv !== null) lines.push(` vs Investor: ${dInv>=0?'+':''}${fcr(dInv)}`);
+              }
+              return lines;
             }
           }
         },
@@ -1167,23 +1176,55 @@ function makeBar(id, labels, ds, fmt, deltas, lines) {
         }
       }
     },
-    plugins: deltas ? [{
+    plugins: (deltas || hasAopDeltas) ? [{
       id: 'deltasBelow_' + id,
       afterDraw(chart) {
         const c = chart.ctx;
         const xScale = chart.scales.x;
         const yBot = chart.chartArea.bottom;
         c.save();
-        c.font = 'bold 9px system-ui,sans-serif';
         c.textAlign = 'center';
         c.textBaseline = 'top';
-        for (let i = 0; i < deltas.length; i++) {
-          const d = deltas[i];
-          if (d === null || d === undefined) continue;
-          const x = xScale.getPixelForTick(i);
-          const label = (d >= 0 ? '+' : '') + (fmt === '$' ? fcr(d) : Math.round(d).toLocaleString());
-          c.fillStyle = d >= 0 ? '#3ecfc6' : '#e8728a';
-          c.fillText(label, x, yBot + 34);
+        // YoY deltas row
+        if (deltas) {
+          c.font = 'bold 9px system-ui,sans-serif';
+          for (let i = 0; i < deltas.length; i++) {
+            const d = deltas[i];
+            if (d === null || d === undefined) continue;
+            const x = xScale.getPixelForTick(i);
+            const label = (d >= 0 ? '+' : '') + (fmt === '$' ? fcr(d) : Math.round(d).toLocaleString());
+            c.fillStyle = d >= 0 ? '#3ecfc6' : '#e8728a';
+            c.fillText(label, x, yBot + 14);
+          }
+        }
+        // AOP delta rows (3+9 and Investor)
+        if (hasAopDeltas) {
+          const baseY = yBot + (deltas ? 28 : 14);
+          // 3+9 row
+          c.font = '600 10px system-ui,sans-serif';
+          for (let i = 0; i < aopDeltas.aop39.length; i++) {
+            const d = aopDeltas.aop39[i];
+            if (d === null || d === undefined) continue;
+            const x = xScale.getPixelForTick(i);
+            c.fillStyle = '#4a6278';
+            c.font = '400 8px system-ui,sans-serif';
+            c.fillText('3+9:', x, baseY);
+            c.font = '700 10px system-ui,sans-serif';
+            c.fillStyle = d >= 0 ? '#3ecfc6' : '#e8728a';
+            c.fillText((d >= 0 ? '+' : '') + fcr(d), x, baseY + 10);
+          }
+          // Investor row
+          for (let i = 0; i < aopDeltas.investor.length; i++) {
+            const d = aopDeltas.investor[i];
+            if (d === null || d === undefined) continue;
+            const x = xScale.getPixelForTick(i);
+            c.fillStyle = '#4a6278';
+            c.font = '400 8px system-ui,sans-serif';
+            c.fillText('Investor:', x, baseY + 24);
+            c.font = '700 10px system-ui,sans-serif';
+            c.fillStyle = d >= 0 ? '#3ecfc6' : '#e8728a';
+            c.fillText((d >= 0 ? '+' : '') + fcr(d), x, baseY + 34);
+          }
         }
         c.restore();
       }
@@ -1243,10 +1284,29 @@ function renderCharts() {
     { label:'2026', data: r26, backgroundColor: r26c, borderRadius:4 },
   ], '$', deltaMonthR);
 
+  const qtrAopLines = activeBuilder === 'all' ? [
+    { type:'line', label:'AOP (3+9)', data: _g.qtrAOP2026,
+      borderColor:'rgba(63,185,80,0.9)', backgroundColor:'transparent',
+      borderWidth:2, borderDash:[6,3], pointRadius:4, pointHoverRadius:6,
+      pointBackgroundColor:'rgba(63,185,80,0.9)', tension:0.3, order:-1,
+      datalabels:{display:false} },
+    { type:'line', label:'AOP (Investor)', data: _g.qtrAOPInvestor,
+      borderColor:'rgba(139,148,158,0.85)', backgroundColor:'transparent',
+      borderWidth:2, borderDash:[6,3], pointRadius:4, pointHoverRadius:6,
+      pointBackgroundColor:'rgba(139,148,158,0.85)', tension:0.3, order:-1,
+      datalabels:{display:false} },
+  ] : null;
+
+  // Quarterly AOP deltas for below-bar rendering
+  const qtrAopDeltas = activeBuilder === 'all' ? {
+    aop39:  qB26.map((v,i) => v > 0 ? v - _g.qtrAOP2026[i] : null),
+    investor: qB26.map((v,i) => v > 0 ? v - _g.qtrAOPInvestor[i] : null),
+  } : null;
+
   makeBar('chartQtrBookings', QUARTERS, [
     { label:'2025', data: qB25, backgroundColor: b25c, borderRadius:5 },
     { label:'2026', data: qB26, backgroundColor: b26c, borderRadius:5 },
-  ], '$', deltaQtrB);
+  ], '$', deltaQtrB, qtrAopLines, qtrAopDeltas);
 
   makeBar('chartQtrRevenue', QUARTERS, [
     { label:'2025', data: qR25, backgroundColor: r25c, borderRadius:5 },
