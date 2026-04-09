@@ -187,6 +187,8 @@
     .metric-value.dim  { color: var(--text-dim); }
     .metric-sub { font-size: 11px; color: var(--text-dim); margin-top: 4px; }
     .metric-sub.xs { font-size: 9px; margin-top: 3px; }
+    .delta-row { margin-top: 2px; }
+    .delta-cell { text-align: center; font-size: 9px; font-weight: 700; line-height: 1; padding: 2px 0; }
     .prog-wrap { background: var(--border); border-radius: 6px; height: 5px; margin-top: 10px; overflow: hidden; }
     .prog-fill { height: 100%; border-radius: 6px; transition: width 0.5s ease; }
 
@@ -489,7 +491,7 @@
   <div class="header-right">
     <div class="header-date" id="headerDate"></div>
     <div class="header-period" id="headerPeriod"></div>
-    <div style="font-size:11px;color:var(--teal);margin-top:4px;letter-spacing:.04em;font-weight:700">v3.4</div>
+    <div style="font-size:11px;color:var(--teal);margin-top:4px;letter-spacing:.04em;font-weight:700">v3.9</div>
   </div>
 </header>
 
@@ -620,11 +622,11 @@
       <div class="drh-section-label">Bookings by Category &amp; Pipeline</div>
       <div class="charts-grid">
         <div class="chart-card">
-          <div class="chart-title">Bookings by Category ($K) — Jan 2025 to Mar 2026</div>
+          <div class="chart-title">Bookings by Category ($K) — Jan 2025 to Apr 2026</div>
           <div class="chart-wrap"><canvas id="drhCatStack"></canvas></div>
         </div>
         <div class="chart-card">
-          <div class="chart-title">Home Starts &amp; Closes — Jan 2025 to Mar 2026</div>
+          <div class="chart-title">Home Starts &amp; Closes — Jan 2025 to Apr 2026</div>
           <div class="chart-wrap"><canvas id="drhStartsCloses"></canvas></div>
         </div>
       </div>
@@ -796,14 +798,14 @@ const BUILDERS = [
     b25:[0,0,0,0,0,0,0,0,0,0,0,0],
     b26:[0,0,0,0,0,0,0,0,0,0,0,0] },
   { key:'maronda',       name:'Maronda Homes',
-    b25:[14.961,27.474,59.284,72.374,114.938,100.662,96.734,104.300,75.401,97.734,69.060,76.887],
-    b26:[125.141,84.621,93.015,9.112,0,0,0,0,0,0,0,0] },
+    b25:[14.961,27.474,59.284,72.325,114.865,100.611,98.132,104.569,75.667,99.114,72.381,78.097],
+    b26:[125.120,84.621,92.188,17.400,0,0,0,0,0,0,0,0] },
   { key:'stonemartin',   name:'Stone Martin Builders',
-    b25:[63.719,76.387,64.622,73.992,50.473,69.293,71.561,49.168,58.903,53.400,46.328,29.848],
-    b26:[56.486,86.723,80.265,20.365,0,0,0,0,0,0,0,0] },
+    b25:[63.719,76.387,64.622,73.992,50.423,69.250,71.511,49.156,58.849,53.400,46.328,29.848],
+    b26:[56.486,86.723,80.265,37.594,0,0,0,0,0,0,0,0] },
   { key:'hc_okc',        name:'Home Creations - OKC',
     b25:[0.321,0,1.764,5.144,9.184,11.082,14.477,11.515,10.812,11.208,18.342,9.170],
-    b26:[7.016,5.585,12.009,0.503,0,0,0,0,0,0,0,0] },
+    b26:[7.016,5.585,12.009,3.907,0,0,0,0,0,0,0,0] },
   { key:'candlelight',   name:'Candlelight Homes',
     b25:[0.950,3.325,3.984,1.992,5.478,1.701,14.442,21.858,9.900,12.650,4.400,2.750],
     b26:[7.150,4.950,5.500,2.750,0,0,0,0,0,0,0,0] },
@@ -811,14 +813,14 @@ const BUILDERS = [
     b25:[1.938,4.132,7.894,3.705,6.886,7.043,3.282,3.542,8.110,4.878,6.034,0.948],
     b26:[1.620,0.669,0.530,0,0,0,0,0,0,0,0,0] },
   { key:'risewell',      name:'Risewell Homes (Total)',
-    b25:[0,2.129,4.648,7.058,4.947,0.875,3.830,6.859,1.726,4.233,6.337,10.570],
+    b25:[0,2.129,4.648,7.058,4.947,0.875,3.830,6.859,1.726,0,4.233,6.337],
     b26:[5.083,3.464,8.379,0,0,0,0,0,0,0,0,0] },
   { key:'schumacher',    name:'Schumacher (Electrician)',
     b25:[0,0,0,1.554,0,3.440,1.426,7.214,4.323,8.437,5.999,2.139],
     b26:[1.426,1.160,2.096,0,0,0,0,0,0,0,0,0] },
   { key:'kdh',           name:'KDH Builders',
     b25:[0,0,0,0,0,0,0,0,0,16.467,0,5.399],
-    b26:[0,5.399,0,0,0,0,0,0,0,0,0,0] },
+    b26:[0,5.399,0,6.749,0,0,0,0,0,0,0,0] },
   { key:'toa',           name:'TOA via Denney Electric',
     b25:[1.650,0,0,1.275,2.375,11.370,1.375,1.350,0.825,2.750,0.203,1.450],
     b26:[0,0,0.550,0,0,0,0,0,0,0,0,0] },
@@ -832,17 +834,17 @@ const BUILDERS = [
     b25:[3.555,1.575,3.735,1.935,3.195,2.070,2.610,1.125,0.450,0.630,0.270,0.090],
     b26:[0.045,0,0.090,0,0,0,0,0,0,0,0,0] },
   { key:'hc_glenwood',   name:'Home Creations - Glenwood',
-    b25:[0,0,0,0,0,0,6.095,3.080,9.175,2.739,2.788,2.387],
+    b25:[0,0,0,0,0,0,0,6.095,3.080,2.739,2.788,2.387],
     b26:[1.753,0.660,0,0,0,0,0,0,0,0,0,0] },
   { key:'adams',         name:'Adams Homes',
     b25:[0.358,0.563,0.180,0.270,0.924,1.362,0.758,1.516,1.516,1.895,0,8.351],
-    b26:[0,2.653,0,0,0,0,0,0,0,0,0,0] },
+    b26:[0,2.653,3.032,0,0,0,0,0,0,0,0,0] },
   { key:'drees',         name:'Drees Homes',
     b25:[0,0,0,0,1.968,1.192,1.345,1.476,3.348,1.806,0,4.491],
-    b26:[3.384,2.232,2.232,0,0,0,0,0,0,0,0,0] },
+    b26:[3.384,2.232,2.232,4.322,0,0,0,0,0,0,0,0] },
   { key:'rolwes',        name:'Rolwes Company',
     b25:[0,0,0,0,0,0,2.948,1.900,0.809,0.745,0,0.745],
-    b26:[0,2.711,2.782,0,0,0,0,0,0,0,0,0] },
+    b26:[0,2.711,2.782,0.385,0,0,0,0,0,0,0,0] },
   { key:'apple',         name:'Apple / 1st Oklahoma',
     b25:[0,0,2.058,0,0,3.201,1.292,0,0,0,0,0.414],
     b26:[0.414,0,0,0,0,0,0,0,0,0,0,0] },
@@ -856,26 +858,28 @@ const BUILDERS = [
 
 // __DATA_START__
 const DEFAULTS = {
-  dataVersion: 7,  // bump this whenever monthly/goals data changes to bust localStorage cache
+  dataVersion: 10,  // bump this whenever monthly/goals data changes to bust localStorage cache
   monthly: {
     // Bookings: full-year actuals from Justin Bookings Table row 58
-    bookings2026: [218.858, 206.701, 213.854, 33.418, 0, 0, 0, 0, 0, 0, 0, 0],
-    bookings2025: [88.104, 117.541, 148.386, 187.128, 211.729, 227.547, 240.187, 243.327, 188.220, 223.398, 161.607, 159.140],
+    bookings2026: [218.837, 206.701, 216.059, 74.419, 0, 0, 0, 0, 0, 0, 0, 0],
+    bookings2025: [88.104, 117.541, 148.386, 187.128, 211.679, 227.504, 241.693, 243.703, 188.555, 225.342, 166.071, 160.696],
     // Revenue: full-year actuals from Justin Bookings Table row 58
-    revenue2026:  [218.858, 206.701, 213.854, 33.418, 0, 0, 0, 0, 0, 0, 0, 0],
-    revenue2025:  [88.104, 117.541, 148.386, 187.128, 211.729, 227.547, 240.187, 243.327, 188.220, 223.398, 161.607, 159.140],
+    revenue2026:  [218.837, 206.701, 216.059, 74.419, 0, 0, 0, 0, 0, 0, 0, 0],
+    revenue2025:  [88.104, 117.541, 148.386, 187.128, 211.679, 227.504, 241.693, 243.703, 188.555, 225.342, 166.071, 160.696],
   },
   goals: {
-    aopBookings:       2616.5,  // 2026 AOP — BM row 59
-    aopRevenue:        2616.5,  // 2026 AOP — BM row 59
-    bookings2025Full:  2418.6,  // 2025 full-year actual — AQ row 59
-    revenue2025Full:   2418.6,  // 2025 full-year actual — AQ row 59
+    aopBookings:       2616.548,  // 2026 AOP — BM row 59
+    aopRevenue:        2616.548,  // 2026 AOP — BM row 59
+    bookings2025Full:  2418.625,  // 2025 full-year actual — AQ row 59
+    revenue2025Full:   2418.625,  // 2025 full-year actual — AQ row 59
     // Monthly AOP 2026 (row 59, individual month columns)
     monthlyAOP2026: [202.401, 208.235, 219.454, 221.783, 229.603, 233.766, 235.989, 236.944, 236.674, 217.579, 186.706, 187.414],
     // Monthly AOP 2026 — Investor view ($K)
     monthlyAOPInvestor: [232.747, 243.768, 242.691, 241.194, 239.233, 243.521, 233.943, 236.671, 238.348, 235.784, 240.126, 238.289],
     // Quarterly AOP 2026 (row 59 quarter total columns)
     qtrAOP2026: [630.090, 685.152, 709.607, 591.699],
+    // Quarterly AOP 2026 — Investor view (row 60 quarter total columns)
+    qtrAOPInvestor: [719.206, 723.948, 708.962, 714.199],
   },
   modelHome: {
     total:          292,
@@ -1122,7 +1126,7 @@ function makeBar(id, labels, ds, fmt, deltas, lines) {
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      layout: { padding: { top: 4, bottom: deltas ? 18 : 4 } },
+      layout: { padding: { top: 4, bottom: deltas ? 44 : 4 } },
       plugins: {
         legend: {
           position:'top',
@@ -1134,23 +1138,21 @@ function makeBar(id, labels, ds, fmt, deltas, lines) {
           borderWidth: 1,
           titleColor: '#e2edf7',
           bodyColor: '#6b8299',
+          mode: 'index',
+          intersect: false,
           callbacks: {
-            label: c => ` ${c.dataset.label}: ${fmt==='$' ? fc(c.raw) : fn(c.raw)}`
+            label: c => ` ${c.dataset.label}: ${fmt==='$' ? fc(c.raw) : fn(c.raw)}`,
+            afterBody: (items) => {
+              if (!deltas || items.length < 2) return [];
+              const i = items[0].dataIndex;
+              const d = deltas[i];
+              if (d === null || d === undefined) return [];
+              const sign = d >= 0 ? '+' : '';
+              return ['', ` YoY Delta: ${sign}${fmt==='$' ? fcr(d) : Math.round(d).toLocaleString()}`];
+            }
           }
         },
-        datalabels: deltas ? {
-          display: (ctx) => ctx.datasetIndex === lastIdx && ctx.dataset.data[ctx.dataIndex] > 0,
-          formatter: (value, ctx) => {
-            const d = deltas[ctx.dataIndex];
-            if (d === null || d === undefined) return '';
-            return (d >= 0 ? '+' : '') + (fmt === '$' ? fcr(d) : Math.round(d).toLocaleString());
-          },
-          color: (ctx) => (deltas[ctx.dataIndex] ?? 0) >= 0 ? '#3ecfc6' : '#e8728a',
-          anchor: 'start',
-          align: 'bottom',
-          font: { size: 9, weight: '700' },
-          offset: 4
-        } : { display: false }
+        datalabels: { display: false }
       },
       scales: {
         x: {
@@ -1164,7 +1166,28 @@ function makeBar(id, labels, ds, fmt, deltas, lines) {
           border: { color:'#1e3048' }
         }
       }
-    }
+    },
+    plugins: deltas ? [{
+      id: 'deltasBelow_' + id,
+      afterDraw(chart) {
+        const c = chart.ctx;
+        const xScale = chart.scales.x;
+        const yBot = chart.chartArea.bottom;
+        c.save();
+        c.font = 'bold 9px system-ui,sans-serif';
+        c.textAlign = 'center';
+        c.textBaseline = 'top';
+        for (let i = 0; i < deltas.length; i++) {
+          const d = deltas[i];
+          if (d === null || d === undefined) continue;
+          const x = xScale.getPixelForTick(i);
+          const label = (d >= 0 ? '+' : '') + (fmt === '$' ? fcr(d) : Math.round(d).toLocaleString());
+          c.fillStyle = d >= 0 ? '#3ecfc6' : '#e8728a';
+          c.fillText(label, x, yBot + 34);
+        }
+        c.restore();
+      }
+    }] : []
   });
 }
 
@@ -1302,16 +1325,28 @@ function renderMetrics() {
       </div>`;
   }
   function cardCompact(label, val, valCls, sub, delta=null) {
-    const deltaHtml = delta !== null
-      ? `<div class="metric-sub xs" style="color:${delta>=0?'var(--teal)':'var(--pink)'};font-weight:700;margin-top:2px">${delta>=0?'+':''}${fcr(delta)}</div>`
-      : '';
     return `
       <div class="metric-card compact">
         <div class="metric-label sm">${label}</div>
         <div class="metric-value xs ${valCls}">${val}</div>
         <div class="metric-sub xs">${sub}</div>
-        ${deltaHtml}
       </div>`;
+  }
+  function deltaRow(deltas) {
+    return `<div class="metrics-grid-12 delta-row">${deltas.map(d =>
+      d !== null
+        ? `<div class="delta-cell" style="color:${d>=0?'var(--teal)':'var(--pink)'}">${d>=0?'+':''}${fcr(d)}</div>`
+        : `<div class="delta-cell"></div>`
+    ).join('')}</div>`;
+  }
+  function qtrDeltaRow(label, deltas) {
+    return `<div class="metrics-grid-4 delta-row" style="margin-top:-2px;align-items:center">
+      ${deltas.map(d =>
+        d !== null
+          ? `<div class="delta-cell" style="color:${d>=0?'var(--teal)':'var(--pink)'}; font-size:11px; font-weight:600"><span style="color:var(--text-dim);font-weight:400;font-size:10px">${label}: </span>${d>=0?'+':''}${fcr(d)}</div>`
+          : `<div class="delta-cell" style="font-size:11px;color:var(--text-dim)"><span style="font-size:10px">${label}: </span>—</div>`
+      ).join('')}
+    </div>`;
   }
 
   // Days from today to a given date
@@ -1338,11 +1373,14 @@ function renderMetrics() {
   // ── BOOKINGS: quarterly row ──
   const QNAMES = ['Q1 26','Q2 26','Q3 26','Q4 26'];
   let bookingsQtrly = '';
+  const bookingsQtrDeltas39 = [];
+  const bookingsQtrDeltasInv = [];
   for (let q = 0; q < 4; q++) {
     const qm0      = q * 3;
     const qSum     = b26.slice(qm0, qm0+3).reduce((a,v)=>a+v, 0);
     const qSum25   = b25.slice(qm0, qm0+3).reduce((a,v)=>a+v, 0);
     const qAOP     = g.qtrAOP2026[q];
+    const qAOPInv  = g.qtrAOPInvestor[q];
     const daysLeft = daysTo(di.year, qm0+3, 0);
     const isPast    = q < di.qIdx;
     const isCurrent = q === di.qIdx;
@@ -1353,11 +1391,15 @@ function renderMetrics() {
       ? (isFiltered ? qSum - qSum25 : qSum - qAOP)
       : null;
     bookingsQtrly += cardCompact(QNAMES[q], val, cls, sub, delta);
+    const hasData = (isPast || isCurrent) && qSum > 0;
+    bookingsQtrDeltas39.push(hasData && !isFiltered ? qSum - qAOP : null);
+    bookingsQtrDeltasInv.push(hasData && !isFiltered ? qSum - qAOPInv : null);
   }
 
   // ── BOOKINGS: monthly row ──
   const MONTH_LABELS = ['Jan 26','Feb 26','Mar 26','Apr 26','May 26','Jun 26','Jul 26','Aug 26','Sep 26','Oct 26','Nov 26','Dec 26'];
   let bookingsMonthly = '';
+  const bookingsMonthlyDeltas = [];
   for (let m = 0; m < 12; m++) {
     const val26    = b26[m];
     const val25    = b25[m];
@@ -1372,10 +1414,11 @@ function renderMetrics() {
     const delta = (isPast || isCurrent) && val26 > 0
       ? (isFiltered ? val26 - val25 : val26 - mAOP)
       : null;
-    bookingsMonthly += cardCompact(MONTH_LABELS[m], val, cls, sub, delta);
+    bookingsMonthly += cardCompact(MONTH_LABELS[m], val, cls, sub);
+    bookingsMonthlyDeltas.push(delta);
   }
 
-  // ── REVENUE: main row only ──
+  // ── REVENUE: main row ──
   const revAopSub  = isFiltered ? 'Company AOP (ref only)' : `AOP Target: ${fc(g.aopRevenue)}`;
   const revYoySub  = isFiltered ? '2025 YTD (same period)' : `2025 Full Year: ${fc(g.revenue2025Full)}`;
   const revenueCards =
@@ -1386,16 +1429,74 @@ function renderMetrics() {
     card(`Est. ${qName} End`, fc(est.revenue.qEnd),  'sm', `${di.daysElapsedQ} / ${di.totalDaysQ} days elapsed`) +
     card('Est. Year End',     fc(est.revenue.yearEnd), 'sm', `Day ${di.dayOfYear} of ${di.daysInYear}`);
 
+  // ── REVENUE: quarterly row ──
+  let revenueQtrly = '';
+  const revenueQtrDeltas39 = [];
+  const revenueQtrDeltasInv = [];
+  for (let q = 0; q < 4; q++) {
+    const qm0      = q * 3;
+    const qSum     = r26.slice(qm0, qm0+3).reduce((a,v)=>a+v, 0);
+    const qSum25   = r25.slice(qm0, qm0+3).reduce((a,v)=>a+v, 0);
+    const qAOP     = g.qtrAOP2026[q];
+    const qAOPInv  = g.qtrAOPInvestor[q];
+    const daysLeft = daysTo(di.year, qm0+3, 0);
+    const isPast    = q < di.qIdx;
+    const isCurrent = q === di.qIdx;
+    const val   = qSum > 0 ? fc(qSum) : '—';
+    const cls   = isPast ? 'pos' : isCurrent ? 'sm' : 'dim';
+    const sub   = isPast ? `Completed ✓` : `${daysLeft} days to Q end`;
+    const delta = (isPast || isCurrent) && qSum > 0
+      ? (isFiltered ? qSum - qSum25 : qSum - qAOP)
+      : null;
+    revenueQtrly += cardCompact(QNAMES[q], val, cls, sub);
+    const hasData = (isPast || isCurrent) && qSum > 0;
+    revenueQtrDeltas39.push(hasData && !isFiltered ? qSum - qAOP : null);
+    revenueQtrDeltasInv.push(hasData && !isFiltered ? qSum - qAOPInv : null);
+  }
+
+  // ── REVENUE: monthly row ──
+  let revenueMonthly = '';
+  const revenueMonthlyDeltas = [];
+  for (let m = 0; m < 12; m++) {
+    const val26    = r26[m];
+    const val25    = r25[m];
+    const mAOP     = g.monthlyAOP2026[m];
+    const isPast    = m < di.month;
+    const isCurrent = m === di.month;
+    const daysLeft  = isCurrent ? (di.daysInMonth - di.day) : 0;
+    const val   = (isPast || isCurrent) && val26 > 0 ? fc(val26) : '—';
+    const metAOP = !isFiltered && val26 >= mAOP;
+    const cls   = isPast ? (metAOP ? 'pos' : 'neg') : isCurrent ? 'sm' : 'dim';
+    const sub   = isPast ? 'Completed' : isCurrent ? `${daysLeft} days left` : '—';
+    const delta = (isPast || isCurrent) && val26 > 0
+      ? (isFiltered ? val26 - val25 : val26 - mAOP)
+      : null;
+    revenueMonthly += cardCompact(MONTH_LABELS[m], val, cls, sub);
+    revenueMonthlyDeltas.push(delta);
+  }
+
   document.getElementById('metricsContainer').innerHTML =
     metricBlock('Bookings',
       cardRow(bookingsMain) +
       subLabel('Quarterly YTD') +
       cardRow(bookingsQtrly, 'metrics-grid-4') +
+      qtrDeltaRow('3+9', bookingsQtrDeltas39) +
+      qtrDeltaRow('Investor', bookingsQtrDeltasInv) +
       subLabel('Monthly') +
-      cardRow(bookingsMonthly, 'metrics-grid-12')
+      cardRow(bookingsMonthly, 'metrics-grid-12') +
+      deltaRow(bookingsMonthlyDeltas)
     ) +
     '<div class="divider"></div>' +
-    metricBlock('Revenue', cardRow(revenueCards));
+    metricBlock('Revenue',
+      cardRow(revenueCards) +
+      subLabel('Quarterly YTD') +
+      cardRow(revenueQtrly, 'metrics-grid-4') +
+      qtrDeltaRow('3+9', revenueQtrDeltas39) +
+      qtrDeltaRow('Investor', revenueQtrDeltasInv) +
+      subLabel('Monthly') +
+      cardRow(revenueMonthly, 'metrics-grid-12') +
+      deltaRow(revenueMonthlyDeltas)
+    );
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -2146,40 +2247,40 @@ const DRH_DATA = {
   labels27: [
     'Jan 24','Feb 24','Mar 24','Apr 24','May 24','Jun 24','Jul 24','Aug 24','Sep 24','Oct 24','Nov 24','Dec 24',
     'Jan 25','Feb 25','Mar 25','Apr 25','May 25','Jun 25','Jul 25','Aug 25','Sep 25','Oct 25','Nov 25','Dec 25',
-    'Jan 26','Feb 26','Mar 26'
+    'Jan 26','Feb 26','Mar 26','Apr 26'
   ],
   // 4SS — Smart Switch 4-pack bookings ($K)
   fss:   [876.6,824.8,681.2,576.2,923.6,737.4,541.8,610.4,534.7,600.2,530.0,550.0,
           603.2,624.8,625.6,795.4,739.4,566.4,495.4,406.0,359.8,287.8,135.3,113.1,
-          79.7,44.7,61.7],
+          79.7,44.7,61.7,8.0],
   // 1SS — Smart Switch 1-pack bookings ($K)
   oss:   [0,0,0,174.3,916.2,330.8,1900.0,287.1,257.3,317.9,299.1,313.2,
           338.2,338.7,352.8,457.8,432.7,322.5,279.8,212.2,224.3,326.9,375.1,457.1,
-          407.4,317.6,342.1],
+          407.4,317.6,342.1,38.1],
   // ITM — In-the-moment pack bookings ($K)
   itm:   [152.3,176.6,162.2,120.4,164.3,54.0,62.2,64.5,60.8,77.5,43.3,53.8,
           51.0,75.3,71.5,89.1,85.3,74.1,83.8,78.2,59.3,40.1,42.2,29.5,
-          47.3,39.3,45.7],
+          47.3,39.3,45.7,5.0],
   // Incentive/Spec ($K)
   inc:   [112.8,58.3,53.3,30.9,42.9,11.5,22.6,20.2,37.7,34.6,19.1,26.8,
           51.0,45.2,60.8,50.5,39.5,43.6,60.2,40.0,44.9,33.9,21.2,36.9,
-          44.2,47.5,27.0],
+          44.2,47.5,27.0,3.9],
   // Model home packs ($K)
   mdl:   [21.6,18.2,19.4,14.4,12.7,18.9,25.2,20.8,17.8,13.9,13.8,19.8,
           20.4,24.9,18.6,29.4,12.0,18.1,13.4,11.2,15.3,21.1,6.3,11.2,
-          5.9,4.3,7.3],
+          5.9,4.3,7.3,0.8],
   // Total Booked ($K)
   total: [1163.3,1077.9,916.1,741.9,1143.5,821.8,651.8,715.9,651.0,726.2,606.2,650.4,
           725.6,770.2,776.5,1006.3,886.1,711.5,687.5,564.0,493.9,418.9,218.9,206.7,
-          600.5,461.8,502.6],
+          600.5,461.8,502.6,56.4],
   // Home Starts MTD (units)
   starts:[6374,7765,8655,9923,7759,7188,6753,7058,5987,5856,6159,7239,
           6493,6410,7043,8906,8694,6458,5683,4481,4402,5212,5616,6527,
-          6120,5904,5288],
+          6120,5904,5313,1202],
   // Home Closes MTD (units)
   closes:[4890,6539,9519,5895,7290,9194,7671,7388,8796,5558,5725,6852,
           5052,5717,7852,6210,7534,9018,6652,6947,10336,5249,4950,7482,
-          4402,5669,8455],
+          4402,5669,8745,146],
 };
 
 // ═══════════════════════════════════════════════════════════
@@ -2265,11 +2366,15 @@ function renderDrhMetrics() {
   function card(label, val, valCls, sub, extra='') {
     return `<div class="metric-card"><div class="metric-label">${label}</div><div class="metric-value ${valCls}">${val}</div><div class="metric-sub">${sub}</div>${extra}</div>`;
   }
-  function cardCompact(label, val, valCls, sub, delta=null) {
-    const dh = delta !== null
-      ? `<div class="metric-sub xs" style="color:${delta>=0?'var(--teal)':'var(--pink)'};font-weight:700;margin-top:2px">${delta>=0?'+':''}${fcr(delta)}</div>`
-      : '';
-    return `<div class="metric-card compact"><div class="metric-label sm">${label}</div><div class="metric-value xs ${valCls}">${val}</div><div class="metric-sub xs">${sub}</div>${dh}</div>`;
+  function cardCompact(label, val, valCls, sub) {
+    return `<div class="metric-card compact"><div class="metric-label sm">${label}</div><div class="metric-value xs ${valCls}">${val}</div><div class="metric-sub xs">${sub}</div></div>`;
+  }
+  function deltaRow(deltas) {
+    return `<div class="metrics-grid-12 delta-row">${deltas.map(d =>
+      d !== null
+        ? `<div class="delta-cell" style="color:${d>=0?'var(--teal)':'var(--pink)'}">${d>=0?'+':''}${fcr(d)}</div>`
+        : `<div class="delta-cell"></div>`
+    ).join('')}</div>`;
   }
 
   const qName = QUARTERS[qIdx];
@@ -2302,6 +2407,7 @@ function renderDrhMetrics() {
 
   const MLBLS = ['Jan 26','Feb 26','Mar 26','Apr 26','May 26','Jun 26','Jul 26','Aug 26','Sep 26','Oct 26','Nov 26','Dec 26'];
   let bookingsMonthly = '';
+  const drhMonthlyDeltas = [];
   for (let m = 0; m < 12; m++) {
     const v26 = b26[m], v25 = b25[m];
     const isPast = m < month, isCur = m === month;
@@ -2310,7 +2416,8 @@ function renderDrhMetrics() {
     const cls   = isPast ? 'pos' : isCur ? 'sm' : 'dim';
     const sub   = isPast ? 'Completed' : isCur ? `${daysLeft} days left` : '—';
     const delta = (isPast||isCur) && v26 > 0 ? v26-v25 : null;
-    bookingsMonthly += cardCompact(MLBLS[m], val, cls, sub, delta);
+    bookingsMonthly += cardCompact(MLBLS[m], val, cls, sub);
+    drhMonthlyDeltas.push(delta);
   }
 
   // Revenue block — placeholder until data arrives
@@ -2328,7 +2435,8 @@ function renderDrhMetrics() {
       subLabel('Quarterly YTD') +
       cardRow(bookingsQtrly, 'metrics-grid-4') +
       subLabel('Monthly') +
-      cardRow(bookingsMonthly, 'metrics-grid-12')
+      cardRow(bookingsMonthly, 'metrics-grid-12') +
+      deltaRow(drhMonthlyDeltas)
     ) +
     '<div class="divider"></div>' +
     metricBlock('Revenue', cardRow(revCards));
@@ -2372,7 +2480,7 @@ function drhMakeBar(id, labels, datasets, fmtFn, stacked, deltas) {
 
 function renderDrhCharts() {
   const d = DRH_DATA;
-  const idx = Array.from({length:15},(_,i)=>i+12);
+  const idx = Array.from({length:16},(_,i)=>i+12);
   const lbl = idx.map(i=>d.labels27[i]);
   const ttBase = { backgroundColor:'#1a2535', borderColor:'#1e3048', borderWidth:1, titleColor:'#e2edf7', bodyColor:'#6b8299' };
 
@@ -2445,7 +2553,7 @@ function renderDrhCharts() {
   function makeQtrYoy(canvasId, src, q, fmtFn) {
     const b24 = [src[q*3],   src[q*3+1],   src[q*3+2]];
     const b25 = [src[12+q*3],src[12+q*3+1],src[12+q*3+2]];
-    const b26 = q===0 ? [src[24],src[25],src[26]] : [0,0,0];
+    const b26 = Array.from({length:3}, (_,i) => { const si=24+q*3+i; return si<src.length?src[si]:0; });
     const ctx = document.getElementById(canvasId).getContext('2d');
     if (drhCharts[canvasId]) drhCharts[canvasId].destroy();
     drhCharts[canvasId] = new Chart(ctx, {
@@ -2453,7 +2561,7 @@ function renderDrhCharts() {
       data:{ labels: qMonthLabels[q], datasets:[
         { label:'2024', data:b24, backgroundColor:'rgba(107,130,153,0.5)', borderRadius:3 },
         { label:'2025', data:b25, backgroundColor:'rgba(88,166,255,0.7)',  borderRadius:3 },
-        { label:'2026', data:b26, backgroundColor: q===0?'rgba(62,207,198,0.85)':'rgba(62,207,198,0.2)', borderRadius:3 },
+        { label:'2026', data:b26, backgroundColor: q<=1?'rgba(62,207,198,0.85)':'rgba(62,207,198,0.2)', borderRadius:3 },
       ]},
       options:{
         responsive:true, maintainAspectRatio:false,
@@ -2466,7 +2574,7 @@ function renderDrhCharts() {
           datalabels:{
             display:true,
             formatter:(v,ctx)=>{
-              if(v===0&&(ctx.datasetIndex===2&&q>0)) return '';
+              if(v===0&&(ctx.datasetIndex===2&&q>1)) return '';
               return fmtFn(v);
             },
             color:(ctx)=>['#8b949e','#58a6ff','#3ecfc6'][ctx.datasetIndex],
@@ -2666,9 +2774,53 @@ function renderDrhCharts() {
       }
     });
 
-    // Q2 / Q3 / Q4 — placeholder donuts (data pending)
-    ['drhDonutQ2','drhDonutQ3','drhDonutQ4'].forEach((id, qi) => {
-      const qLabel = ['Q2','Q3','Q4'][qi];
+    // Q2 donut — partial data (April 2026)
+    {
+      const q2Start = 27; // index for Apr 26
+      const q2Vals = [
+        (d.oss[q2Start]||0)+(d.oss[q2Start+1]||0)+(d.oss[q2Start+2]||0),
+        (d.fss[q2Start]||0)+(d.fss[q2Start+1]||0)+(d.fss[q2Start+2]||0),
+        (d.itm[q2Start]||0)+(d.itm[q2Start+1]||0)+(d.itm[q2Start+2]||0),
+        (d.inc[q2Start]||0)+(d.inc[q2Start+1]||0)+(d.inc[q2Start+2]||0),
+        (d.mdl[q2Start]||0)+(d.mdl[q2Start+1]||0)+(d.mdl[q2Start+2]||0),
+      ];
+      const q2Tot = q2Vals.reduce((a,b)=>a+b,0);
+      const ctx2 = document.getElementById('drhDonutQ2').getContext('2d');
+      if (drhCharts['drhDonutQ2']) drhCharts['drhDonutQ2'].destroy();
+      drhCharts['drhDonutQ2'] = new Chart(ctx2, {
+        type: 'doughnut',
+        data: {
+          labels: catLbls,
+          datasets: [{
+            data: q2Vals,
+            backgroundColor: ['rgba(62,207,198,0.88)','rgba(88,166,255,0.85)','rgba(244,168,67,0.88)','rgba(232,114,138,0.85)','rgba(139,148,158,0.6)'],
+            borderColor: '#1a2535', borderWidth: 2,
+          }]
+        },
+        options: {
+          responsive:true, maintainAspectRatio:false,
+          cutout: '58%',
+          plugins: {
+            legend:{ position:'right', labels:{ font:{size:12}, boxWidth:14, padding:12, color:'#8b949e' } },
+            tooltip: { ...ttBase,
+              callbacks: {
+                title: () => `2026 Q2 Total: ${fc(q2Tot)} (partial)`,
+                label: () => catLbls.map((l,i) => ` ${l}: ${fc(q2Vals[i])} (${(q2Vals[i]/q2Tot*100).toFixed(1)}%)`),
+              }
+            },
+            datalabels: {
+              display: true,
+              formatter: v => (v/q2Tot*100).toFixed(0)+'%',
+              color: '#fff', font:{ size:11, weight:'700' },
+            }
+          }
+        }
+      });
+    }
+
+    // Q3 / Q4 — placeholder donuts (data pending)
+    ['drhDonutQ3','drhDonutQ4'].forEach((id, qi) => {
+      const qLabel = ['Q3','Q4'][qi];
       const ctx = document.getElementById(id).getContext('2d');
       if (drhCharts[id]) drhCharts[id].destroy();
       drhCharts[id] = new Chart(ctx, {
