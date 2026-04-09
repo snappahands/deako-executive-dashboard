@@ -187,7 +187,7 @@
     .metric-value.dim  { color: var(--text-dim); }
     .metric-sub { font-size: 11px; color: var(--text-dim); margin-top: 4px; }
     .metric-sub.xs { font-size: 9px; margin-top: 3px; }
-    .delta-row { margin-top: 2px; }
+    .delta-row { margin-top: 10px; }
     .delta-cell { text-align: center; font-size: 9px; font-weight: 700; line-height: 1; padding: 2px 0; }
     .prog-wrap { background: var(--border); border-radius: 6px; height: 5px; margin-top: 10px; overflow: hidden; }
     .prog-fill { height: 100%; border-radius: 6px; transition: width 0.5s ease; }
@@ -491,7 +491,7 @@
   <div class="header-right">
     <div class="header-date" id="headerDate"></div>
     <div class="header-period" id="headerPeriod"></div>
-    <div style="font-size:11px;color:var(--teal);margin-top:4px;letter-spacing:.04em;font-weight:700">v4.1</div>
+    <div style="font-size:11px;color:var(--teal);margin-top:4px;letter-spacing:.04em;font-weight:700">v4.2</div>
   </div>
 </header>
 
@@ -1121,7 +1121,7 @@ function makeBar(id, labels, ds, fmt, deltas, lines, aopDeltas) {
   const lastIdx = ds.length - 1;
   const allDs = lines ? [...ds, ...lines] : ds;
   const hasAopDeltas = aopDeltas && aopDeltas.aop39;
-  const bottomPad = hasAopDeltas ? 74 : deltas ? 44 : 4;
+  const bottomPad = hasAopDeltas ? 114 : deltas ? 64 : 4;
   charts[id] = new Chart(ctx, {
     type: 'bar',
     data: { labels, datasets: allDs },
@@ -1194,12 +1194,12 @@ function makeBar(id, labels, ds, fmt, deltas, lines, aopDeltas) {
             const x = xScale.getPixelForTick(i);
             const label = (d >= 0 ? '+' : '') + (fmt === '$' ? fcr(d) : Math.round(d).toLocaleString());
             c.fillStyle = d >= 0 ? '#3ecfc6' : '#e8728a';
-            c.fillText(label, x, yBot + 14);
+            c.fillText(label, x, yBot + 34);
           }
         }
         // AOP delta rows (3+9 and Investor)
         if (hasAopDeltas) {
-          const baseY = yBot + (deltas ? 28 : 14);
+          const baseY = yBot + (deltas ? 58 : 34);
           // 3+9 row
           c.font = '600 10px system-ui,sans-serif';
           for (let i = 0; i < aopDeltas.aop39.length; i++) {
