@@ -249,7 +249,7 @@ body.light ::-webkit-scrollbar-thumb{background:#d0d7de !important}
   <div id="content"></div>
 </div>
 
-<div id="version-badge">v6.5</div>
+<div id="version-badge">v6.6</div>
 
 <script>
 // Theme toggle — isolated so nothing can break it
@@ -1069,17 +1069,36 @@ const ITM_MONTHLY = {
 function fmtK(v){ return v>=1000000?'$'+(v/1000000).toFixed(1)+'M':v>=1000?'$'+(v/1000).toFixed(v>=100000?0:1)+'K':'$'+v; }
 function fmtDiv(d){ return d.replace(/_/g,' ').replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase()); }
 
+var _divSortCol = 'packs';
+var _commSortCol = 'last3';
+
 function renderDivTable(tab){
-  const data = DIV_PERF[tab];
-  const maxRev = data[0].rev;
+  const data = DIV_PERF[tab].slice().sort((a,b)=>b[_divSortCol]-a[_divSortCol]);
+  const maxPacks = data.length ? data[0].packs : 1;
+  const hdr = (label,key) => `<th style="cursor:pointer;user-select:none${_divSortCol===key?';color:#58a6ff':''}" onclick="_divSortCol='${key}';switchDivTab('${tab}')">${label}${_divSortCol===key?' ▼':''}</th>`;
   return `<table class="summary-table">
-    <tr><th>#</th><th>Division</th><th>Packs Sold</th><th>Revenue</th><th>Profit</th></tr>
+    <tr><th>#</th><th>Division</th>${hdr('Packs Sold','packs')}${hdr('Revenue','rev')}${hdr('Profit','profit')}</tr>
     ${data.map((d,i)=>`<tr>
       <td style="color:#484f58;font-weight:700">#${i+1}</td>
       <td><strong>${d.div}</strong></td>
-      <td>${d.packs}<span class="rm-bar-wrap"><span class="rm-bar-fill" style="width:${Math.round(d.packs/data[0].packs*100)}%"></span></span></td>
+      <td>${d.packs}<span class="rm-bar-wrap"><span class="rm-bar-fill" style="width:${Math.round(d.packs/maxPacks*100)}%"></span></span></td>
       <td style="color:#3fb950">${fmtK(d.rev)}</td>
       <td style="color:#8b949e">${fmtK(d.profit)}</td>
+    </tr>`).join('')}
+  </table>`;
+}
+
+function renderCommTable(){
+  const data = COMMUNITIES_TOP.slice().sort((a,b)=>b[_commSortCol]-a[_commSortCol]);
+  const hdr = (label,key) => `<th style="cursor:pointer;user-select:none${_commSortCol===key?';color:#58a6ff':''}" onclick="_commSortCol='${key}';document.getElementById('comm-table-body').innerHTML=renderCommTable()">${label}${_commSortCol===key?' ▼':''}</th>`;
+  return `<table class="summary-table">
+    <tr><th>#</th><th>Community</th><th>Division</th>${hdr('Last 3 Months','last3')}${hdr('Total Packs','total')}</tr>
+    ${data.map((c,i)=>`<tr>
+      <td style="color:#484f58;font-weight:700">#${i+1}</td>
+      <td><strong>${c.name}</strong></td>
+      <td style="color:#8b949e">${c.div}</td>
+      <td style="color:#3fb950;font-weight:700">${c.last3}</td>
+      <td>${c.total}</td>
     </tr>`).join('')}
   </table>`;
 }
@@ -1120,16 +1139,7 @@ function renderOverview(){
     <!-- COMMUNITY LEADERBOARD -->
     <div class="full-chart-card">
       <h3 style="margin-bottom:12px">Top Communities by ITM Packs — Last 3 Months <span style="font-size:10px;font-weight:400;color:#484f58;margin-left:8px">Source: HEX · 3,754 total communities</span></h3>
-      <table class="summary-table">
-        <tr><th>#</th><th>Community</th><th>Division</th><th>Last 3 Months</th><th>Total Packs</th></tr>
-        ${COMMUNITIES_TOP.map((c,i)=>`<tr>
-          <td style="color:#484f58;font-weight:700">#${i+1}</td>
-          <td><strong>${c.name}</strong></td>
-          <td style="color:#8b949e">${c.div}</td>
-          <td style="color:#3fb950;font-weight:700">${c.last3}</td>
-          <td>${c.total}</td>
-        </tr>`).join('')}
-      </table>
+      <div id="comm-table-body">${renderCommTable()}</div>
     </div>
 
     <!-- REPORT CARD — BOTTOM -->
