@@ -2244,7 +2244,7 @@ function renderChase(){
             return `<tr>
               <td style="padding:5px 8px;${daysCls}">${r.dy!==null?r.dy:'—'}</td>
               <td style="padding:5px 8px;text-align:center"><span style="${typeBg};font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px">${r.type}</span></td>
-              <td style="padding:5px 8px;font-weight:600">${fDiv(r.d)}</td>
+              <td style="padding:5px 8px;font-weight:600;cursor:pointer;color:#79c0ff;text-decoration:underline dotted" onclick="_chaseDivFilter='${r.d}';_chasePage=0;renderChase()" title="Filter to ${fDiv(r.d)}">${fDiv(r.d)}</td>
               <td style="padding:5px 8px;color:#c9d1d9">${fComm(r.c)}</td>
               <td style="padding:5px 8px;color:#484f58;font-size:10px">${r.j}</td>
               <td style="padding:5px 8px">${r.sd||'—'}</td>
