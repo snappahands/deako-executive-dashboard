@@ -249,7 +249,7 @@ body.light ::-webkit-scrollbar-thumb{background:#d0d7de !important}
   <div id="content"></div>
 </div>
 
-<div id="version-badge">v6.6</div>
+<div id="version-badge">v6.7</div>
 
 <script>
 // Theme toggle — isolated so nothing can break it
@@ -590,6 +590,7 @@ function renderSidebar(){
   <div class="div-item${selectedIdx==='divisions'?' active':''}" onclick="showDivisions()" style="font-weight:700;color:#d2a8ff;border-left-color:${selectedIdx==='divisions'?'#d2a8ff':'transparent'}">📋 Training Summary</div>
   <div class="div-item${selectedIdx==='summary'?' active':''}" onclick="showSummary()" style="font-weight:700;color:#f85149;border-left-color:${selectedIdx==='summary'?'#f85149':'transparent'}">📊 Performance Summary</div>
   <div class="div-item${selectedIdx==='hst'?' active':''}" onclick="showHstAnalysis()" style="font-weight:700;color:#8b949e;border-left-color:${selectedIdx==='hst'?'#8b949e':'transparent'}">🔍 HST vs ITM Analysis</div>
+  <div class="div-item${selectedIdx==='execbrief'?' active':''}" onclick="showExecBrief()" style="font-weight:700;color:#f0883e;border-left-color:${selectedIdx==='execbrief'?'#f0883e':'transparent'}">📧 Division Exec Brief</div>
   <div class="sidebar-section">Divisions</div>`;
   // Sort divisions by eligible homes (most to least)
   const _latM = [...new Set((CONV_DATA?.yearly||[]).map(d=>d.p))].sort().pop();
@@ -2055,6 +2056,290 @@ function switchDivTab(tab){
       ? 'background:#1f6feb;border:none;border-radius:6px;padding:5px 12px;color:#fff;font-size:11px;font-weight:600;cursor:pointer'
       : 'background:#21262d;border:1px solid #30363d;border-radius:6px;padding:5px 12px;color:#8b949e;font-size:11px;font-weight:600;cursor:pointer';
   });
+}
+
+/* ── EXEC BRIEF ── */
+var _execBriefDiv = 'ATL West';
+
+function showExecBrief(){
+  selectedIdx = 'execbrief';
+  renderSidebar();
+  renderExecBrief(_execBriefDiv);
+}
+
+function renderExecBrief(divName){
+  _execBriefDiv = divName;
+  const dk = findDivKey(divName);
+  const v = VISITS.find(x=>x.division===divName);
+
+  // Pull conversion data
+  const yearly = (CONV_DATA?.yearly||[]).filter(d=>d.div===dk);
+  const monthly = (CONV_DATA?.monthly||[]).filter(d=>d.div===dk).sort((a,b)=>a.p.localeCompare(b.p));
+  const quarterly = (CONV_DATA?.quarterly||[]).filter(d=>d.div===dk).sort((a,b)=>a.p.localeCompare(b.p));
+  const closes_y = (CLOSES_DATA?.yearly||[]).filter(d=>d.div===dk);
+  const closes_m = (CLOSES_DATA?.monthly||[]).filter(d=>d.div===dk).sort((a,b)=>a.p.localeCompare(b.p));
+  const ratif_y = (RATIF_DATA?.yearly||[]).filter(d=>d.div===dk);
+
+  // Profitability
+  const perfAll = (DIV_PERF.allTime||[]).find(d=>fmtDiv(d.div)===fmtDiv(divName));
+  const perf25 = (DIV_PERF.y2025||[]).find(d=>fmtDiv(d.div)===fmtDiv(divName));
+  const perfL3 = (DIV_PERF.last3||[]).find(d=>fmtDiv(d.div)===fmtDiv(divName));
+
+  // Projected homes
+  const projHomes = dk ? (PROJ_HOMES_2026[dk]||0) : 0;
+
+  // Communities
+  const comms = COMMUNITIES_TOP.filter(c=>fmtDiv(c.div)===fmtDiv(divName));
+
+  // Year-level stats
+  const y = {};
+  yearly.forEach(d=>{ const yr=d.p.substring(0,4); y[yr]={eligible:d.e,packs:d.pk,conv:d.r}; });
+  const cy = {};
+  closes_y.forEach(d=>{ const yr=d.p.substring(0,4); cy[yr]=d.n; });
+  const ry = {};
+  ratif_y.forEach(d=>{ const yr=d.p.substring(0,4); ry[yr]=d.n; });
+
+  // Training info
+  const trainDate = v ? v.date : null;
+  const trainReps = v ? v.reps : 0;
+  const trainCert = v ? v.certified : 0;
+  const trainAmb = v ? v.ambassadors.filter(a=>a.name&&!a.name.startsWith('(')).length : 0;
+  const itmPre = v ? v.preITM : null;
+  const itmPost = v ? v.postITM : null;
+  const itmLift = (itmPre!==null && itmPost!==null && itmPre>0) ? Math.round((itmPost-itmPre)/itmPre*100) : (itmPre===0&&itmPost>0?'∞':null);
+
+  // Monthly packs for sparkline (last 12 months of available data)
+  const last12 = monthly.slice(-12);
+
+  // Revenue generated (from DIV_PERF)
+  const totalRev = perfAll ? perfAll.rev : 0;
+  const totalProfit = perfAll ? perfAll.profit : 0;
+  const totalPacks = perfAll ? perfAll.packs : 0;
+
+  // Format helpers
+  const fk = v => v>=1000 ? '$'+(v/1000).toFixed(1)+'K' : '$'+v.toLocaleString();
+  const pct = v => v!==null&&v!==undefined ? v.toFixed(2)+'%' : '—';
+
+  // Build year comparison rows
+  const years = ['2023','2024','2025','2026'];
+  const yearRows = years.map(yr=>{
+    const d = y[yr];
+    const cl = cy[yr]||0;
+    return `<tr>
+      <td style="font-weight:700">${yr}${yr==='2026'?' YTD':''}</td>
+      <td>${d?d.eligible.toLocaleString():'—'}</td>
+      <td>${cl?cl.toLocaleString():'—'}</td>
+      <td style="font-weight:700;color:#3fb950">${d?d.packs:'—'}</td>
+      <td style="color:#58a6ff;font-weight:600">${d?pct(d.conv):'—'}</td>
+    </tr>`;
+  }).join('');
+
+  // Determine value story
+  const cur26 = y['2026'];
+  const convTrend = cur26 && y['2025'] ? (cur26.conv > y['2025'].conv ? 'up' : 'down') : null;
+  const packsPerMonth26 = cur26 ? (cur26.packs / (new Date().getMonth()>0 ? Math.min(new Date().getMonth(),3) : 1)).toFixed(1) : 0;
+
+  // Division select dropdown (all VISITS divisions)
+  const allDivs = VISITS.filter(x=>x.status!=='cancelled'&&x.status!=='scheduled').map(x=>x.division);
+  const divSelect = allDivs.map(d=>`<option value="${d}"${d===divName?' selected':''}>${d}</option>`).join('');
+
+  document.getElementById('content').innerHTML = `
+    <div style="max-width:720px;margin:0 auto">
+      <!-- Division Selector -->
+      <div style="margin-bottom:16px;display:flex;align-items:center;gap:12px">
+        <select onchange="renderExecBrief(this.value)" style="background:var(--bg-card);color:var(--text-h);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:14px;font-weight:600;cursor:pointer">
+          ${divSelect}
+        </select>
+        <span style="color:var(--text-m);font-size:12px">Select division to preview exec brief</span>
+      </div>
+
+      <!-- THE BRIEF — email-ready -->
+      <div id="exec-brief-content" style="background:#ffffff;color:#1a1a2e;border-radius:12px;padding:36px 32px;font-family:Georgia,'Times New Roman',serif;line-height:1.7">
+
+        <!-- Header -->
+        <div style="border-bottom:3px solid #1a1a2e;padding-bottom:16px;margin-bottom:24px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start">
+            <div>
+              <div style="font-size:11px;text-transform:uppercase;letter-spacing:2px;color:#666;font-family:Arial,sans-serif">Deako Division Performance Brief</div>
+              <div style="font-size:28px;font-weight:700;margin-top:4px;color:#1a1a2e">${divName}${v?', '+v.state:''}</div>
+            </div>
+            <div style="text-align:right;font-family:Arial,sans-serif">
+              <div style="font-size:11px;color:#666">Prepared ${new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}</div>
+              ${projHomes ? `<div style="font-size:11px;color:#666;margin-top:2px">${projHomes.toLocaleString()} projected homes FY2026</div>` : ''}
+            </div>
+          </div>
+        </div>
+
+        <!-- Value Headline -->
+        <div style="background:#f0f7ff;border-left:4px solid #1a5fb4;padding:16px 20px;border-radius:0 8px 8px 0;margin-bottom:28px">
+          <div style="font-size:13px;font-weight:700;color:#1a5fb4;text-transform:uppercase;letter-spacing:1px;font-family:Arial,sans-serif;margin-bottom:6px">The Deako Value in ${divName}</div>
+          <div style="font-size:15px;color:#1a1a2e">
+            Since launch, Deako has generated <strong style="color:#1a5fb4">${fk(totalRev)} in revenue</strong> and
+            <strong style="color:#1a5fb4">${fk(totalProfit)} in profit</strong> from <strong>${totalPacks} ITM pack sales</strong> in this division alone.
+            ${cur26 && cur26.conv > 3 ? `<br>In 2026, conversion rate has reached <strong style="color:#16a34a">${pct(cur26.conv)}</strong> — the highest performance on record.` : ''}
+            ${convTrend==='up' ? `<br>Conversion rate is <strong style="color:#16a34a">trending upward</strong> compared to 2025.` : ''}
+          </div>
+        </div>
+
+        <!-- Key Metrics Grid -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px">
+          <div style="text-align:center;padding:16px;background:#fafafa;border-radius:8px;border:1px solid #e5e7eb">
+            <div style="font-size:28px;font-weight:700;color:#1a5fb4;font-family:Arial,sans-serif">${fk(totalRev)}</div>
+            <div style="font-size:11px;color:#666;text-transform:uppercase;letter-spacing:1px;font-family:Arial,sans-serif">Total Revenue</div>
+            <div style="font-size:10px;color:#999;margin-top:2px">Since program launch</div>
+          </div>
+          <div style="text-align:center;padding:16px;background:#fafafa;border-radius:8px;border:1px solid #e5e7eb">
+            <div style="font-size:28px;font-weight:700;color:#16a34a;font-family:Arial,sans-serif">${fk(totalProfit)}</div>
+            <div style="font-size:11px;color:#666;text-transform:uppercase;letter-spacing:1px;font-family:Arial,sans-serif">Total Profit</div>
+            <div style="font-size:10px;color:#999;margin-top:2px">Direct Deako margin</div>
+          </div>
+          <div style="text-align:center;padding:16px;background:#fafafa;border-radius:8px;border:1px solid #e5e7eb">
+            <div style="font-size:28px;font-weight:700;color:#d97706;font-family:Arial,sans-serif">${totalPacks}</div>
+            <div style="font-size:11px;color:#666;text-transform:uppercase;letter-spacing:1px;font-family:Arial,sans-serif">ITM Packs Sold</div>
+            <div style="font-size:10px;color:#999;margin-top:2px">All-time</div>
+          </div>
+        </div>
+
+        <!-- Year-over-Year Performance -->
+        <div style="margin-bottom:28px">
+          <div style="font-size:16px;font-weight:700;margin-bottom:12px;color:#1a1a2e">Year-over-Year Performance</div>
+          <table style="width:100%;border-collapse:collapse;font-family:Arial,sans-serif;font-size:13px">
+            <tr style="background:#f3f4f6">
+              <th style="text-align:left;padding:8px 12px;border-bottom:2px solid #d1d5db;color:#374151">Year</th>
+              <th style="text-align:left;padding:8px 12px;border-bottom:2px solid #d1d5db;color:#374151">Eligible Homes</th>
+              <th style="text-align:left;padding:8px 12px;border-bottom:2px solid #d1d5db;color:#374151">Closes</th>
+              <th style="text-align:left;padding:8px 12px;border-bottom:2px solid #d1d5db;color:#374151">Packs Sold</th>
+              <th style="text-align:left;padding:8px 12px;border-bottom:2px solid #d1d5db;color:#374151">Conv. Rate</th>
+            </tr>
+            ${yearRows}
+          </table>
+        </div>
+
+        ${v ? `
+        <!-- Training Impact -->
+        <div style="margin-bottom:28px">
+          <div style="font-size:16px;font-weight:700;margin-bottom:12px;color:#1a1a2e">Deako Training Impact</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+            <div style="background:#fafafa;border-radius:8px;padding:16px;border:1px solid #e5e7eb">
+              <div style="font-size:11px;color:#666;text-transform:uppercase;letter-spacing:1px;font-family:Arial,sans-serif;margin-bottom:8px">Training Visit</div>
+              <div style="font-size:14px"><strong>${trainDate||'TBD'}</strong> · ${v.type}</div>
+              <div style="font-size:13px;color:#555;margin-top:4px">${trainReps} reps trained · ${trainCert} certified · ${trainAmb} ambassador${trainAmb!==1?'s':''}</div>
+              ${v.highlights ? `<div style="font-size:12px;color:#16a34a;margin-top:8px;font-style:italic">"${v.highlights}"</div>` : ''}
+            </div>
+            <div style="background:#fafafa;border-radius:8px;padding:16px;border:1px solid #e5e7eb">
+              <div style="font-size:11px;color:#666;text-transform:uppercase;letter-spacing:1px;font-family:Arial,sans-serif;margin-bottom:8px">ITM Performance Lift</div>
+              ${itmPre!==null&&itmPost!==null ? `
+                <div style="display:flex;align-items:center;gap:12px;margin-top:4px">
+                  <div style="text-align:center">
+                    <div style="font-size:24px;font-weight:700;color:#999;font-family:Arial,sans-serif">${itmPre}</div>
+                    <div style="font-size:10px;color:#999">Before</div>
+                  </div>
+                  <div style="font-size:20px;color:#16a34a">→</div>
+                  <div style="text-align:center">
+                    <div style="font-size:24px;font-weight:700;color:#16a34a;font-family:Arial,sans-serif">${itmPost}</div>
+                    <div style="font-size:10px;color:#16a34a">After</div>
+                  </div>
+                  ${itmLift!==null ? `<div style="background:#dcfce7;color:#16a34a;font-weight:700;font-size:13px;padding:4px 10px;border-radius:20px;font-family:Arial,sans-serif">${typeof itmLift==='number'?'+'+itmLift:itmLift}%</div>` : ''}
+                </div>
+                <div style="font-size:12px;color:#555;margin-top:8px">ITM packs in the field, pre vs post training visit</div>
+              ` : '<div style="color:#999;font-size:13px">ITM data not yet available</div>'}
+            </div>
+          </div>
+        </div>
+        ` : ''}
+
+        <!-- Monthly Trend -->
+        ${last12.length > 0 ? `
+        <div style="margin-bottom:28px">
+          <div style="font-size:16px;font-weight:700;margin-bottom:12px;color:#1a1a2e">Monthly Pack Sales & Conversion</div>
+          <table style="width:100%;border-collapse:collapse;font-family:Arial,sans-serif;font-size:12px">
+            <tr style="background:#f3f4f6">
+              <th style="text-align:left;padding:6px 10px;border-bottom:2px solid #d1d5db;color:#374151">Month</th>
+              <th style="text-align:center;padding:6px 10px;border-bottom:2px solid #d1d5db;color:#374151">Eligible</th>
+              <th style="text-align:center;padding:6px 10px;border-bottom:2px solid #d1d5db;color:#374151">Packs</th>
+              <th style="text-align:center;padding:6px 10px;border-bottom:2px solid #d1d5db;color:#374151">Conv %</th>
+              <th style="text-align:left;padding:6px 10px;border-bottom:2px solid #d1d5db;color:#374151"></th>
+            </tr>
+            ${last12.map(d=>{
+              const maxPk = Math.max(...last12.map(x=>x.pk||0),1);
+              return `<tr style="border-bottom:1px solid #f0f0f0">
+                <td style="padding:6px 10px;font-weight:600">${d.p}</td>
+                <td style="text-align:center;padding:6px 10px">${d.e}</td>
+                <td style="text-align:center;padding:6px 10px;font-weight:700;color:#1a5fb4">${d.pk}</td>
+                <td style="text-align:center;padding:6px 10px;color:${d.r>=2?'#16a34a':'#999'};font-weight:600">${pct(d.r)}</td>
+                <td style="padding:6px 10px"><div style="background:#dbeafe;height:8px;border-radius:4px;width:${Math.round((d.pk||0)/maxPk*100)}%"></div></td>
+              </tr>`;
+            }).join('')}
+          </table>
+        </div>
+        ` : ''}
+
+        <!-- Profitability Breakdown -->
+        ${perfL3||perf25 ? `
+        <div style="margin-bottom:28px">
+          <div style="font-size:16px;font-weight:700;margin-bottom:12px;color:#1a1a2e">Revenue & Profit Breakdown</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;font-family:Arial,sans-serif">
+            ${perfL3 ? `<div style="background:#fafafa;border-radius:8px;padding:14px;border:1px solid #e5e7eb">
+              <div style="font-size:10px;color:#666;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Last 3 Months</div>
+              <div style="font-size:13px"><strong>${perfL3.packs}</strong> packs</div>
+              <div style="font-size:13px;color:#16a34a">${fk(perfL3.rev)} rev</div>
+              <div style="font-size:13px;color:#555">${fk(perfL3.profit)} profit</div>
+            </div>` : ''}
+            ${perf25 ? `<div style="background:#fafafa;border-radius:8px;padding:14px;border:1px solid #e5e7eb">
+              <div style="font-size:10px;color:#666;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Full Year 2025</div>
+              <div style="font-size:13px"><strong>${perf25.packs}</strong> packs</div>
+              <div style="font-size:13px;color:#16a34a">${fk(perf25.rev)} rev</div>
+              <div style="font-size:13px;color:#555">${fk(perf25.profit)} profit</div>
+            </div>` : ''}
+            ${perfAll ? `<div style="background:#fafafa;border-radius:8px;padding:14px;border:1px solid #e5e7eb">
+              <div style="font-size:10px;color:#666;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Since Launch</div>
+              <div style="font-size:13px"><strong>${perfAll.packs}</strong> packs</div>
+              <div style="font-size:13px;color:#16a34a">${fk(perfAll.rev)} rev</div>
+              <div style="font-size:13px;color:#555">${fk(perfAll.profit)} profit</div>
+            </div>` : ''}
+          </div>
+        </div>
+        ` : ''}
+
+        <!-- Model Homes & Ambassadors -->
+        ${v && (v.modelHomes.length>0 || v.ambassadors.length>0) ? `
+        <div style="margin-bottom:28px">
+          <div style="font-size:16px;font-weight:700;margin-bottom:12px;color:#1a1a2e">On the Ground</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;font-family:Arial,sans-serif">
+            ${v.modelHomes.length>0 ? `<div>
+              <div style="font-size:11px;color:#666;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Deako Model Home Experiences</div>
+              ${v.modelHomes.filter(m=>m&&!m.startsWith('(')).map(m=>`<div style="font-size:12px;color:#333;margin-bottom:3px">📍 ${m}</div>`).join('')||'<div style="font-size:12px;color:#999">None active</div>'}
+            </div>` : ''}
+            ${v.ambassadors.filter(a=>a.name&&!a.name.startsWith('(')).length>0 ? `<div>
+              <div style="font-size:11px;color:#666;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Deako Ambassadors</div>
+              ${v.ambassadors.filter(a=>a.name&&!a.name.startsWith('(')).map(a=>`<div style="font-size:12px;color:#333;margin-bottom:3px">⭐ ${a.name}${a.email?' · <span style="color:#1a5fb4">'+a.email+'</span>':''}</div>`).join('')}
+            </div>` : ''}
+          </div>
+        </div>
+        ` : ''}
+
+        ${comms.length>0 ? `
+        <!-- Top Communities -->
+        <div style="margin-bottom:28px">
+          <div style="font-size:16px;font-weight:700;margin-bottom:8px;color:#1a1a2e">Top Communities — Last 3 Months</div>
+          ${comms.map(c=>`<div style="font-size:13px;color:#333;margin-bottom:2px">🏘️ <strong>${c.name}</strong> — ${c.last3} packs (${c.total} total)</div>`).join('')}
+        </div>
+        ` : ''}
+
+        <!-- Footer / CTA -->
+        <div style="border-top:2px solid #e5e7eb;padding-top:16px;margin-top:20px">
+          <div style="font-size:13px;color:#555;line-height:1.8">
+            Deako smart switches add a premium feature that differentiates homes, drives buyer interest, and creates revenue with zero builder cost on ITM sales.
+            This division has <strong>${projHomes?projHomes.toLocaleString():'significant'} projected homes in 2026</strong> — every close is an opportunity for Deako pack conversion.
+          </div>
+          <div style="margin-top:12px;font-size:12px;color:#999;font-family:Arial,sans-serif">
+            Prepared by Deako Account Development · Data sourced from HEX, Netsuite, Safe Streets
+          </div>
+        </div>
+
+      </div>
+    </div>
+  `;
 }
 
 /* ── INIT ── */
