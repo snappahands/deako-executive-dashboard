@@ -491,7 +491,7 @@
   <div class="header-right">
     <div class="header-date" id="headerDate"></div>
     <div class="header-period" id="headerPeriod"></div>
-    <div style="font-size:11px;color:var(--teal);margin-top:4px;letter-spacing:.04em;font-weight:700">v4.4</div>
+    <div style="font-size:11px;color:var(--teal);margin-top:4px;letter-spacing:.04em;font-weight:700">v4.5</div>
   </div>
 </header>
 
@@ -538,6 +538,7 @@
         <div class="chart-card">
           <div class="chart-title">Quarterly Bookings ($K)</div>
           <div class="chart-wrap"><canvas id="chartQtrBookings"></canvas></div>
+          <div id="qtrBookingsDeltas"></div>
         </div>
         <div class="chart-card">
           <div class="chart-title">Quarterly Revenue ($K)</div>
@@ -1306,12 +1307,26 @@ function renderCharts() {
   makeBar('chartQtrBookings', QUARTERS, [
     { label:'2025', data: qB25, backgroundColor: b25c, borderRadius:5 },
     { label:'2026', data: qB26, backgroundColor: b26c, borderRadius:5 },
-  ], '$', deltaQtrB, qtrAopLines, qtrAopDeltas);
+  ], '$', deltaQtrB, qtrAopLines);
 
   makeBar('chartQtrRevenue', QUARTERS, [
     { label:'2025', data: qR25, backgroundColor: r25c, borderRadius:5 },
     { label:'2026', data: qR26, backgroundColor: r26c, borderRadius:5 },
   ], '$', deltaQtrR);
+
+  // Render AOP deltas as HTML below the quarterly bookings chart
+  const qtrDeltaEl = document.getElementById('qtrBookingsDeltas');
+  if (qtrDeltaEl && qtrAopDeltas) {
+    const row = (label, color, arr) => `<div style="display:grid;grid-template-columns:repeat(4,1fr);text-align:center;margin-top:4px">
+      ${arr.map(d => d !== null
+        ? `<div><span style="color:#4a6278;font-size:9px">${label}</span> <span style="color:${d>=0?'var(--teal)':'var(--pink)'};font-size:11px;font-weight:700">${d>=0?'+':''}${fcr(d)}</span></div>`
+        : `<div style="color:#4a6278;font-size:9px">${label} —</div>`
+      ).join('')}
+    </div>`;
+    qtrDeltaEl.innerHTML = row('3+9:', 'green', qtrAopDeltas.aop39) + row('Inv:', 'gray', qtrAopDeltas.investor);
+  } else if (qtrDeltaEl) {
+    qtrDeltaEl.innerHTML = '';
+  }
 
   // note about current month
   const di = getDateInfo();
