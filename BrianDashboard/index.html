@@ -250,7 +250,7 @@ body.light ::-webkit-scrollbar-thumb{background:#d0d7de !important}
   <div id="content"></div>
 </div>
 
-<div id="version-badge">v6.9</div>
+<div id="version-badge">v7.0</div>
 
 <script>
 // Theme toggle — isolated so nothing can break it
@@ -2104,12 +2104,12 @@ function switchDivTab(tab){
 }
 
 /* ── 1SS & 4SS CHASE ── */
-var _chaseTab = '4ss';
+var _chaseTab = 'both'; // 'both', '1ss', '4ss'
 var _chaseDivFilter = '';
 var _chaseSearch = '';
-var _chaseMileFilter = '';
+var _chaseMileSet = new Set(); // empty = all
 var _chaseSort = 'dy';
-var _chaseSortDir = -1; // -1 = desc
+var _chaseSortDir = -1;
 var _chasePage = 0;
 const CHASE_PAGE_SIZE = 100;
 
@@ -2123,7 +2123,12 @@ function showChase(){
 function chaseSetTab(t){ _chaseTab=t; _chasePage=0; renderChase(); }
 function chaseSetDiv(v){ _chaseDivFilter=v; _chasePage=0; renderChase(); }
 function chaseSetSearch(v){ _chaseSearch=v.toLowerCase(); _chasePage=0; renderChase(); }
-function chaseSetMile(v){ _chaseMileFilter=v; _chasePage=0; renderChase(); }
+function chaseToggleMile(v){
+  v=Number(v);
+  if(_chaseMileSet.has(v)) _chaseMileSet.delete(v); else _chaseMileSet.add(v);
+  _chasePage=0; renderChase();
+}
+function chaseClearMiles(){ _chaseMileSet.clear(); _chasePage=0; renderChase(); }
 function chaseSetSort(col){
   if(_chaseSort===col) _chaseSortDir*=-1;
   else { _chaseSort=col; _chaseSortDir=-1; }
@@ -2132,19 +2137,25 @@ function chaseSetSort(col){
 function chaseSetPage(p){ _chasePage=p; renderChase(); }
 
 function renderChase(){
-  const raw = _chaseTab==='1ss' ? (typeof CHASE_1SS!=='undefined'?CHASE_1SS:[]) : (typeof CHASE_4SS!=='undefined'?CHASE_4SS:[]);
+  const all1 = typeof CHASE_1SS!=='undefined' ? CHASE_1SS.map(r=>({...r,type:'1SS'})) : [];
+  const all4 = typeof CHASE_4SS!=='undefined' ? CHASE_4SS.map(r=>({...r,type:'4SS'})) : [];
+  let raw;
+  if(_chaseTab==='1ss') raw = all1;
+  else if(_chaseTab==='4ss') raw = all4;
+  else raw = [...all1,...all4];
 
-  // Extract unique divisions & milestones for filters
+  // Unique divisions & milestones from full combined set for filters
+  const allCombined = [...all1,...all4];
   const divSet = new Set(); const mileSet = new Set();
-  raw.forEach(r=>{ divSet.add(r.d); if(r.m!==null) mileSet.add(r.m); });
+  allCombined.forEach(r=>{ divSet.add(r.d); if(r.m!==null) mileSet.add(r.m); });
   const divs = [...divSet].sort();
   const miles = [...mileSet].sort((a,b)=>a-b);
 
   // Filter
   let data = raw;
   if(_chaseDivFilter) data = data.filter(r=>r.d===_chaseDivFilter);
-  if(_chaseMileFilter!=='') data = data.filter(r=>r.m==_chaseMileFilter);
-  if(_chaseSearch) data = data.filter(r=>(r.d+' '+r.c+' '+r.j).toLowerCase().includes(_chaseSearch));
+  if(_chaseMileSet.size>0) data = data.filter(r=>r.m!==null && _chaseMileSet.has(r.m));
+  if(_chaseSearch) data = data.filter(r=>(r.d+' '+r.c+' '+r.j+' '+r.type).toLowerCase().includes(_chaseSearch));
 
   // Sort
   data = data.slice().sort((a,b)=>{
@@ -2158,7 +2169,6 @@ function renderChase(){
   const totalPages = Math.ceil(data.length/CHASE_PAGE_SIZE);
   const page = data.slice(_chasePage*CHASE_PAGE_SIZE, (_chasePage+1)*CHASE_PAGE_SIZE);
 
-  // Clean division display name
   const fDiv = d => d.replace(/^\d+-/,'').replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
   const fComm = c => c.replace(/^\d+-/,'');
 
@@ -2168,41 +2178,59 @@ function renderChase(){
     return `<th style="cursor:pointer;user-select:none;padding:6px 8px;font-size:11px;white-space:nowrap${active?';color:#58a6ff':''}" onclick="chaseSetSort('${key}')">${label}${arrow}</th>`;
   };
 
-  // Tab styles
   const tabStyle = t => t===_chaseTab
     ? 'background:#da3633;border:none;border-radius:6px;padding:6px 14px;color:#fff;font-size:12px;font-weight:700;cursor:pointer'
     : 'background:#21262d;border:1px solid #30363d;border-radius:6px;padding:6px 14px;color:#8b949e;font-size:12px;font-weight:600;cursor:pointer';
+
+  // Milestone multi-select checkboxes
+  const mileChecks = miles.map(m=>{
+    const checked = _chaseMileSet.size===0 || _chaseMileSet.has(m);
+    const isActive = _chaseMileSet.has(m);
+    return `<label style="display:inline-flex;align-items:center;gap:3px;cursor:pointer;font-size:11px;color:${isActive?'#58a6ff':'#8b949e'};padding:2px 6px;border-radius:4px;background:${isActive?'#1c2128':'transparent'}">
+      <input type="checkbox" ${isActive?'checked':''} onchange="chaseToggleMile(${m})" style="accent-color:#da3633;width:12px;height:12px">${m}
+    </label>`;
+  }).join('');
+
+  const count1 = _chaseTab==='4ss'?0:data.filter(r=>r.type==='1SS').length;
+  const count4 = _chaseTab==='1ss'?0:data.filter(r=>r.type==='4SS').length;
 
   document.getElementById('content').innerHTML = `
     <div class="full-chart-card">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
         <h3 style="margin:0">🎯 1SS & 4SS Chase List</h3>
         <div style="display:flex;gap:6px">
-          <button onclick="chaseSetTab('1ss')" style="${tabStyle('1ss')}">1SS (${typeof CHASE_1SS!=='undefined'?CHASE_1SS.length:0})</button>
-          <button onclick="chaseSetTab('4ss')" style="${tabStyle('4ss')}">4SS (${typeof CHASE_4SS!=='undefined'?CHASE_4SS.length:0})</button>
+          <button onclick="chaseSetTab('both')" style="${tabStyle('both')}">Both (${all1.length+all4.length})</button>
+          <button onclick="chaseSetTab('1ss')" style="${tabStyle('1ss')}">1SS (${all1.length})</button>
+          <button onclick="chaseSetTab('4ss')" style="${tabStyle('4ss')}">4SS (${all4.length})</button>
         </div>
       </div>
 
-      <!-- Filters -->
-      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center">
+      <!-- Filters Row 1 -->
+      <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;align-items:center">
         <input type="text" placeholder="Search job, division, community..." value="${_chaseSearch}" oninput="chaseSetSearch(this.value)"
           style="background:#0d1117;color:#c9d1d9;border:1px solid #30363d;border-radius:6px;padding:6px 12px;font-size:12px;width:240px">
         <select onchange="chaseSetDiv(this.value)" style="background:#0d1117;color:#c9d1d9;border:1px solid #30363d;border-radius:6px;padding:6px 10px;font-size:12px">
           <option value="">All Divisions (${divs.length})</option>
           ${divs.map(d=>`<option value="${d}"${d===_chaseDivFilter?' selected':''}>${fDiv(d)}</option>`).join('')}
         </select>
-        <select onchange="chaseSetMile(this.value)" style="background:#0d1117;color:#c9d1d9;border:1px solid #30363d;border-radius:6px;padding:6px 10px;font-size:12px">
-          <option value="">All Milestones</option>
-          ${miles.map(m=>`<option value="${m}"${String(m)===_chaseMileFilter?' selected':''}>${m}</option>`).join('')}
-        </select>
-        <span style="color:#8b949e;font-size:12px;margin-left:4px">${data.length.toLocaleString()} homes · Page ${_chasePage+1} of ${totalPages||1}</span>
+        <span style="color:#8b949e;font-size:12px">${data.length.toLocaleString()} homes${_chaseTab==='both'?' ('+count1+' 1SS · '+count4+' 4SS)':''} · Page ${_chasePage+1}/${totalPages||1}</span>
+      </div>
+
+      <!-- Milestone Multi-Select -->
+      <div style="display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;align-items:center">
+        <span style="font-size:11px;color:#484f58;font-weight:600;margin-right:4px">Milestones:</span>
+        <label style="display:inline-flex;align-items:center;gap:3px;cursor:pointer;font-size:11px;color:${_chaseMileSet.size===0?'#3fb950':'#8b949e'};padding:2px 6px;border-radius:4px;background:${_chaseMileSet.size===0?'#1c2128':'transparent'}" onclick="chaseClearMiles()">
+          All
+        </label>
+        ${mileChecks}
       </div>
 
       <!-- Table -->
       <div style="overflow-x:auto">
-        <table class="summary-table" style="font-size:11px;min-width:900px">
+        <table class="summary-table" style="font-size:11px;min-width:960px">
           <tr>
             ${hdr('Days Since Cutoff','dy')}
+            <th style="padding:6px 8px;font-size:11px">Type</th>
             ${hdr('Division','d')}
             ${hdr('Community','c')}
             ${hdr('Job #','j')}
@@ -2212,8 +2240,10 @@ function renderChase(){
           </tr>
           ${page.map(r=>{
             const daysCls = r.dy>=60?'color:#da3633;font-weight:700':r.dy>=30?'color:#f0883e;font-weight:600':'color:#8b949e';
+            const typeBg = r.type==='1SS'?'background:#1c3a5e;color:#58a6ff':'background:#3b1d25;color:#f778ba';
             return `<tr>
               <td style="padding:5px 8px;${daysCls}">${r.dy!==null?r.dy:'—'}</td>
+              <td style="padding:5px 8px;text-align:center"><span style="${typeBg};font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px">${r.type}</span></td>
               <td style="padding:5px 8px;font-weight:600">${fDiv(r.d)}</td>
               <td style="padding:5px 8px;color:#c9d1d9">${fComm(r.c)}</td>
               <td style="padding:5px 8px;color:#484f58;font-size:10px">${r.j}</td>
