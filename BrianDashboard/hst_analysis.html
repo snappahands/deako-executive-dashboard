@@ -434,11 +434,13 @@
     <div style="background:#161b22;border:1px solid #21262d;border-radius:8px;padding:14px 18px">
       <div style="font-size:11px;font-weight:700;color:#f0a500;text-transform:uppercase;margin-bottom:8px">Talking Points for Builder Conversations</div>
       <ul style="font-size:12px;line-height:1.8;color:#c9d1d9;padding-left:18px">
-        <li><strong>Lead with total buyer adoption:</strong> "Across your communities, we're seeing consistent buyer interest in Deako upgrades — the demand is real and growing."</li>
+        <li><strong>Lead with buyer demand data:</strong> "Across all DRH divisions, 1 in 3 homebuyers purchase simple Deako upgrades and 1 in 8 purchase smart upgrades — on their own, after closing. The demand for this product is built into your buyer base."</li>
+        <li><strong>Show the money left on the table:</strong> "On average, $96 per home in Deako upgrade revenue is being captured after close by Deako directly — not by Horton. In some divisions, that number is over $200/home. ITM pack integration at time of sale lets Horton capture this revenue instead."</li>
         <li><strong>Reference aggregate volume without specifics:</strong> "Our data shows your division's communities are among the most active for Deako pack purchases across all sales channels."</li>
         <li><strong>Reframe ITM as one piece:</strong> "The ITM numbers you see represent our in-person training events. That's one of several ways buyers are choosing Deako in your homes."</li>
         <li><strong>Focus on the model home experience:</strong> "The strongest conversion driver is the model home setup — buyers who interact with Deako in the model convert at 2–3× the rate. Let's make sure every model is equipped."</li>
         <li><strong>Show the training investment:</strong> "We've trained X reps, certified Y agents, and set up Z model homes in your division — that infrastructure is what makes Deako sell itself."</li>
+        <li><strong>Use the unrealized value hook:</strong> "Your buyers are already spending money on Deako after they close. Every dollar they spend post-close is a dollar your division could have earned through ITM. We can help you capture that."</li>
       </ul>
     </div>
   </div>
@@ -1135,6 +1137,30 @@ const CHART_DEFAULTS = {
     eligByDiv[d.div] = (eligByDiv[d.div]||0) + d.e;
   });
 
+  // Horton Upgrades data (from Horton Division Sales Report Sep 2021 – Oct 2025)
+  const HORTON = {
+    'greensboro':{closes:4604,packs:318,totalRev:674403,margin:172149,simplePct:25,smartPct:16,unrealized:100},
+    'indianapolis':{closes:3793,packs:110,totalRev:245226,margin:62518,simplePct:32,smartPct:11,unrealized:91},
+    'chicago':{closes:3979,packs:112,totalRev:227211,margin:58058,simplePct:42,smartPct:17,unrealized:130},
+    'charlotte_north':{closes:3932,packs:99,totalRev:226749,margin:57764,simplePct:59,smartPct:25,unrealized:189},
+    'greenville':{closes:5442,packs:111,totalRev:212811,margin:54518,simplePct:32,smartPct:12,unrealized:98},
+    'maryland':{closes:2889,packs:94,totalRev:209361,margin:53363,simplePct:45,smartPct:27,unrealized:174},
+    'north_colorado':{closes:2205,packs:125,totalRev:151777,margin:38855,simplePct:38,smartPct:12,unrealized:103},
+    'atlanta_west':{closes:4901,packs:65,totalRev:147951,margin:37717,simplePct:72,smartPct:43,unrealized:278},
+    'charlotte_south':{closes:2198,packs:64,totalRev:141078,margin:36000,simplePct:10,smartPct:3,unrealized:29},
+    'eastern_nc':{closes:1868,packs:61,totalRev:105987,margin:27245,simplePct:26,smartPct:13,unrealized:92},
+    'fort_wayne':{closes:972,packs:65,totalRev:96575,margin:24723,simplePct:43,smartPct:17,unrealized:131},
+    'delaware':{closes:1762,packs:51,totalRev:86277,margin:22191,simplePct:95,smartPct:37,unrealized:290},
+    'baldwin':{closes:4575,packs:91,totalRev:81975,margin:21792,simplePct:9,smartPct:5,unrealized:34},
+    'eastern_pa':{closes:1354,packs:36,totalRev:74928,margin:19140,simplePct:36,smartPct:14,unrealized:110},
+    'asheville':{closes:1123,packs:37,totalRev:63909,margin:16351,simplePct:38,smartPct:17,unrealized:126},
+    'cincinnati':{closes:978,packs:31,totalRev:62103,margin:15902,simplePct:43,smartPct:18,unrealized:137},
+    'reno':{closes:993,packs:62,totalRev:54706,margin:14005,simplePct:31,smartPct:17,unrealized:113},
+    'birmingham':{closes:2164,packs:36,totalRev:40500,margin:10368,simplePct:17,smartPct:7,unrealized:53},
+    'kansas_city':{closes:122,packs:6,totalRev:15125,margin:3872,simplePct:35,smartPct:16,unrealized:115},
+    'south_colorado':{closes:753,packs:13,totalRev:17975,margin:4602,simplePct:43,smartPct:35,unrealized:203},
+  };
+
   // Top 10 divisions by ITM packs
   const rows = Object.keys(itmByDiv)
     .map(div=>({div, itm:itmByDiv[div], elig:eligByDiv[div]||0, conv:eligByDiv[div]>0?(itmByDiv[div]/eligByDiv[div]*100):0}))
@@ -1164,12 +1190,14 @@ const CHART_DEFAULTS = {
           <th style="text-align:right;color:#1f6feb">ITM Packs<br><span style="font-size:9px;color:#8b949e">(Builder sees)</span></th>
           <th style="text-align:right;color:#3fb950">Conv Rate</th>
           <th style="text-align:right;color:#f778ba">HST Direct<br><span style="font-size:9px;color:#8b949e">(Builder can't see)</span></th>
-          <th style="text-align:right;color:#e6edf3">Est. Combined<br><span style="font-size:9px;color:#8b949e">(2:1 HST ratio)</span></th>
+          <th style="text-align:right;color:#f0a500">Buyer Upgrade %<br><span style="font-size:9px;color:#8b949e">(Smart upgrades)</span></th>
+          <th style="text-align:right;color:#f85149">$/Home Lost<br><span style="font-size:9px;color:#8b949e">(Unrealized)</span></th>
           <th style="text-align:left">Builder Story</th>
         </tr>
         ${rows.map((d,i)=>{
-          const estHst = Math.round(d.itm * 2); // national 2:1 ratio estimate
+          const estHst = Math.round(d.itm * 2);
           const estCombined = d.itm + estHst;
+          const h = HORTON[d.div];
           return `<tr>
             <td style="color:#484f58;font-weight:700">${i+1}</td>
             <td style="font-weight:600">${fmtDiv(d.div)}</td>
@@ -1177,14 +1205,15 @@ const CHART_DEFAULTS = {
             <td style="text-align:right;color:#1f6feb;font-weight:700">${d.itm.toLocaleString()}</td>
             <td style="text-align:right;color:${d.conv>=3?'#3fb950':d.conv>=1.5?'#f0a500':'#f85149'};font-weight:700">${d.conv.toFixed(2)}%</td>
             <td style="text-align:right;color:#f778ba;font-style:italic">~${estHst.toLocaleString()} *</td>
-            <td style="text-align:right;color:#e6edf3;font-weight:700;font-style:italic">~${estCombined.toLocaleString()} *</td>
-            <td style="font-size:11px;color:#8b949e">"Your division has ${d.itm} confirmed pack sales through ITM alone — likely ${estCombined}+ total across all channels."</td>
+            <td style="text-align:right;color:#f0a500;font-weight:700">${h?h.smartPct+'%':'—'}</td>
+            <td style="text-align:right;color:#f85149;font-weight:700">${h?'$'+h.unrealized:'—'}</td>
+            <td style="font-size:11px;color:#8b949e">${h?'"'+h.smartPct+'% of your buyers already purchase Deako smart upgrades after close — that\'s $'+h.unrealized+'/home you could capture through ITM."':'"Your division has '+d.itm+' confirmed pack sales through ITM — likely '+estCombined+'+ total."'}</td>
           </tr>`;
         }).join('')}
       </table>
       <p style="font-size:11px;color:#484f58;margin-top:12px">
-        * HST Direct estimates use the national 2:1 HST-to-ITM ratio. Actual division-level HST data is not yet available for these divisions.
-        When it is, these estimates will be replaced with real numbers.
+        * HST Direct estimates use the national 2:1 HST-to-ITM ratio. Buyer Upgrade % and $/Home Lost from Horton Division Sales Report (Sep 2021 – Oct 2025).
+        <strong>Avg across all DRH divisions: 1 in 3 buy simple upgrades, 1 in 8 buy smart upgrades, $96/home unrealized.</strong>
       </p>
     </div>`;
 })();

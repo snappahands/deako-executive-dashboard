@@ -249,7 +249,7 @@ body.light ::-webkit-scrollbar-thumb{background:#d0d7de !important}
   <div id="content"></div>
 </div>
 
-<div id="version-badge">v6.7</div>
+<div id="version-badge">v6.8</div>
 
 <script>
 // Theme toggle — isolated so nothing can break it
@@ -590,6 +590,7 @@ function renderSidebar(){
   <div class="div-item${selectedIdx==='divisions'?' active':''}" onclick="showDivisions()" style="font-weight:700;color:#d2a8ff;border-left-color:${selectedIdx==='divisions'?'#d2a8ff':'transparent'}">📋 Training Summary</div>
   <div class="div-item${selectedIdx==='summary'?' active':''}" onclick="showSummary()" style="font-weight:700;color:#f85149;border-left-color:${selectedIdx==='summary'?'#f85149':'transparent'}">📊 Performance Summary</div>
   <div class="div-item${selectedIdx==='hst'?' active':''}" onclick="showHstAnalysis()" style="font-weight:700;color:#8b949e;border-left-color:${selectedIdx==='hst'?'#8b949e':'transparent'}">🔍 HST vs ITM Analysis</div>
+  <div class="div-item${selectedIdx==='horton'?' active':''}" onclick="showHortonReport()" style="font-weight:700;color:#3fb950;border-left-color:${selectedIdx==='horton'?'#3fb950':'transparent'}">💰 Horton Upgrades Report</div>
   <div class="div-item${selectedIdx==='execbrief'?' active':''}" onclick="showExecBrief()" style="font-weight:700;color:#f0883e;border-left-color:${selectedIdx==='execbrief'?'#f0883e':'transparent'}">📧 Division Exec Brief</div>
   <div class="sidebar-section">Divisions</div>`;
   // Sort divisions by eligible homes (most to least)
@@ -949,6 +950,48 @@ const REPORT_CARD = {
   allTime: { totalPacks:7262, itmPacks:3278, revenue:5700183, profit:1464923, convRateAll:3.08, convRateITM:1.78 },
   projections: { eligibleHomes:506, projRevenue:882700, projProfit:226900, ratifiedHomes:6268, projRevTotal:10900000, projProfitTotal:2800000 }
 };
+
+/* ── HORTON UPGRADES BY DIVISION (Sep 2021 – Oct 2025) ── */
+const HORTON_UPGRADES = [
+  {id:490,div:'Greensboro',region:'Carolinas',closes:4604,packs:318,revPerHome:146,totalRev:674403,totalMargin:172149,simplePct:25,simpleRatio:'1 in 4',smartPct:16,smartRatio:'1 in 6',unrealizedPerHome:100},
+  {id:560,div:'Sacramento',region:'California',closes:2165,packs:412,revPerHome:214,totalRev:463500,totalMargin:118656,simplePct:32,simpleRatio:'1 in 3',smartPct:18,smartRatio:'1 in 5',unrealizedPerHome:121},
+  {id:555,div:'Indianapolis',region:'Ohio Valley',closes:3793,packs:110,revPerHome:65,totalRev:245226,totalMargin:62518,simplePct:32,simpleRatio:'1 in 3',smartPct:11,smartRatio:'1 in 9',unrealizedPerHome:91},
+  {id:315,div:'Fort Worth South',region:'South',closes:2734,packs:173,revPerHome:83,totalRev:227526,totalMargin:59104,simplePct:10,simpleRatio:'1 in 10',smartPct:10,smartRatio:'1 in 10',unrealizedPerHome:57},
+  {id:530,div:'Chicago',region:'North',closes:3979,packs:112,revPerHome:57,totalRev:227211,totalMargin:58058,simplePct:42,simpleRatio:'1 in 2',smartPct:17,smartRatio:'1 in 6',unrealizedPerHome:130},
+  {id:480,div:'Charlotte North',region:'Carolinas',closes:3932,packs:99,revPerHome:58,totalRev:226749,totalMargin:57764,simplePct:59,simpleRatio:'1 in 2',smartPct:25,smartRatio:'1 in 4',unrealizedPerHome:189},
+  {id:709,div:'Greenville',region:'Carolinas',closes:5442,packs:111,revPerHome:39,totalRev:212811,totalMargin:54518,simplePct:32,simpleRatio:'1 in 3',smartPct:12,smartRatio:'1 in 8',unrealizedPerHome:98},
+  {id:420,div:'Maryland',region:'Mid-Atlantic',closes:2889,packs:94,revPerHome:72,totalRev:209361,totalMargin:53363,simplePct:45,simpleRatio:'1 in 2',smartPct:27,smartRatio:'1 in 4',unrealizedPerHome:174},
+  {id:255,div:'Fort Worth North',region:'South',closes:4386,packs:128,revPerHome:41,totalRev:181272,totalMargin:46881,simplePct:9,simpleRatio:'1 in 11',smartPct:4,smartRatio:'1 in 25',unrealizedPerHome:30},
+  {id:885,div:'Northern Colorado',region:'West',closes:2205,packs:125,revPerHome:69,totalRev:151777,totalMargin:38855,simplePct:38,simpleRatio:'1 in 3',smartPct:12,smartRatio:'1 in 9',unrealizedPerHome:103},
+  {id:210,div:'Atlanta West',region:'East',closes:4901,packs:65,revPerHome:30,totalRev:147951,totalMargin:37717,simplePct:72,simpleRatio:'1 in 1',smartPct:43,smartRatio:'1 in 2',unrealizedPerHome:278},
+  {id:705,div:'Charlotte South',region:'Carolinas',closes:2198,packs:64,revPerHome:64,totalRev:141078,totalMargin:36000,simplePct:10,simpleRatio:'1 in 10',smartPct:3,smartRatio:'1 in 29',unrealizedPerHome:29},
+  {id:559,div:'Columbus OH',region:'Ohio Valley',closes:2032,packs:74,revPerHome:55,totalRev:112656,totalMargin:29049,simplePct:29,simpleRatio:'1 in 3',smartPct:17,smartRatio:'1 in 6',unrealizedPerHome:114},
+  {id:495,div:'Raleigh South',region:'Carolinas',closes:2391,packs:52,revPerHome:46,totalRev:110394,totalMargin:28175,simplePct:26,simpleRatio:'1 in 4',smartPct:8,smartRatio:'1 in 13',unrealizedPerHome:70},
+  {id:577,div:'Southwest Florida',region:'Florida',closes:6240,packs:55,revPerHome:17,totalRev:108747,totalMargin:27807,simplePct:48,simpleRatio:'1 in 2',smartPct:16,smartRatio:'1 in 6',unrealizedPerHome:136},
+  {id:313,div:'Eastern NC',region:'Carolinas',closes:1868,packs:61,revPerHome:57,totalRev:105987,totalMargin:27245,simplePct:26,simpleRatio:'1 in 4',smartPct:13,smartRatio:'1 in 8',unrealizedPerHome:92},
+  {id:443,div:'Southern Virginia',region:'Mid-Atlantic',closes:1142,packs:51,revPerHome:90,totalRev:102573,totalMargin:26216,simplePct:41,simpleRatio:'1 in 2',smartPct:16,smartRatio:'1 in 6',unrealizedPerHome:124},
+  {id:952,div:'DFW Central',region:'South',closes:615,packs:151,revPerHome:166,totalRev:102124,totalMargin:26144,simplePct:94,simpleRatio:'1 in 1',smartPct:82,smartRatio:'1 in 1',unrealizedPerHome:469},
+  {id:557,div:'Fort Wayne',region:'Ohio Valley',closes:972,packs:65,revPerHome:99,totalRev:96575,totalMargin:24723,simplePct:43,simpleRatio:'1 in 2',smartPct:17,smartRatio:'1 in 6',unrealizedPerHome:131},
+  {id:350,div:'Phoenix West',region:'Southwest Pacific',closes:2315,packs:41,revPerHome:40,totalRev:93441,totalMargin:23834,simplePct:55,simpleRatio:'1 in 2',smartPct:26,smartRatio:'1 in 4',unrealizedPerHome:187},
+  {id:590,div:'Nashville',region:'East',closes:2829,packs:50,revPerHome:31,totalRev:86382,totalMargin:22175,simplePct:26,simpleRatio:'1 in 4',smartPct:8,smartRatio:'1 in 13',unrealizedPerHome:69},
+  {id:415,div:'Delaware',region:'Mid-Atlantic',closes:1762,packs:51,revPerHome:49,totalRev:86277,totalMargin:22191,simplePct:95,simpleRatio:'1 in 1',smartPct:37,smartRatio:'1 in 3',unrealizedPerHome:290},
+  {id:270,div:'Austin',region:'Southwest Texas',closes:3498,packs:71,revPerHome:24,totalRev:83865,totalMargin:21861,simplePct:0,simpleRatio:'n/a',smartPct:2,smartRatio:'1 in 48',unrealizedPerHome:8},
+  {id:224,div:'Baldwin',region:'Gulf Coast',closes:4575,packs:91,revPerHome:18,totalRev:81975,totalMargin:21792,simplePct:9,simpleRatio:'1 in 11',smartPct:5,smartRatio:'1 in 20',unrealizedPerHome:34},
+  {id:370,div:'Omaha',region:'North',closes:1083,packs:57,revPerHome:73,totalRev:78925,totalMargin:20205,simplePct:38,simpleRatio:'1 in 3',smartPct:16,smartRatio:'1 in 6',unrealizedPerHome:121},
+  {id:790,div:'Eastern Pennsylvania',region:'Mid-Atlantic',closes:1354,packs:36,revPerHome:55,totalRev:74928,totalMargin:19140,simplePct:36,simpleRatio:'1 in 3',smartPct:14,smartRatio:'1 in 7',unrealizedPerHome:110},
+  {id:879,div:'Central Colorado',region:'West',closes:1225,packs:35,revPerHome:58,totalRev:71181,totalMargin:18187,simplePct:41,simpleRatio:'1 in 2',smartPct:16,smartRatio:'1 in 6',unrealizedPerHome:125},
+  {id:468,div:'Asheville',region:'Carolinas',closes:1123,packs:37,revPerHome:57,totalRev:63909,totalMargin:16351,simplePct:38,simpleRatio:'1 in 3',smartPct:17,smartRatio:'1 in 6',unrealizedPerHome:126},
+  {id:558,div:'Cincinnati',region:'Ohio Valley',closes:978,packs:31,revPerHome:64,totalRev:62103,totalMargin:15902,simplePct:43,simpleRatio:'1 in 2',smartPct:18,smartRatio:'1 in 6',unrealizedPerHome:137},
+  {id:440,div:'Northern Virginia',region:'Mid-Atlantic',closes:1164,packs:31,revPerHome:52,totalRev:60534,totalMargin:15470,simplePct:16,simpleRatio:'1 in 6',smartPct:7,smartRatio:'1 in 14',unrealizedPerHome:52},
+  {id:632,div:'Reno',region:'West',closes:993,packs:62,revPerHome:55,totalRev:54706,totalMargin:14005,simplePct:31,simpleRatio:'1 in 3',smartPct:17,smartRatio:'1 in 6',unrealizedPerHome:113},
+  {id:318,div:'San Marcos',region:'Southwest Texas',closes:1677,packs:26,revPerHome:29,totalRev:48984,totalMargin:12529,simplePct:11,simpleRatio:'1 in 9',smartPct:1,smartRatio:'1 in 98',unrealizedPerHome:20},
+  {id:240,div:'Birmingham',region:'Gulf Coast',closes:2164,packs:36,revPerHome:19,totalRev:40500,totalMargin:10368,simplePct:17,simpleRatio:'1 in 6',smartPct:7,smartRatio:'1 in 14',unrealizedPerHome:53},
+  {id:678,div:'Kansas City',region:'Carolinas',closes:122,packs:6,revPerHome:124,totalRev:15125,totalMargin:3872,simplePct:35,simpleRatio:'1 in 3',smartPct:16,smartRatio:'1 in 6',unrealizedPerHome:115},
+  {id:888,div:'Southern Colorado',region:'West',closes:753,packs:13,revPerHome:24,totalRev:17975,totalMargin:4602,simplePct:43,simpleRatio:'1 in 2',smartPct:35,smartRatio:'1 in 3',unrealizedPerHome:203},
+  {id:710,div:'Portland',region:'West',closes:2054,packs:66,revPerHome:33,totalRev:66800,totalMargin:17101,simplePct:64,simpleRatio:'1 in 2',smartPct:30,smartRatio:'1 in 3',unrealizedPerHome:216},
+  {id:631,div:'Las Vegas',region:'West',closes:3134,packs:0,revPerHome:0,totalRev:0,totalMargin:0,simplePct:23,simpleRatio:'1 in 4',smartPct:8,smartRatio:'1 in 13',unrealizedPerHome:64},
+];
+// Totals: 275,638 closes, 3,896 packs, $6,281,404 rev, $1,609,115 margin, avg 29% simple (1 in 3), 13% smart (1 in 8), $96 unrealized/home
 
 /* ── DIVISION PROFITABILITY (exact from HEX PDF) ── */
 const DIV_PERF = {
@@ -2058,6 +2101,79 @@ function switchDivTab(tab){
   });
 }
 
+/* ── HORTON UPGRADES REPORT ── */
+var _hortonSort = 'totalRev';
+function showHortonReport(){
+  selectedIdx = 'horton';
+  renderSidebar();
+  const data = HORTON_UPGRADES.slice().sort((a,b)=>b[_hortonSort]-a[_hortonSort]);
+  const totRev = data.reduce((s,d)=>s+d.totalRev,0);
+  const totMargin = data.reduce((s,d)=>s+d.totalMargin,0);
+  const totPacks = data.reduce((s,d)=>s+d.packs,0);
+  const totCloses = data.reduce((s,d)=>s+d.closes,0);
+  const fk = v=>v>=1000000?'$'+(v/1000000).toFixed(1)+'M':v>=1000?'$'+(v/1000).toFixed(0)+'K':'$'+v;
+  const hdr = (label,key) => `<th style="cursor:pointer;user-select:none;padding:8px 6px;font-size:11px${_hortonSort===key?';color:#58a6ff':''}" onclick="_hortonSort='${key}';showHortonReport()">${label}${_hortonSort===key?' ▼':''}</th>`;
+
+  document.getElementById('content').innerHTML = `
+    <div class="full-chart-card">
+      <h3 style="margin-bottom:4px">Horton Upgrades by Division — Deako Value Report</h3>
+      <div style="font-size:12px;color:#8b949e;margin-bottom:16px">Source: Horton Division Sales Report (Sep 2021 – Oct 2025) · ${data.length} divisions · Click column headers to sort</div>
+
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px">
+        <div style="background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:14px;text-align:center">
+          <div style="font-size:22px;font-weight:700;color:#3fb950">${fk(totRev)}</div>
+          <div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:1px;margin-top:4px">Total Revenue</div>
+        </div>
+        <div style="background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:14px;text-align:center">
+          <div style="font-size:22px;font-weight:700;color:#f0a500">${fk(totMargin)}</div>
+          <div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:1px;margin-top:4px">Total Margin</div>
+        </div>
+        <div style="background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:14px;text-align:center">
+          <div style="font-size:22px;font-weight:700;color:#58a6ff">${totPacks.toLocaleString()}</div>
+          <div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:1px;margin-top:4px">Total Packs</div>
+        </div>
+        <div style="background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:14px;text-align:center">
+          <div style="font-size:22px;font-weight:700;color:#c9d1d9">${totCloses.toLocaleString()}</div>
+          <div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:1px;margin-top:4px">Homes Closed</div>
+        </div>
+      </div>
+
+      <div style="background:#161b22;border:1px solid #21262d;border-radius:8px;padding:10px 6px;margin-bottom:16px;text-align:center;font-size:13px;color:#c9d1d9">
+        <strong style="color:#f0a500">Key Insight:</strong> 1 in 3 homebuyers purchase simple switch upgrades · 1 in 8 purchase smart switch upgrades · Avg <strong style="color:#3fb950">$96/home</strong> unrealized value Horton could capture
+      </div>
+
+      <table class="summary-table" style="font-size:11px">
+        <tr>
+          <th style="padding:8px 6px;font-size:11px">#</th>
+          <th style="padding:8px 6px;font-size:11px">Division</th>
+          <th style="padding:8px 6px;font-size:11px">Region</th>
+          ${hdr('Closes','closes')}
+          ${hdr('Packs','packs')}
+          ${hdr('Rev/Home','revPerHome')}
+          ${hdr('Total Rev','totalRev')}
+          ${hdr('Margin','totalMargin')}
+          ${hdr('Simple %','simplePct')}
+          ${hdr('Smart %','smartPct')}
+          ${hdr('$/Home Lost','unrealizedPerHome')}
+        </tr>
+        ${data.map((d,i)=>`<tr>
+          <td style="color:#484f58;font-weight:700;padding:6px">#${i+1}</td>
+          <td style="padding:6px"><strong>${d.div}</strong></td>
+          <td style="padding:6px;color:#8b949e;font-size:10px">${d.region}</td>
+          <td style="padding:6px">${d.closes.toLocaleString()}</td>
+          <td style="padding:6px;font-weight:700;color:#58a6ff">${d.packs}</td>
+          <td style="padding:6px">$${d.revPerHome}</td>
+          <td style="padding:6px;color:#3fb950;font-weight:600">${fk(d.totalRev)}</td>
+          <td style="padding:6px;color:#f0a500">${fk(d.totalMargin)}</td>
+          <td style="padding:6px">${d.simplePct}%<span style="color:#484f58;font-size:9px;margin-left:3px">${d.simpleRatio}</span></td>
+          <td style="padding:6px">${d.smartPct}%<span style="color:#484f58;font-size:9px;margin-left:3px">${d.smartRatio}</span></td>
+          <td style="padding:6px;color:#f85149;font-weight:600">$${d.unrealizedPerHome}</td>
+        </tr>`).join('')}
+      </table>
+    </div>
+  `;
+}
+
 /* ── EXEC BRIEF ── */
 var _execBriefDiv = 'ATL West';
 
@@ -2090,6 +2206,10 @@ function renderExecBrief(divName){
 
   // Communities
   const comms = COMMUNITIES_TOP.filter(c=>fmtDiv(c.div)===fmtDiv(divName));
+
+  // Horton Upgrades data
+  const hu = HORTON_UPGRADES.find(h=>fmtDiv(h.div)===fmtDiv(divName)) || null;
+  const huRank = hu ? HORTON_UPGRADES.slice().sort((a,b)=>b.totalRev-a.totalRev).findIndex(h=>h.div===hu.div)+1 : null;
 
   // Year-level stats
   const y = {};
@@ -2199,6 +2319,35 @@ function renderExecBrief(divName){
             <div style="font-size:10px;color:#999;margin-top:2px">All-time</div>
           </div>
         </div>
+
+        ${hu ? `
+        <!-- Homebuyer Upgrade Demand -->
+        <div style="background:#fef9ee;border-left:4px solid #d97706;padding:16px 20px;border-radius:0 8px 8px 0;margin-bottom:28px">
+          <div style="font-size:13px;font-weight:700;color:#92400e;text-transform:uppercase;letter-spacing:1px;font-family:Arial,sans-serif;margin-bottom:8px">Homebuyer Upgrade Demand — ${divName}</div>
+          <div style="font-size:14px;color:#1a1a2e;line-height:1.7">
+            Across <strong>${hu.closes.toLocaleString()} homes closed</strong>, <strong style="color:#1a5fb4">${hu.simplePct}% of buyers (${hu.simpleRatio})</strong> purchased simple Deako upgrades and
+            <strong style="color:#1a5fb4">${hu.smartPct}% (${hu.smartRatio})</strong> purchased smart upgrades — <em>on their own, after closing</em>.
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px;font-family:Arial,sans-serif">
+            <div style="text-align:center;background:#fff;border-radius:6px;padding:10px;border:1px solid #e5e7eb">
+              <div style="font-size:20px;font-weight:700;color:#1a5fb4">${fk(hu.totalRev)}</div>
+              <div style="font-size:9px;color:#666;text-transform:uppercase;letter-spacing:.5px;margin-top:2px">Horton Pack Revenue</div>
+            </div>
+            <div style="text-align:center;background:#fff;border-radius:6px;padding:10px;border:1px solid #e5e7eb">
+              <div style="font-size:20px;font-weight:700;color:#16a34a">${fk(hu.totalMargin)}</div>
+              <div style="font-size:9px;color:#666;text-transform:uppercase;letter-spacing:.5px;margin-top:2px">Horton Margin</div>
+            </div>
+            <div style="text-align:center;background:#fff;border-radius:6px;padding:10px;border:1px solid #e5e7eb">
+              <div style="font-size:20px;font-weight:700;color:#dc2626">$${hu.unrealizedPerHome}/home</div>
+              <div style="font-size:9px;color:#666;text-transform:uppercase;letter-spacing:.5px;margin-top:2px">Unrealized Value</div>
+            </div>
+          </div>
+          <div style="font-size:12px;color:#78716c;margin-top:10px">
+            <strong style="color:#dc2626">$${hu.unrealizedPerHome} per home</strong> is being left on the table — revenue from buyers who purchase Deako upgrades after close that Horton could capture through ITM pack integration at time of sale.
+            ${hu.unrealizedPerHome > 100 ? ' This division has above-average buyer demand for Deako products.' : ''}
+          </div>
+        </div>
+        ` : ''}
 
         <!-- Year-over-Year Performance -->
         <div style="margin-bottom:28px">
