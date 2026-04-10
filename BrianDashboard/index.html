@@ -11,6 +11,7 @@
 <script src="closes_data.js"></script>
 <script src="ratif_data.js"></script>
 <script src="ss1_data.js"></script>
+<script src="chase_data.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{--bg:#0d1117;--bg-card:#161b22;--bg-hover:#1c2128;--border:#21262d;--text:#c9d1d9;--text-h:#e6edf3;--text-m:#8b949e;--text-d:#484f58}
@@ -249,7 +250,7 @@ body.light ::-webkit-scrollbar-thumb{background:#d0d7de !important}
   <div id="content"></div>
 </div>
 
-<div id="version-badge">v6.8</div>
+<div id="version-badge">v6.9</div>
 
 <script>
 // Theme toggle — isolated so nothing can break it
@@ -591,6 +592,7 @@ function renderSidebar(){
   <div class="div-item${selectedIdx==='summary'?' active':''}" onclick="showSummary()" style="font-weight:700;color:#f85149;border-left-color:${selectedIdx==='summary'?'#f85149':'transparent'}">📊 Performance Summary</div>
   <div class="div-item${selectedIdx==='hst'?' active':''}" onclick="showHstAnalysis()" style="font-weight:700;color:#8b949e;border-left-color:${selectedIdx==='hst'?'#8b949e':'transparent'}">🔍 HST vs ITM Analysis</div>
   <div class="div-item${selectedIdx==='horton'?' active':''}" onclick="showHortonReport()" style="font-weight:700;color:#3fb950;border-left-color:${selectedIdx==='horton'?'#3fb950':'transparent'}">💰 Horton Upgrades Report</div>
+  <div class="div-item${selectedIdx==='chase'?' active':''}" onclick="showChase()" style="font-weight:700;color:#da3633;border-left-color:${selectedIdx==='chase'?'#da3633':'transparent'}">🎯 1SS & 4SS Chase</div>
   <div class="div-item${selectedIdx==='execbrief'?' active':''}" onclick="showExecBrief()" style="font-weight:700;color:#f0883e;border-left-color:${selectedIdx==='execbrief'?'#f0883e':'transparent'}">📧 Division Exec Brief</div>
   <div class="sidebar-section">Divisions</div>`;
   // Sort divisions by eligible homes (most to least)
@@ -2099,6 +2101,141 @@ function switchDivTab(tab){
       ? 'background:#1f6feb;border:none;border-radius:6px;padding:5px 12px;color:#fff;font-size:11px;font-weight:600;cursor:pointer'
       : 'background:#21262d;border:1px solid #30363d;border-radius:6px;padding:5px 12px;color:#8b949e;font-size:11px;font-weight:600;cursor:pointer';
   });
+}
+
+/* ── 1SS & 4SS CHASE ── */
+var _chaseTab = '4ss';
+var _chaseDivFilter = '';
+var _chaseSearch = '';
+var _chaseMileFilter = '';
+var _chaseSort = 'dy';
+var _chaseSortDir = -1; // -1 = desc
+var _chasePage = 0;
+const CHASE_PAGE_SIZE = 100;
+
+function showChase(){
+  selectedIdx = 'chase';
+  _chasePage = 0;
+  renderSidebar();
+  renderChase();
+}
+
+function chaseSetTab(t){ _chaseTab=t; _chasePage=0; renderChase(); }
+function chaseSetDiv(v){ _chaseDivFilter=v; _chasePage=0; renderChase(); }
+function chaseSetSearch(v){ _chaseSearch=v.toLowerCase(); _chasePage=0; renderChase(); }
+function chaseSetMile(v){ _chaseMileFilter=v; _chasePage=0; renderChase(); }
+function chaseSetSort(col){
+  if(_chaseSort===col) _chaseSortDir*=-1;
+  else { _chaseSort=col; _chaseSortDir=-1; }
+  _chasePage=0; renderChase();
+}
+function chaseSetPage(p){ _chasePage=p; renderChase(); }
+
+function renderChase(){
+  const raw = _chaseTab==='1ss' ? (typeof CHASE_1SS!=='undefined'?CHASE_1SS:[]) : (typeof CHASE_4SS!=='undefined'?CHASE_4SS:[]);
+
+  // Extract unique divisions & milestones for filters
+  const divSet = new Set(); const mileSet = new Set();
+  raw.forEach(r=>{ divSet.add(r.d); if(r.m!==null) mileSet.add(r.m); });
+  const divs = [...divSet].sort();
+  const miles = [...mileSet].sort((a,b)=>a-b);
+
+  // Filter
+  let data = raw;
+  if(_chaseDivFilter) data = data.filter(r=>r.d===_chaseDivFilter);
+  if(_chaseMileFilter!=='') data = data.filter(r=>r.m==_chaseMileFilter);
+  if(_chaseSearch) data = data.filter(r=>(r.d+' '+r.c+' '+r.j).toLowerCase().includes(_chaseSearch));
+
+  // Sort
+  data = data.slice().sort((a,b)=>{
+    let va=a[_chaseSort], vb=b[_chaseSort];
+    if(va===null||va===undefined||va==='') va=_chaseSortDir===-1?-Infinity:Infinity;
+    if(vb===null||vb===undefined||vb==='') vb=_chaseSortDir===-1?-Infinity:Infinity;
+    if(typeof va==='string') return _chaseSortDir * va.localeCompare(vb);
+    return _chaseSortDir * (va-vb);
+  });
+
+  const totalPages = Math.ceil(data.length/CHASE_PAGE_SIZE);
+  const page = data.slice(_chasePage*CHASE_PAGE_SIZE, (_chasePage+1)*CHASE_PAGE_SIZE);
+
+  // Clean division display name
+  const fDiv = d => d.replace(/^\d+-/,'').replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+  const fComm = c => c.replace(/^\d+-/,'');
+
+  const hdr = (label,key) => {
+    const active = _chaseSort===key;
+    const arrow = active ? (_chaseSortDir===-1 ? ' ▼' : ' ▲') : '';
+    return `<th style="cursor:pointer;user-select:none;padding:6px 8px;font-size:11px;white-space:nowrap${active?';color:#58a6ff':''}" onclick="chaseSetSort('${key}')">${label}${arrow}</th>`;
+  };
+
+  // Tab styles
+  const tabStyle = t => t===_chaseTab
+    ? 'background:#da3633;border:none;border-radius:6px;padding:6px 14px;color:#fff;font-size:12px;font-weight:700;cursor:pointer'
+    : 'background:#21262d;border:1px solid #30363d;border-radius:6px;padding:6px 14px;color:#8b949e;font-size:12px;font-weight:600;cursor:pointer';
+
+  document.getElementById('content').innerHTML = `
+    <div class="full-chart-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <h3 style="margin:0">🎯 1SS & 4SS Chase List</h3>
+        <div style="display:flex;gap:6px">
+          <button onclick="chaseSetTab('1ss')" style="${tabStyle('1ss')}">1SS (${typeof CHASE_1SS!=='undefined'?CHASE_1SS.length:0})</button>
+          <button onclick="chaseSetTab('4ss')" style="${tabStyle('4ss')}">4SS (${typeof CHASE_4SS!=='undefined'?CHASE_4SS.length:0})</button>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center">
+        <input type="text" placeholder="Search job, division, community..." value="${_chaseSearch}" oninput="chaseSetSearch(this.value)"
+          style="background:#0d1117;color:#c9d1d9;border:1px solid #30363d;border-radius:6px;padding:6px 12px;font-size:12px;width:240px">
+        <select onchange="chaseSetDiv(this.value)" style="background:#0d1117;color:#c9d1d9;border:1px solid #30363d;border-radius:6px;padding:6px 10px;font-size:12px">
+          <option value="">All Divisions (${divs.length})</option>
+          ${divs.map(d=>`<option value="${d}"${d===_chaseDivFilter?' selected':''}>${fDiv(d)}</option>`).join('')}
+        </select>
+        <select onchange="chaseSetMile(this.value)" style="background:#0d1117;color:#c9d1d9;border:1px solid #30363d;border-radius:6px;padding:6px 10px;font-size:12px">
+          <option value="">All Milestones</option>
+          ${miles.map(m=>`<option value="${m}"${String(m)===_chaseMileFilter?' selected':''}>${m}</option>`).join('')}
+        </select>
+        <span style="color:#8b949e;font-size:12px;margin-left:4px">${data.length.toLocaleString()} homes · Page ${_chasePage+1} of ${totalPages||1}</span>
+      </div>
+
+      <!-- Table -->
+      <div style="overflow-x:auto">
+        <table class="summary-table" style="font-size:11px;min-width:900px">
+          <tr>
+            ${hdr('Days Since Cutoff','dy')}
+            ${hdr('Division','d')}
+            ${hdr('Community','c')}
+            ${hdr('Job #','j')}
+            ${hdr('Start Date','sd')}
+            ${hdr('Ratification','rd')}
+            ${hdr('Milestone','m')}
+          </tr>
+          ${page.map(r=>{
+            const daysCls = r.dy>=60?'color:#da3633;font-weight:700':r.dy>=30?'color:#f0883e;font-weight:600':'color:#8b949e';
+            return `<tr>
+              <td style="padding:5px 8px;${daysCls}">${r.dy!==null?r.dy:'—'}</td>
+              <td style="padding:5px 8px;font-weight:600">${fDiv(r.d)}</td>
+              <td style="padding:5px 8px;color:#c9d1d9">${fComm(r.c)}</td>
+              <td style="padding:5px 8px;color:#484f58;font-size:10px">${r.j}</td>
+              <td style="padding:5px 8px">${r.sd||'—'}</td>
+              <td style="padding:5px 8px">${r.rd||'—'}</td>
+              <td style="padding:5px 8px;text-align:center">${r.m!==null?r.m:'—'}</td>
+            </tr>`;
+          }).join('')}
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      ${totalPages>1 ? `<div style="display:flex;gap:4px;margin-top:12px;justify-content:center;flex-wrap:wrap">
+        ${_chasePage>0?`<button onclick="chaseSetPage(${_chasePage-1})" style="background:#21262d;border:1px solid #30363d;border-radius:4px;padding:4px 10px;color:#c9d1d9;font-size:11px;cursor:pointer">← Prev</button>`:''}
+        ${Array.from({length:Math.min(totalPages,10)},(_,i)=>{
+          const p = totalPages<=10 ? i : Math.max(0,Math.min(_chasePage-4,totalPages-10))+i;
+          return `<button onclick="chaseSetPage(${p})" style="background:${p===_chasePage?'#da3633':'#21262d'};border:${p===_chasePage?'none':'1px solid #30363d'};border-radius:4px;padding:4px 8px;color:${p===_chasePage?'#fff':'#8b949e'};font-size:11px;cursor:pointer">${p+1}</button>`;
+        }).join('')}
+        ${_chasePage<totalPages-1?`<button onclick="chaseSetPage(${_chasePage+1})" style="background:#21262d;border:1px solid #30363d;border-radius:4px;padding:4px 10px;color:#c9d1d9;font-size:11px;cursor:pointer">Next →</button>`:''}
+      </div>` : ''}
+    </div>
+  `;
 }
 
 /* ── HORTON UPGRADES REPORT ── */
