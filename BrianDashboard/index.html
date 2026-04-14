@@ -13,6 +13,7 @@
 <script src="ss1_data.js"></script>
 <script src="chase_data.js"></script>
 <script src="po_status_data.js"></script>
+<script src="hst_top10.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{--bg:#0d1117;--bg-card:#161b22;--bg-hover:#1c2128;--border:#21262d;--text:#c9d1d9;--text-h:#e6edf3;--text-m:#8b949e;--text-d:#484f58}
@@ -957,8 +958,8 @@ function renderDetail(v, idx){
 /* ── RENDER OVERVIEW (default) ── */
 /* ── REPORT CARD DATA (exact from HEX PDF) ── */
 const REPORT_CARD = {
-  last3: { totalPacks:367, itmPacks:147, revenue:209952, profit:54388, convRateAll:1.65, convRateITM:0.82 },
-  allTime: { totalPacks:7262, itmPacks:3278, revenue:5700183, profit:1464923, convRateAll:3.08, convRateITM:1.78 },
+  last3: { totalPacks:365, itmPacks:145, revenue:209154, profit:54148, convRateAll:1.65, convRateITM:0.82 },
+  allTime: { totalPacks:7289, itmPacks:3287, revenue:5718678, profit:1469647, convRateAll:3.08, convRateITM:1.78 },
   projections: { eligibleHomes:506, projRevenue:882700, projProfit:226900, ratifiedHomes:6268, projRevTotal:10900000, projProfitTotal:2800000 }
 };
 
@@ -1669,7 +1670,67 @@ function renderConvRates(period, value){
           ${(()=>{ const p=getPO(d.div); return p?`<td style="color:#3fb950;font-weight:700">${p.i}</td><td style="color:#da3633;font-weight:700">${p.m1}</td>`:'<td>—</td><td>—</td>'; })()}
         </tr>`;}).join('')}
       </table>
-    </div>`;
+    </div>
+
+    ${typeof HST_TOP10!=='undefined' ? `
+    <!-- TOP 10 DIVISIONS ANALYSIS -->
+    <div class="full-chart-card">
+      <h3 style="margin-bottom:4px">HST Direct Pack Orders — Top 10 Division Analysis</h3>
+      <div style="font-size:12px;color:#8b949e;margin-bottom:16px">Source: Shopify order data · Trends compare recent 3 months vs. prior 3 months</div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+        <!-- Top 10 by All-Time Orders -->
+        <div style="background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:14px">
+          <div style="font-size:12px;font-weight:700;color:#7ecfe0;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Top 10 — All-Time Orders</div>
+          <table style="width:100%;font-size:11px;border-collapse:collapse">
+            <tr style="color:#484f58"><th style="text-align:left;padding:4px">Division</th><th>Orders</th><th>Jobs</th><th>Recent</th><th>Trend</th></tr>
+            ${HST_TOP10.byTotal.map((r,i)=>{
+              const tc = r.trend==='up'?'#3fb950':r.trend==='down'?'#da3633':'#8b949e';
+              const arrow = r.trend==='up'?'▲':r.trend==='down'?'▼':'—';
+              return '<tr style="border-top:1px solid #1e2530"><td style="padding:4px;color:#c9d1d9">'+(i+1)+'. '+fmtDiv(r.div)+'</td><td style="text-align:center;font-weight:700;color:#7ecfe0">'+r.total+'</td><td style="text-align:center;color:#8b949e">'+r.unique_jobs+'</td><td style="text-align:center;color:#58a6ff">'+r.recent3+'</td><td style="text-align:center;color:'+tc+';font-weight:700">'+arrow+' '+r.trend_pct+'%</td></tr>';
+            }).join('')}
+          </table>
+        </div>
+
+        <!-- Top 10 by Recent Momentum -->
+        <div style="background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:14px">
+          <div style="font-size:12px;font-weight:700;color:#58a6ff;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Top 10 — Recent Momentum (Last 3 Mo)</div>
+          <table style="width:100%;font-size:11px;border-collapse:collapse">
+            <tr style="color:#484f58"><th style="text-align:left;padding:4px">Division</th><th>Recent</th><th>All-Time</th><th>Trend</th></tr>
+            ${HST_TOP10.byRecent.map((r,i)=>{
+              const tc = r.trend==='up'?'#3fb950':r.trend==='down'?'#da3633':'#8b949e';
+              const arrow = r.trend==='up'?'▲':r.trend==='down'?'▼':'—';
+              return '<tr style="border-top:1px solid #1e2530"><td style="padding:4px;color:#c9d1d9">'+(i+1)+'. '+fmtDiv(r.div)+'</td><td style="text-align:center;font-weight:700;color:#58a6ff">'+r.recent3+'</td><td style="text-align:center;color:#8b949e">'+r.total+'</td><td style="text-align:center;color:'+tc+';font-weight:700">'+arrow+' '+r.trend_pct+'%</td></tr>';
+            }).join('')}
+          </table>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+        <!-- Trending Up -->
+        <div style="background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:14px">
+          <div style="font-size:12px;font-weight:700;color:#3fb950;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Trending Up — Growth Divisions</div>
+          ${HST_TOP10.trending.map((r,i)=>'<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12px;border-bottom:1px solid #1e2530"><span style="color:#c9d1d9">'+(i+1)+'. '+fmtDiv(r.div)+'</span><span style="color:#3fb950;font-weight:700">▲ '+r.trend_pct+'% ('+r.recent3+' orders)</span></div>').join('')}
+        </div>
+
+        <!-- Declining -->
+        <div style="background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:14px">
+          <div style="font-size:12px;font-weight:700;color:#da3633;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Declining — Needs Attention</div>
+          ${HST_TOP10.declining.map((r,i)=>'<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12px;border-bottom:1px solid #1e2530"><span style="color:#c9d1d9">'+(i+1)+'. '+fmtDiv(r.div)+' <span style="color:#484f58;font-size:10px">('+r.prev3+'→'+r.recent3+')</span></span><span style="color:#da3633;font-weight:700">▼ '+Math.abs(r.trend_pct)+'%</span></div>').join('')}
+        </div>
+      </div>
+
+      <!-- TALKING POINTS -->
+      <div style="background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:16px">
+        <div style="font-size:12px;font-weight:700;color:#f0a500;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px">Talking Points for Impacted Divisions</div>
+        <ul style="font-size:12px;line-height:1.8;color:#c9d1d9;padding-left:20px;margin:0">
+          ${HST_TOP10.trending.slice(0,3).map(r=>'<li><strong style="color:#3fb950">'+fmtDiv(r.div)+'</strong> is surging — '+r.recent3+' orders in the last 3 months ('+r.trend_pct+'% growth). Reinforce with ambassador check-in and ensure pack inventory meets demand.</li>').join('')}
+          ${HST_TOP10.byTotal.filter(r=>r.trend==='flat').slice(0,2).map(r=>'<li><strong style="color:#7ecfe0">'+fmtDiv(r.div)+'</strong> is a top performer with '+r.total+' all-time orders but has gone flat recently ('+r.recent3+' last 3mo). Schedule a refresh training or PDP visit to re-ignite momentum.</li>').join('')}
+          ${HST_TOP10.declining.slice(0,3).map(r=>'<li><strong style="color:#da3633">'+fmtDiv(r.div)+'</strong> dropped from '+r.prev3+' to '+r.recent3+' orders ('+Math.abs(r.trend_pct)+'% decline). Investigate if there are staffing changes, inventory issues, or competitor pressure. Prioritize outreach.</li>').join('')}
+          ${HST_TOP10.byRecent.filter(r=>r.total<30 && r.recent3>=5).slice(0,2).map(r=>'<li><strong style="color:#58a6ff">'+fmtDiv(r.div)+'</strong> is a newer adopter showing strong early traction ('+r.recent3+' recent orders from '+r.total+' total). Nurture this division with training support to build long-term adoption.</li>').join('')}
+        </ul>
+      </div>
+    </div>` : ''}`;
   _ce.scrollTop = _sv;
 
   new Chart(document.getElementById('convDivChart'),{
