@@ -12,6 +12,7 @@
 <script src="ratif_data.js"></script>
 <script src="ss1_data.js"></script>
 <script src="chase_data.js"></script>
+<script src="po_status_data.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{--bg:#0d1117;--bg-card:#161b22;--bg-hover:#1c2128;--border:#21262d;--text:#c9d1d9;--text-h:#e6edf3;--text-m:#8b949e;--text-d:#484f58}
@@ -720,6 +721,10 @@ function renderDetail(v, idx){
   const totalRat = ratifAll.reduce((s,d)=>s+d.n,0);
   const totalHst = hstAll.reduce((s,d)=>s+d.n,0);
 
+  // PO Status lookup
+  const poStat = dk && typeof PO_STATUS!=='undefined' ? Object.entries(PO_STATUS).find(([k])=>k.replace(/^\d+-/,'')===dk) : null;
+  const po = poStat ? poStat[1] : null;
+
   // Revenue/profit from DIV_PERF
   const normDiv = s=>s.toLowerCase().replace(/[^a-z]/g,'');
   const findPerf = arr => arr.find(d=>normDiv(d.div)===normDiv(v.division)) || arr.find(d=>normDiv(d.div).includes(normDiv(v.division).substring(0,5)));
@@ -849,6 +854,10 @@ function renderDetail(v, idx){
       ${mCard('Ratifications',totalRat.toLocaleString(),'#7ecfe0')}
       ${mCard('HST Direct',totalHst.toLocaleString(),'#f778ba')}
       ${dk && PROJ_HOMES_2026[dk] ? mCard("Proj. Homes '26",PROJ_HOMES_2026[dk].toLocaleString(),'#d2a8ff') : ''}
+      ${po ? mCard('1SS Installed',po.i.toLocaleString(),'#3fb950') : ''}
+      ${po ? mCard('Missing 1SS',po.m1.toLocaleString(),'#da3633') : ''}
+      ${po ? mCard('Missing 4SS',po.m4.toLocaleString(),'#f778ba') : ''}
+      ${po ? mCard('PO Install Rate',po.r+'%',po.r>=50?'#3fb950':po.r>=25?'#f0a500':'#da3633') : ''}
     </div>
 
     ${v.preITM!==null&&v.postITM!==null?`<div class="itm-card">
@@ -1067,7 +1076,7 @@ const COMMUNITIES_TOP = [
   {name:'Madeline Farm',div:'Eastern NC',last3:2,total:10}
 ];
 
-/* ── DPUP PACKS BY INITIATIVE (totals exact from HEX PDF; initiative split proportional) ── */
+/* ── DPUP PACKS BY INITIATIVE ── */
 const DPUP_MONTHLY = {
   labels:['Jan 23','Feb 23','Mar 23','Apr 23','May 23','Jun 23','Jul 23','Aug 23','Sep 23','Oct 23','Nov 23','Dec 23',
           'Jan 24','Feb 24','Mar 24','Apr 24','May 24','Jun 24','Jul 24','Aug 24','Sep 24','Oct 24','Nov 24','Dec 24',
@@ -1076,40 +1085,40 @@ const DPUP_MONTHLY = {
   ITM:      [30,22,95,83,136,102,102,104,101,94,69,65,
              118,115,134,88,119,51,75,85,75,101,65,67,
              59,93,78,96,85,76,95,106,65,54,48,38,
-             51,44,52,6],
+             51,44,50,17],
   spec:     [5,4,38,42,55,39,91,61,57,43,56,64,
              154,77,74,49,76,22,30,32,68,43,41,53,
              85,73,92,85,55,76,98,42,65,45,28,38,
-             52,32,21,4],
+             52,32,21,5],
   incentive:[0,14,5,0,1,181,36,23,16,2,16,17,
              25,16,17,3,0,1,5,2,22,11,5,1,
              5,1,2,1,3,2,2,29,20,14,9,26,
-             9,48,25,2],
+             9,48,25,17],
   model:    [12,3,49,49,25,66,29,74,26,56,59,17,
              29,26,34,24,12,27,31,33,31,23,20,32,
              36,35,32,39,22,27,19,17,22,40,10,17,
-             11,9,13,2],
+             11,9,13,4],
   hstDirect:[null,null,null,null,null,null,null,null,null,null,null,null,
-             103,121,159,90,129,141,101,118,135,142,125,100,
-             119,126,159,157,153,183,94,128,145,126,124,88,
-             124,111,150,31]
+             98,111,127,74,106,128,85,96,107,118,116,90,
+             112,118,148,142,146,168,88,124,142,119,112,76,
+             104,102,138,34]
 };
 
-/* ── ITM MONTHLY REVENUE/PROFIT/CONV (revenue/profit derived from ITM packs × $1,740/$458 per pack; conv rates from HEX PDF labels) ── */
+/* ── ITM MONTHLY REVENUE/PROFIT/CONV ── */
 const ITM_MONTHLY = {
   labels: DPUP_MONTHLY.labels,
   revenue:[63882,49860,205641,175401,271854,210168,210168,224136,197874,191673,134541,111627,
            239886,241533,251739,169308,241011,82485,119574,122067,95751,129045,84441,87417,
            82713,121392,115053,146028,139029,120534,134505,126372,95820,65031,68103,47463,
-           76500,60228,73224,8424],
+           76500,60228,72426,27717],
   profit: [16303,12705,52459,44772,69493,53681,53681,57183,50596,48957,34416,28661,
            61294,61662,64449,43325,61587,21220,30783,31618,24934,33679,22032,22793,
            21519,31692,29791,37729,35850,31126,34836,33131,24793,16983,17650,12323,
-           19780,15595,19014,2178],
+           19780,15595,18774,7142],
   convRate:[2.5,1.6,5.9,4.6,7.4,5.0,4.5,4.2,3.9,2.1,1.8,1.4,
             1.7,1.8,2.0,1.4,2.1,0.9,1.4,1.6,1.7,2.0,1.4,1.5,
             1.0,1.8,1.2,1.4,1.4,1.4,1.6,1.8,1.4,1.1,1.0,0.8,
-            0.9,0.8,0.8,0.9]
+            0.9,0.8,0.8,0.8]
 };
 
 function fmtK(v){ return v>=1000000?'$'+(v/1000000).toFixed(1)+'M':v>=1000?'$'+(v/1000).toFixed(v>=100000?0:1)+'K':'$'+v; }
@@ -1588,12 +1597,21 @@ function renderConvRates(period, value){
     });
   }
 
+  // PO Status lookup for conv rate view
+  const getPO = div => {
+    if(typeof PO_STATUS==='undefined') return null;
+    const e = Object.entries(PO_STATUS).find(([k])=>k.replace(/^\d+-/,'')===div);
+    return e ? e[1] : null;
+  };
+
   const getDivSortVal = d => {
     if(divSortBy==='e')      return d.e;
     if(divSortBy==='r')      return d.r;
     if(divSortBy==='ratif')  return ratifMap[d.div+'|'+value]||0;
     if(divSortBy==='closes') return closesMap[d.div+'|'+value]||0;
     if(divSortBy==='proj')   return PROJ_HOMES_2026[d.div]||0;
+    if(divSortBy==='po_i')   { const p=getPO(d.div); return p?p.i:0; }
+    if(divSortBy==='po_m1')  { const p=getPO(d.div); return p?p.m1:0; }
     return d.pk; // 'pk' default
   };
   const rows = src.filter(d=>d.p===value).sort((a,b)=>getDivSortVal(b)-getDivSortVal(a));
@@ -1638,7 +1656,7 @@ function renderConvRates(period, value){
     <div class="full-chart-card">
       <h3 style="margin-bottom:12px">Division Breakdown — ${fmtPeriod(value)}</h3>
       <table class="summary-table">
-        <tr><th>#</th><th>Division</th><th style="cursor:pointer" onclick="divSortBy='proj';renderConvRates('${period}','${value}')">${divSortBy==='proj'?'↓ ':''}<span style="color:${divSortBy==='proj'?'#d2a8ff':'inherit'}">Proj. Homes '26</span></th><th style="cursor:pointer" onclick="divSortBy='e';renderConvRates('${period}','${value}')">${divSortBy==='e'?'↓ ':''}<span style="color:${divSortBy==='e'?'#7ecfe0':'inherit'}">Eligible Homes</span></th><th style="cursor:pointer" onclick="divSortBy='pk';renderConvRates('${period}','${value}')">${divSortBy==='pk'?'↓ ':''}<span style="color:${divSortBy==='pk'?'#1f6feb':'inherit'}">Packs Sold</span></th><th style="cursor:pointer" onclick="divSortBy='r';renderConvRates('${period}','${value}')">${divSortBy==='r'?'↓ ':''}<span style="color:${divSortBy==='r'?'#3fb950':'inherit'}">Conv. Rate %</span></th><th style="cursor:pointer" onclick="divSortBy='ratif';renderConvRates('${period}','${value}')">${divSortBy==='ratif'?'↓ ':''}<span style="color:${divSortBy==='ratif'?'#7ecfe0':'inherit'}">Ratifications</span></th><th style="cursor:pointer" onclick="divSortBy='closes';renderConvRates('${period}','${value}')">${divSortBy==='closes'?'↓ ':''}<span style="color:${divSortBy==='closes'?'#f0a500':'inherit'}">Home Closes</span></th></tr>
+        <tr><th>#</th><th>Division</th><th style="cursor:pointer" onclick="divSortBy='proj';renderConvRates('${period}','${value}')">${divSortBy==='proj'?'↓ ':''}<span style="color:${divSortBy==='proj'?'#d2a8ff':'inherit'}">Proj. Homes '26</span></th><th style="cursor:pointer" onclick="divSortBy='e';renderConvRates('${period}','${value}')">${divSortBy==='e'?'↓ ':''}<span style="color:${divSortBy==='e'?'#7ecfe0':'inherit'}">Eligible Homes</span></th><th style="cursor:pointer" onclick="divSortBy='pk';renderConvRates('${period}','${value}')">${divSortBy==='pk'?'↓ ':''}<span style="color:${divSortBy==='pk'?'#1f6feb':'inherit'}">Packs Sold</span></th><th style="cursor:pointer" onclick="divSortBy='r';renderConvRates('${period}','${value}')">${divSortBy==='r'?'↓ ':''}<span style="color:${divSortBy==='r'?'#3fb950':'inherit'}">Conv. Rate %</span></th><th style="cursor:pointer" onclick="divSortBy='ratif';renderConvRates('${period}','${value}')">${divSortBy==='ratif'?'↓ ':''}<span style="color:${divSortBy==='ratif'?'#7ecfe0':'inherit'}">Ratifications</span></th><th style="cursor:pointer" onclick="divSortBy='closes';renderConvRates('${period}','${value}')">${divSortBy==='closes'?'↓ ':''}<span style="color:${divSortBy==='closes'?'#f0a500':'inherit'}">Home Closes</span></th><th style="cursor:pointer" onclick="divSortBy='po_i';renderConvRates('${period}','${value}')">${divSortBy==='po_i'?'↓ ':''}<span style="color:${divSortBy==='po_i'?'#3fb950':'inherit'}">1SS Installed</span></th><th style="cursor:pointer" onclick="divSortBy='po_m1';renderConvRates('${period}','${value}')">${divSortBy==='po_m1'?'↓ ':''}<span style="color:${divSortBy==='po_m1'?'#da3633':'inherit'}">Missing 1SS</span></th></tr>
         ${rows.map((d,i)=>{ const cl=getCloses(d.div); const rf=getRatif(d.div); const ph=PROJ_HOMES_2026[d.div]||null; return `<tr style="cursor:pointer" onclick="renderConvRates('monthly','${d.div}')">
           <td style="color:#484f58;font-weight:700">#${i+1}</td>
           <td><strong>${fmtDiv(d.div)}</strong></td>
@@ -1648,6 +1666,7 @@ function renderConvRates(period, value){
           <td style="color:${d.r>=5?'#3fb950':d.r>=2?'#f0a500':'#f85149'};font-weight:700">${d.r.toFixed(2)}%</td>
           <td style="color:#7ecfe0">${rf!=null?rf.toLocaleString():'—'}</td>
           <td style="color:#f0a500;font-weight:700">${cl!=null?cl.toLocaleString():'—'}</td>
+          ${(()=>{ const p=getPO(d.div); return p?`<td style="color:#3fb950;font-weight:700">${p.i}</td><td style="color:#da3633;font-weight:700">${p.m1}</td>`:'<td>—</td><td>—</td>'; })()}
         </tr>`;}).join('')}
       </table>
     </div>`;
@@ -2137,19 +2156,32 @@ function chaseSetSort(col){
 function chaseSetPage(p){ _chasePage=p; renderChase(); }
 
 function renderChase(){
-  const all1 = typeof CHASE_1SS!=='undefined' ? CHASE_1SS.map(r=>({...r,type:'1SS'})) : [];
-  const all4 = typeof CHASE_4SS!=='undefined' ? CHASE_4SS.map(r=>({...r,type:'4SS'})) : [];
+  const allData = typeof CHASE_DATA!=='undefined' ? CHASE_DATA : [];
+  const all1 = allData.filter(r=>r.m1);
+  const all4 = allData.filter(r=>r.m4);
   let raw;
-  if(_chaseTab==='1ss') raw = all1;
-  else if(_chaseTab==='4ss') raw = all4;
-  else raw = [...all1,...all4];
+  if(_chaseTab==='1ss') raw = all1.map(r=>({...r,type:'1SS'}));
+  else if(_chaseTab==='4ss') raw = all4.map(r=>({...r,type:'4SS'}));
+  else raw = allData.map(r=>({...r,type:r.m1&&r.m4?'Both':r.m1?'1SS':'4SS'}));
 
   // Unique divisions & milestones from full combined set for filters
-  const allCombined = [...all1,...all4];
   const divSet = new Set(); const mileSet = new Set();
-  allCombined.forEach(r=>{ divSet.add(r.d); if(r.m!==null) mileSet.add(r.m); });
+  allData.forEach(r=>{ divSet.add(r.d); if(r.m!==null) mileSet.add(r.m); });
   const divs = [...divSet].sort();
   const miles = [...mileSet].sort((a,b)=>a-b);
+
+  // Top 5 divisions by missing count
+  const divAgg = {};
+  allData.forEach(r=>{
+    if(!divAgg[r.d]) divAgg[r.d]={d:r.d,m1:0,m4:0,total:0};
+    divAgg[r.d].total++;
+    if(r.m1) divAgg[r.d].m1++;
+    if(r.m4) divAgg[r.d].m4++;
+  });
+  const divArr = Object.values(divAgg);
+  const top5both = divArr.slice().sort((a,b)=>b.total-a.total).slice(0,5);
+  const top5_1ss = divArr.slice().sort((a,b)=>b.m1-a.m1).slice(0,5);
+  const top5_4ss = divArr.slice().sort((a,b)=>b.m4-a.m4).slice(0,5);
 
   // Filter
   let data = raw;
@@ -2191,8 +2223,8 @@ function renderChase(){
     </label>`;
   }).join('');
 
-  const count1 = _chaseTab==='4ss'?0:data.filter(r=>r.type==='1SS').length;
-  const count4 = _chaseTab==='1ss'?0:data.filter(r=>r.type==='4SS').length;
+  const count1 = data.filter(r=>r.type==='1SS'||r.type==='Both').length;
+  const count4 = data.filter(r=>r.type==='4SS'||r.type==='Both').length;
 
   document.getElementById('content').innerHTML = `
     <div class="full-chart-card">
@@ -2213,7 +2245,7 @@ function renderChase(){
           <option value="">All Divisions (${divs.length})</option>
           ${divs.map(d=>`<option value="${d}"${d===_chaseDivFilter?' selected':''}>${fDiv(d)}</option>`).join('')}
         </select>
-        <span style="color:#8b949e;font-size:12px">${data.length.toLocaleString()} homes${_chaseTab==='both'?' ('+count1+' 1SS · '+count4+' 4SS)':''} · Page ${_chasePage+1}/${totalPages||1}</span>
+        <span style="color:#8b949e;font-size:12px">${data.length.toLocaleString()} homes${_chaseTab==='both'?' ('+count1+' missing 1SS · '+count4+' missing 4SS)':''} · Page ${_chasePage+1}/${totalPages||1}</span>
       </div>
 
       <!-- Milestone Multi-Select -->
@@ -2223,6 +2255,31 @@ function renderChase(){
           All
         </label>
         ${mileChecks}
+      </div>
+
+      <!-- Top 5 Divisions by Missing POs -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px">
+        <div style="background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:12px">
+          <div style="font-size:11px;font-weight:700;color:#f0a500;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Top 5 — Combined Missing</div>
+          ${top5both.map((d,i)=>`<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12px;border-bottom:1px solid #1e2530">
+            <span style="color:#c9d1d9;cursor:pointer" onclick="chaseSetDiv('${d.d}')">${i+1}. ${fDiv(d.d)}</span>
+            <span style="color:#f0a500;font-weight:700">${d.total}</span>
+          </div>`).join('')}
+        </div>
+        <div style="background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:12px">
+          <div style="font-size:11px;font-weight:700;color:#58a6ff;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Top 5 — Missing 1SS</div>
+          ${top5_1ss.map((d,i)=>`<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12px;border-bottom:1px solid #1e2530">
+            <span style="color:#c9d1d9;cursor:pointer" onclick="chaseSetDiv('${d.d}')">${i+1}. ${fDiv(d.d)}</span>
+            <span style="color:#58a6ff;font-weight:700">${d.m1}</span>
+          </div>`).join('')}
+        </div>
+        <div style="background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:12px">
+          <div style="font-size:11px;font-weight:700;color:#f778ba;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Top 5 — Missing 4SS</div>
+          ${top5_4ss.map((d,i)=>`<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12px;border-bottom:1px solid #1e2530">
+            <span style="color:#c9d1d9;cursor:pointer" onclick="chaseSetDiv('${d.d}')">${i+1}. ${fDiv(d.d)}</span>
+            <span style="color:#f778ba;font-weight:700">${d.m4}</span>
+          </div>`).join('')}
+        </div>
       </div>
 
       <!-- Table -->
@@ -2240,7 +2297,7 @@ function renderChase(){
           </tr>
           ${page.map(r=>{
             const daysCls = r.dy>=60?'color:#da3633;font-weight:700':r.dy>=30?'color:#f0883e;font-weight:600':'color:#8b949e';
-            const typeBg = r.type==='1SS'?'background:#1c3a5e;color:#58a6ff':'background:#3b1d25;color:#f778ba';
+            const typeBg = r.type==='1SS'?'background:#1c3a5e;color:#58a6ff':r.type==='4SS'?'background:#3b1d25;color:#f778ba':'background:#2d1f00;color:#f0a500';
             return `<tr>
               <td style="padding:5px 8px;${daysCls}">${r.dy!==null?r.dy:'—'}</td>
               <td style="padding:5px 8px;text-align:center"><span style="${typeBg};font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px">${r.type}</span></td>
