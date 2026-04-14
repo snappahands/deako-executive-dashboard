@@ -1566,7 +1566,11 @@ function renderConvRates(period, value){
   const ratifSrc = (RATIF_DATA||{})[period==='yearly'?'yearly':period==='quarterly'?'quarterly':'monthly'] || [];
   const ratifMap = {}; ratifSrc.forEach(r=>{ ratifMap[r.div+'|'+r.p]=r.n; });
   const getRatif = div => ratifMap[div+'|'+value] || null;
-  // HST Direct — global aggregate from DPUP_MONTHLY.hstDirect (not per-division)
+  // HST Direct — per-division from SS1_DATA
+  const hstSrc = typeof SS1_DATA!=='undefined' ? (SS1_DATA[period==='yearly'?'yearly':period==='quarterly'?'quarterly':'monthly']||[]) : [];
+  const hstMap = {}; hstSrc.forEach(r=>{ hstMap[r.div+'|'+r.p]=r.n; });
+  const getHst = div => hstMap[div+'|'+value] || null;
+  // HST Direct — global aggregate from DPUP_MONTHLY.hstDirect (for header total)
   const _hstLabels = DPUP_MONTHLY.labels;
   const _hstVals   = DPUP_MONTHLY.hstDirect;
   let totalHstCalc = 0;
@@ -1611,6 +1615,7 @@ function renderConvRates(period, value){
     if(divSortBy==='ratif')  return ratifMap[d.div+'|'+value]||0;
     if(divSortBy==='closes') return closesMap[d.div+'|'+value]||0;
     if(divSortBy==='proj')   return PROJ_HOMES_2026[d.div]||0;
+    if(divSortBy==='hst')    return hstMap[d.div+'|'+value]||0;
     if(divSortBy==='po_i')   { const p=getPO(d.div); return p?p.i:0; }
     if(divSortBy==='po_m1')  { const p=getPO(d.div); return p?p.m1:0; }
     return d.pk; // 'pk' default
@@ -1621,7 +1626,8 @@ function renderConvRates(period, value){
   const avgRate     = totalE>0 ? (totalPk/totalE*100).toFixed(2) : 0;
   const totalRatif  = rows.reduce((s,d)=>s+(ratifMap[d.div+'|'+value]||0),0);
   const totalCloses = rows.reduce((s,d)=>s+(closesMap[d.div+'|'+value]||0),0);
-  const totalHst    = totalHstCalc;
+  const totalHstDiv = rows.reduce((s,d)=>s+(hstMap[d.div+'|'+value]||0),0);
+  const totalHst    = totalHstDiv || totalHstCalc;
 
   _ce.innerHTML = `
     <div style="position:sticky;top:0;z-index:50;background:#0d1117;padding-bottom:10px">
@@ -1643,21 +1649,21 @@ function renderConvRates(period, value){
       <div class="rm-stat" style="cursor:pointer;${divSortBy==='r'?'border-color:#3fb950;box-shadow:0 0 8px 2px rgba(63,185,80,0.4);':''}" onclick="divSortBy='r';renderConvRates('${period}','${value}')" title="Sort by Conv. Rate"><div class="rm-stat-val" style="color:#3fb950">${avgRate}%</div><div class="rm-stat-label">Conv. Rate%${divSortBy==='r'?' ↓':''}</div></div>
       <div class="rm-stat" style="cursor:pointer;${divSortBy==='ratif'?'border-color:#7ecfe0;box-shadow:0 0 8px 2px rgba(126,207,224,0.4);':''}" onclick="divSortBy='ratif';renderConvRates('${period}','${value}')" title="Sort by Ratifications"><div class="rm-stat-val" style="color:#7ecfe0">${totalRatif.toLocaleString()}</div><div class="rm-stat-label">Ratifications${divSortBy==='ratif'?' ↓':''}</div></div>
       <div class="rm-stat" style="cursor:pointer;${divSortBy==='closes'?'border-color:#f0a500;box-shadow:0 0 8px 2px rgba(240,165,0,0.4);':''}" onclick="divSortBy='closes';renderConvRates('${period}','${value}')" title="Sort by Closes"><div class="rm-stat-val" style="color:#f0a500">${totalCloses.toLocaleString()}</div><div class="rm-stat-label">Closes${divSortBy==='closes'?' ↓':''}</div></div>
-      <div class="rm-stat" title="HST Direct Sell Packs (all divisions)"><div class="rm-stat-val" style="color:#f778ba">${totalHst.toLocaleString()}</div><div class="rm-stat-label">HST Direct</div></div>
+      <div class="rm-stat" style="cursor:pointer;${divSortBy==='hst'?'border-color:#f778ba;box-shadow:0 0 8px 2px rgba(247,120,186,0.4);':''}" onclick="divSortBy='hst';renderConvRates('${period}','${value}')" title="Sort by HST Direct"><div class="rm-stat-val" style="color:#f778ba">${totalHst.toLocaleString()}</div><div class="rm-stat-label">HST Direct${divSortBy==='hst'?' ↓':''}</div></div>
     </div>
     </div>
     <div class="full-chart-card">
-      <h3>${fmtPeriod(value)} — All Divisions <span style="font-size:10px;font-weight:400;color:#484f58;margin-left:8px">sorted by ${divSortBy==='e'?'eligible homes':divSortBy==='r'?'conv. rate':divSortBy==='ratif'?'ratifications':divSortBy==='closes'?'closes':divSortBy==='proj'?'proj. homes':'packs sold'} · click a bar to see monthly detail</span></h3>
+      <h3>${fmtPeriod(value)} — All Divisions <span style="font-size:10px;font-weight:400;color:#484f58;margin-left:8px">sorted by ${divSortBy==='e'?'eligible homes':divSortBy==='r'?'conv. rate':divSortBy==='ratif'?'ratifications':divSortBy==='closes'?'closes':divSortBy==='hst'?'HST Direct':divSortBy==='proj'?'proj. homes':'packs sold'} · click a bar to see monthly detail</span></h3>
       <div style="position:relative;height:320px"><canvas id="convDivChart"></canvas></div>
     </div>
     <div class="full-chart-card">
-      <h3>Division Pipeline — ${fmtPeriod(value)} <span style="font-size:10px;font-weight:400;color:#484f58;margin-left:8px">Eligible pool · Ratifications · Closes · Packs Sold — sorted by ${divSortBy==='e'?'eligible homes':divSortBy==='r'?'conv. rate':divSortBy==='ratif'?'ratifications':divSortBy==='closes'?'closes':divSortBy==='proj'?'proj. homes':'packs sold'}</span></h3>
+      <h3>Division Pipeline — ${fmtPeriod(value)} <span style="font-size:10px;font-weight:400;color:#484f58;margin-left:8px">Eligible pool · Ratifications · Closes · Packs Sold · HST Direct — sorted by ${divSortBy==='e'?'eligible homes':divSortBy==='r'?'conv. rate':divSortBy==='ratif'?'ratifications':divSortBy==='closes'?'closes':divSortBy==='hst'?'HST Direct':divSortBy==='proj'?'proj. homes':'packs sold'}</span></h3>
       <div style="position:relative;height:580px"><canvas id="pipelineChart"></canvas></div>
     </div>
     <div class="full-chart-card">
       <h3 style="margin-bottom:12px">Division Breakdown — ${fmtPeriod(value)}</h3>
       <table class="summary-table">
-        <tr><th>#</th><th>Division</th><th style="cursor:pointer" onclick="divSortBy='proj';renderConvRates('${period}','${value}')">${divSortBy==='proj'?'↓ ':''}<span style="color:${divSortBy==='proj'?'#d2a8ff':'inherit'}">Proj. Homes '26</span></th><th style="cursor:pointer" onclick="divSortBy='e';renderConvRates('${period}','${value}')">${divSortBy==='e'?'↓ ':''}<span style="color:${divSortBy==='e'?'#7ecfe0':'inherit'}">Eligible Homes</span></th><th style="cursor:pointer" onclick="divSortBy='pk';renderConvRates('${period}','${value}')">${divSortBy==='pk'?'↓ ':''}<span style="color:${divSortBy==='pk'?'#1f6feb':'inherit'}">Packs Sold</span></th><th style="cursor:pointer" onclick="divSortBy='r';renderConvRates('${period}','${value}')">${divSortBy==='r'?'↓ ':''}<span style="color:${divSortBy==='r'?'#3fb950':'inherit'}">Conv. Rate %</span></th><th style="cursor:pointer" onclick="divSortBy='ratif';renderConvRates('${period}','${value}')">${divSortBy==='ratif'?'↓ ':''}<span style="color:${divSortBy==='ratif'?'#7ecfe0':'inherit'}">Ratifications</span></th><th style="cursor:pointer" onclick="divSortBy='closes';renderConvRates('${period}','${value}')">${divSortBy==='closes'?'↓ ':''}<span style="color:${divSortBy==='closes'?'#f0a500':'inherit'}">Home Closes</span></th><th style="cursor:pointer" onclick="divSortBy='po_i';renderConvRates('${period}','${value}')">${divSortBy==='po_i'?'↓ ':''}<span style="color:${divSortBy==='po_i'?'#3fb950':'inherit'}">1SS Installed</span></th><th style="cursor:pointer" onclick="divSortBy='po_m1';renderConvRates('${period}','${value}')">${divSortBy==='po_m1'?'↓ ':''}<span style="color:${divSortBy==='po_m1'?'#da3633':'inherit'}">Missing 1SS</span></th></tr>
+        <tr><th>#</th><th>Division</th><th style="cursor:pointer" onclick="divSortBy='proj';renderConvRates('${period}','${value}')">${divSortBy==='proj'?'↓ ':''}<span style="color:${divSortBy==='proj'?'#d2a8ff':'inherit'}">Proj. Homes '26</span></th><th style="cursor:pointer" onclick="divSortBy='e';renderConvRates('${period}','${value}')">${divSortBy==='e'?'↓ ':''}<span style="color:${divSortBy==='e'?'#7ecfe0':'inherit'}">Eligible Homes</span></th><th style="cursor:pointer" onclick="divSortBy='pk';renderConvRates('${period}','${value}')">${divSortBy==='pk'?'↓ ':''}<span style="color:${divSortBy==='pk'?'#1f6feb':'inherit'}">Packs Sold</span></th><th style="cursor:pointer" onclick="divSortBy='r';renderConvRates('${period}','${value}')">${divSortBy==='r'?'↓ ':''}<span style="color:${divSortBy==='r'?'#3fb950':'inherit'}">Conv. Rate %</span></th><th style="cursor:pointer" onclick="divSortBy='ratif';renderConvRates('${period}','${value}')">${divSortBy==='ratif'?'↓ ':''}<span style="color:${divSortBy==='ratif'?'#7ecfe0':'inherit'}">Ratifications</span></th><th style="cursor:pointer" onclick="divSortBy='closes';renderConvRates('${period}','${value}')">${divSortBy==='closes'?'↓ ':''}<span style="color:${divSortBy==='closes'?'#f0a500':'inherit'}">Home Closes</span></th><th style="cursor:pointer" onclick="divSortBy='hst';renderConvRates('${period}','${value}')">${divSortBy==='hst'?'↓ ':''}<span style="color:${divSortBy==='hst'?'#f778ba':'inherit'}">HST Direct</span></th><th style="cursor:pointer" onclick="divSortBy='po_i';renderConvRates('${period}','${value}')">${divSortBy==='po_i'?'↓ ':''}<span style="color:${divSortBy==='po_i'?'#3fb950':'inherit'}">1SS Installed</span></th><th style="cursor:pointer" onclick="divSortBy='po_m1';renderConvRates('${period}','${value}')">${divSortBy==='po_m1'?'↓ ':''}<span style="color:${divSortBy==='po_m1'?'#da3633':'inherit'}">Missing 1SS</span></th></tr>
         ${rows.map((d,i)=>{ const cl=getCloses(d.div); const rf=getRatif(d.div); const ph=PROJ_HOMES_2026[d.div]||null; return `<tr style="cursor:pointer" onclick="renderConvRates('monthly','${d.div}')">
           <td style="color:#484f58;font-weight:700">#${i+1}</td>
           <td><strong>${fmtDiv(d.div)}</strong></td>
@@ -1667,6 +1673,7 @@ function renderConvRates(period, value){
           <td style="color:${d.r>=5?'#3fb950':d.r>=2?'#f0a500':'#f85149'};font-weight:700">${d.r.toFixed(2)}%</td>
           <td style="color:#7ecfe0">${rf!=null?rf.toLocaleString():'—'}</td>
           <td style="color:#f0a500;font-weight:700">${cl!=null?cl.toLocaleString():'—'}</td>
+          <td style="color:#f778ba;font-weight:700">${(()=>{const h=getHst(d.div);return h!=null?h.toLocaleString():'—';})()}</td>
           ${(()=>{ const p=getPO(d.div); return p?`<td style="color:#3fb950;font-weight:700">${p.i}</td><td style="color:#da3633;font-weight:700">${p.m1}</td>`:'<td>—</td><td>—</td>'; })()}
         </tr>`;}).join('')}
       </table>
@@ -1742,6 +1749,8 @@ function renderConvRates(period, value){
          datalabels:{anchor:'end',align:'end',color:'#8b949e',font:{size:8},clamp:true,formatter:v=>v>=1000?(v/1000).toFixed(1)+'k':v}},
         {label:'Packs Sold',     data:rows.map(d=>d.pk), backgroundColor:'#3fb950', borderRadius:3, yAxisID:'y', hidden:convDivHidden.has('Packs Sold'),
          datalabels:{anchor:'end',align:'end',color:'#3fb950',font:{size:8},clamp:true}},
+        {label:'HST Direct',    data:rows.map(d=>hstMap[d.div+'|'+value]||0), backgroundColor:'#f778ba', borderRadius:3, yAxisID:'y', hidden:convDivHidden.has('HST Direct'),
+         datalabels:{anchor:'end',align:'end',color:'#f778ba',font:{size:8},clamp:true,formatter:v=>v||''}},
         {label:'Conv. Rate %',   data:rows.map(d=>d.r), type:'line', borderColor:'#f85149', backgroundColor:'transparent', borderWidth:2, pointRadius:4, pointBackgroundColor:'#f85149', pointStyle:'line', yAxisID:'y2', tension:0.2, hidden:convDivHidden.has('Conv. Rate %'),
          datalabels:{anchor:'center',align:'top',color:'#f85149',font:{size:8},clamp:true,formatter:v=>v==null?'':v.toFixed(1)+'%'}}
       ]
@@ -1779,6 +1788,7 @@ function renderConvRates(period, value){
   const pipR  = rows.map(d=>ratifMap[d.div+'|'+value]||0);
   const pipCl = rows.map(d=>closesMap[d.div+'|'+value]||0);
   const pipPk = rows.map(d=>d.pk);
+  const pipHst = rows.map(d=>hstMap[d.div+'|'+value]||0);
 
   new Chart(document.getElementById('pipelineChart'),{
     type:'bar',
@@ -1788,7 +1798,8 @@ function renderConvRates(period, value){
         {label:'Eligible Homes', data:pipE,  backgroundColor:'#1f6feb', borderWidth:0, barPercentage:0.75, categoryPercentage:0.85, hidden:pipelineHidden.has('Eligible Homes')},
         {label:'Ratifications',  data:pipR,  backgroundColor:'#7ecfe0', borderWidth:0, barPercentage:0.75, categoryPercentage:0.85, hidden:pipelineHidden.has('Ratifications')},
         {label:'Closes',         data:pipCl, backgroundColor:'#f0a500', borderWidth:0, barPercentage:0.75, categoryPercentage:0.85, hidden:pipelineHidden.has('Closes')},
-        {label:'Packs Sold',     data:pipPk, backgroundColor:'#3fb950', borderWidth:0, barPercentage:0.75, categoryPercentage:0.85, hidden:pipelineHidden.has('Packs Sold')}
+        {label:'Packs Sold',     data:pipPk, backgroundColor:'#3fb950', borderWidth:0, barPercentage:0.75, categoryPercentage:0.85, hidden:pipelineHidden.has('Packs Sold')},
+        {label:'HST Direct',     data:pipHst,backgroundColor:'#f778ba', borderWidth:0, barPercentage:0.75, categoryPercentage:0.85, hidden:pipelineHidden.has('HST Direct')}
       ]
     },
     options:{
