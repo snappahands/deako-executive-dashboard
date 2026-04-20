@@ -41,20 +41,20 @@
       gap: 16px;
       margin-bottom: 28px;
     }
-    .stat-card .metric-row { display: flex; justify-content: space-around; gap: 10px; margin: 10px 0 6px; }
+    .stat-card .metric-row { display: flex; justify-content: space-around; gap: 12px; margin: 14px 0 10px; }
     .stat-card .metric-row > div { text-align: center; }
-    .stat-card .metric-row .num { font-size: 26px; font-weight: 700; line-height: 1.1; }
-    .stat-card .metric-row .tag { font-size: 11px; color: #8b949e; text-transform: uppercase; letter-spacing: .4px; margin-top: 4px; }
+    .stat-card .metric-row .num { font-size: 36px; font-weight: 800; line-height: 1.1; }
+    .stat-card .metric-row .tag { font-size: 13px; color: #8b949e; text-transform: uppercase; letter-spacing: .5px; margin-top: 6px; font-weight: 600; }
     .stat-card {
       background: #161b22;
       border: 1px solid #21262d;
       border-radius: 10px;
-      padding: 18px 16px;
+      padding: 22px 18px;
       text-align: center;
     }
-    .stat-card .lbl { font-size: 12px; color: #8b949e; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px; }
-    .stat-card .val { font-size: 32px; font-weight: 700; }
-    .stat-card .sub { font-size: 13px; margin-top: 6px; }
+    .stat-card .lbl { font-size: 13px; color: #8b949e; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 12px; font-weight: 600; }
+    .stat-card .val { font-size: 38px; font-weight: 800; }
+    .stat-card .sub { font-size: 15px; margin-top: 8px; font-weight: 500; }
     .red   { color: #f85149; }
     .blue  { color: #f778ba; }
     .pink  { color: #f778ba; }
@@ -159,18 +159,19 @@
     table.kt {
       width: 100%;
       border-collapse: collapse;
-      font-size: 14.5px;
+      font-size: 16px;
     }
     table.kt th {
       background: #0d1117;
       color: #8b949e;
-      padding: 11px 16px;
+      padding: 14px 18px;
       text-align: left;
       font-weight: 600;
+      font-size: 14px;
       border-bottom: 1px solid #21262d;
     }
     table.kt td {
-      padding: 11px 16px;
+      padding: 14px 18px;
       border-bottom: 1px solid #161b22;
       color: #e6edf3;
     }
@@ -211,24 +212,24 @@
   <div class="stat-card">
     <div class="lbl">2024 (HST Launched)</div>
     <div class="metric-row">
-      <div><div class="num red">91</div><div class="tag">ITM /mo</div></div>
-      <div><div class="num blue">105</div><div class="tag">HST /mo</div></div>
+      <div><div class="num" style="color:#1f6feb">91</div><div class="tag">ITM /mo</div></div>
+      <div><div class="num" style="color:#f778ba">105</div><div class="tag">HST /mo</div></div>
     </div>
     <div class="sub red">1.54% conv · HST +15% vs ITM</div>
   </div>
   <div class="stat-card">
     <div class="lbl">2025</div>
     <div class="metric-row">
-      <div><div class="num red">74</div><div class="tag">ITM /mo</div></div>
-      <div><div class="num blue">125</div><div class="tag">HST /mo</div></div>
+      <div><div class="num" style="color:#1f6feb">74</div><div class="tag">ITM /mo</div></div>
+      <div><div class="num" style="color:#f778ba">125</div><div class="tag">HST /mo</div></div>
     </div>
     <div class="sub red">1.33% conv · HST +69% vs ITM</div>
   </div>
   <div class="stat-card">
     <div class="lbl">2026 Q1 (Post-Contraction)</div>
     <div class="metric-row">
-      <div><div class="num red">48</div><div class="tag">ITM /mo</div></div>
-      <div><div class="num blue">114</div><div class="tag">HST /mo</div></div>
+      <div><div class="num" style="color:#1f6feb">48</div><div class="tag">ITM /mo</div></div>
+      <div><div class="num" style="color:#f778ba">114</div><div class="tag">HST /mo</div></div>
     </div>
     <div class="sub red">0.81% conv · 27 divisions only</div>
   </div>
@@ -1045,7 +1046,7 @@ const CHART_DEFAULTS = {
             <td style="text-align:right;color:#f778ba;font-style:italic">~${estHst.toLocaleString()} *</td>
             <td style="text-align:right;color:#f0a500;font-weight:700">${h?h.smartPct+'%':'—'}</td>
             <td style="text-align:right;color:#f85149;font-weight:700">${h?'$'+h.unrealized:'—'}</td>
-            <td style="font-size:12px;color:#7ecfe0;font-weight:600;text-shadow:0 0 8px rgba(126,207,224,0.75),0 0 16px rgba(126,207,224,0.35);line-height:1.35">${h?'"'+h.smartPct+'% of your buyers already purchase Deako smart upgrades after close — that\'s $'+h.unrealized+'/home you could capture through ITM."':'"Your division has '+d.itm+' confirmed pack sales through ITM — likely '+estCombined+'+ total."'}</td>
+            <td style="font-size:15px;color:#7ecfe0;font-weight:600;text-shadow:0 0 10px rgba(126,207,224,0.8),0 0 20px rgba(126,207,224,0.4);line-height:1.45">${h?'"'+h.smartPct+'% of your buyers already purchase Deako smart upgrades after close — that\'s $'+h.unrealized+'/home you could capture through ITM."':'"Your division has '+d.itm+' confirmed pack sales through ITM — likely '+estCombined+'+ total."'}</td>
           </tr>`;
         }).join('')}
       </table>
