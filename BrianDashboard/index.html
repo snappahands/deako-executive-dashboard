@@ -7,6 +7,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 <script src="rainmakers.js"></script>
+<script src="rainmakers_baseline.js"></script>
 <script src="conv_data.js"></script>
 <script src="closes_data.js"></script>
 <script src="ratif_data.js"></script>
@@ -252,7 +253,7 @@ body.light ::-webkit-scrollbar-thumb{background:#d0d7de !important}
   <div id="content"></div>
 </div>
 
-<div id="version-badge">v8.0</div>
+<div id="version-badge">v8.5</div>
 
 <script>
 // Theme toggle — isolated so nothing can break it
@@ -1083,22 +1084,23 @@ const DPUP_MONTHLY = {
           'Jan 24','Feb 24','Mar 24','Apr 24','May 24','Jun 24','Jul 24','Aug 24','Sep 24','Oct 24','Nov 24','Dec 24',
           'Jan 25','Feb 25','Mar 25','Apr 25','May 25','Jun 25','Jul 25','Aug 25','Sep 25','Oct 25','Nov 25','Dec 25',
           'Jan 26','Feb 26','Mar 26','Apr 26'],
+  // ITM/spec/incentive/model — from since_launch_monthly_agg CSV 2026-04-20
   ITM:      [30,22,95,83,136,102,102,104,101,94,69,65,
              118,115,134,88,119,51,75,85,75,101,65,67,
              59,93,78,96,85,76,95,106,65,54,48,38,
-             51,44,50,17],
+             51,44,48,23],
   spec:     [5,4,38,42,55,39,91,61,57,43,56,64,
              154,77,74,49,76,22,30,32,68,43,41,53,
              85,73,92,85,55,76,98,42,65,45,28,38,
-             52,32,21,5],
+             52,32,23,6],
   incentive:[0,14,5,0,1,181,36,23,16,2,16,17,
              25,16,17,3,0,1,5,2,22,11,5,1,
              5,1,2,1,3,2,2,29,20,14,9,26,
-             9,48,25,17],
+             9,48,25,22],
   model:    [12,3,49,49,25,66,29,74,26,56,59,17,
              29,26,34,24,12,27,31,33,31,23,20,32,
              36,35,32,39,22,27,19,17,22,40,10,17,
-             11,9,13,4],
+             11,9,13,10],
   hstDirect:[null,null,null,null,null,null,null,null,null,null,null,null,
              98,111,127,74,106,128,85,96,107,118,116,90,
              112,118,148,142,146,168,88,124,142,119,112,76,
@@ -1108,18 +1110,28 @@ const DPUP_MONTHLY = {
 /* ── ITM MONTHLY REVENUE/PROFIT/CONV ── */
 const ITM_MONTHLY = {
   labels: DPUP_MONTHLY.labels,
+  // ITM monthly revenue ($) & profit ($) — from export 2026-04-20T1552 CSV
   revenue:[63882,49860,205641,175401,271854,210168,210168,224136,197874,191673,134541,111627,
            239886,241533,251739,169308,241011,82485,119574,122067,95751,129045,84441,87417,
            82713,121392,115053,146028,139029,120534,134505,126372,95820,65031,68103,47463,
-           76500,60228,72426,27717],
+           76500,60228,68502,37815],
   profit: [16303,12705,52459,44772,69493,53681,53681,57183,50596,48957,34416,28661,
            61294,61662,64449,43325,61587,21220,30783,31618,24934,33679,22032,22793,
            21519,31692,29791,37729,35850,31126,34836,33131,24793,16983,17650,12323,
-           19780,15595,18774,7142],
-  convRate:[2.5,1.6,5.9,4.6,7.4,5.0,4.5,4.2,3.9,2.1,1.8,1.4,
-            1.7,1.8,2.0,1.4,2.1,0.9,1.4,1.6,1.7,2.0,1.4,1.5,
-            1.0,1.8,1.2,1.4,1.4,1.4,1.6,1.8,1.4,1.1,1.0,0.8,
-            0.9,0.8,0.8,0.8]
+           19780,15595,17770,9737],
+  // Overall monthly conversion rate (%) — total_packs_sold / eligible_homes. Source: overall_conversion_rate CSV 2026-04-20.
+  convRate:[3.00,1.96,6.34,3.31,4.40,1.81,2.58,2.83,2.59,3.02,2.13,1.80,
+            2.47,3.17,2.89,1.88,2.32,1.14,1.98,1.48,2.60,2.76,2.04,2.19,
+            1.06,2.26,1.78,1.50,1.84,1.67,2.51,2.25,1.35,1.54,1.61,0.87,
+            1.64,1.76,1.47,0.77],
+  eligibleHomes:[634,869,1151,1268,1432,1549,1626,1698,1586,1491,1406,1448,
+                 1621,1768,2112,2184,2151,1932,1613,1417,1192,1125,1079,1095,
+                 1318,1502,1794,1927,1906,1853,1671,1559,1332,1230,1239,1270,
+                 1521,1934,2517,2352],
+  totalPacks:[19,17,73,42,63,28,42,48,41,45,30,26,
+              40,56,61,41,50,22,32,21,31,31,22,24,
+              14,34,32,29,35,31,42,35,18,19,20,11,
+              25,34,37,18]
 };
 
 function fmtK(v){ return v>=1000000?'$'+(v/1000000).toFixed(1)+'M':v>=1000?'$'+(v/1000).toFixed(v>=100000?0:1)+'K':'$'+v; }
@@ -2110,6 +2122,8 @@ function showRainmakers(){
 function renderRainmakers(filter, divFilter, sortBy='t'){
   const divs = [...new Set(RAINMAKERS.map(r=>r.d))].sort();
   const getSV = (r,k) => k==='rev' ? r.p25*2700+r.p10*1125+r.p8*399 : (r[k]||0);
+  const isNew = r => typeof RAINMAKERS_BASELINE !== 'undefined' && !RAINMAKERS_BASELINE.has(r.n.trim().toLowerCase());
+  const newAgents = RAINMAKERS.filter(isNew).slice().sort((a,b)=>b.t-a.t);
   const filtered = RAINMAKERS.filter(r=>{
     const nameMatch = !filter || r.n.toLowerCase().includes(filter.toLowerCase());
     const divMatch  = !divFilter || r.d === divFilter;
@@ -2140,6 +2154,16 @@ function renderRainmakers(filter, divFilter, sortBy='t'){
       <div class="rm-stat" style="cursor:pointer;${sortBy==='p8'?'border-color:#f0a500;':''}" onclick="renderRainmakers('${filter}','${divFilter}','p8')" title="Sort by 8-Pack"><div class="rm-stat-val orange">${total8.toLocaleString()}</div><div class="rm-stat-label">8-Pack${sortBy==='p8'?' ↓':''}</div></div>
       <div class="rm-stat" style="cursor:pointer;${sortBy==='rev'?'border-color:#3fb950;':''}" onclick="renderRainmakers('${filter}','${divFilter}','rev')" title="Sort by Deako Revenue"><div class="rm-stat-val" style="color:#3fb950">$${totalRev.toLocaleString()}</div><div class="rm-stat-label">Deako Revenue${sortBy==='rev'?' ↓':''}</div></div>
     </div>
+    ${newAgents.length ? `
+    <div class="full-chart-card" style="background:#161b22;border:1px solid #30363d;border-left:3px solid #f0a500;padding:12px 16px;margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="font-size:14px;font-weight:700;color:#f0a500">✨ Potential New Agents</span>
+        <span style="font-size:11px;color:#8b949e">${newAgents.length} agent${newAgents.length>1?'s':''} appearing for the first time since the baseline report · click name to filter</span>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        ${newAgents.map(r => `<span style="display:inline-flex;gap:6px;align-items:center;background:#21262d;border:1px solid #30363d;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer" onclick="renderRainmakers('${r.n.replace(/'/g,String.fromCharCode(39))}','','${sortBy}')"><strong style="color:#e6edf3">${r.n}</strong><span style="color:#79c0ff;font-size:11px">${r.d}</span><span style="color:#3fb950;font-weight:700">${r.t} pack${r.t!==1?'s':''}</span></span>`).join('')}
+      </div>
+    </div>` : ''}
     <div class="rm-controls">
       <input type="text" id="rm-search" placeholder="Search agent name..." value="${filter}" oninput="renderRainmakers(this.value, document.getElementById('rm-div').value, '${sortBy}')">
       <select id="rm-div" onchange="renderRainmakers(document.getElementById('rm-search').value, this.value, '${sortBy}')">
