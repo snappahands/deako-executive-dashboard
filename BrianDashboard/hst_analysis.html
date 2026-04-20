@@ -503,11 +503,11 @@
 </div>
 
 <script>
-// ── Raw data (Jan 2024 – Feb 2026) ──
-const labels26 = ["Jan '24","Feb '24","Mar '24","Apr '24","May '24","Jun '24","Jul '24","Aug '24","Sep '24","Oct '24","Nov '24","Dec '24","Jan '25","Feb '25","Mar '25","Apr '25","May '25","Jun '25","Jul '25","Aug '25","Sep '25","Oct '25","Nov '25","Dec '25","Jan '26","Feb '26*","Mar '26","Apr '26"];
-const ITM  = [122,77,97,48,66,71,92,84,61,72,87,96, 97,103,77,85,101,91,81,72,45,56,57,62, 53,5,52,6];
-const HST  = [103,121,159,90,129,141,101,118,135,142,125,100, 119,126,159,157,153,183,94,128,145,126,124,88, 124,111,150,31];
-const conv = [1.8,1.1,2.2,2.0,3.0,1.5,2.6,2.8,2.3,2.5,2.2,1.5, 3.4,1.6,1.4,0.9,1.7,1.2,1.5,1.5,1.3,1.2,1.0,0.9, 1.0,0.5,0.8,0.9];
+// ── Raw data (Jan 2024 – Apr 2026) — refreshed from export CSVs 2026-04-20 ──
+const labels26 = ["Jan '24","Feb '24","Mar '24","Apr '24","May '24","Jun '24","Jul '24","Aug '24","Sep '24","Oct '24","Nov '24","Dec '24","Jan '25","Feb '25","Mar '25","Apr '25","May '25","Jun '25","Jul '25","Aug '25","Sep '25","Oct '25","Nov '25","Dec '25","Jan '26","Feb '26","Mar '26","Apr '26*"];
+const ITM  = [118,115,134,88,119,51,75,85,75,101,65,67, 59,93,78,96,85,76,95,106,65,54,48,38, 51,44,48,23];
+const HST  = [98,111,127,74,106,128,85,96,107,118,116,90, 112,118,148,142,145,168,88,124,142,119,112,76, 103,102,138,34];
+const conv = [1.75,1.80,1.96,1.39,2.08,0.90,1.40,1.64,1.68,2.00,1.37,1.52, 1.03,1.76,1.16,1.44,1.45,1.36,1.59,1.85,1.40,1.10,0.97,0.81, 0.87,0.80,0.75,0.73];
 
 const CHART_DEFAULTS = {
   responsive: true,
@@ -821,12 +821,12 @@ const CHART_DEFAULTS = {
 (function() {
   const ctx = document.getElementById('quarterlyChart').getContext('2d');
 
-  const qLabels = ['Q1 2024','Q2 2024','Q3 2024','Q4 2024','Q1 2025','Q2 2025','Q3 2025','Q4 2025'];
+  const qLabels = ['Q1 2024','Q2 2024','Q3 2024','Q4 2024','Q1 2025','Q2 2025','Q3 2025','Q4 2025','Q1 2026'];
   function qAvg(arr, startIdx) {
     return Math.round((arr[startIdx] + arr[startIdx+1] + arr[startIdx+2]) / 3);
   }
-  const itmQ = [qAvg(ITM,0),qAvg(ITM,3),qAvg(ITM,6),qAvg(ITM,9), qAvg(ITM,12),qAvg(ITM,15),qAvg(ITM,18),qAvg(ITM,21)];
-  const hstQ = [qAvg(HST,0),qAvg(HST,3),qAvg(HST,6),qAvg(HST,9), qAvg(HST,12),qAvg(HST,15),qAvg(HST,18),qAvg(HST,21)];
+  const itmQ = [qAvg(ITM,0),qAvg(ITM,3),qAvg(ITM,6),qAvg(ITM,9), qAvg(ITM,12),qAvg(ITM,15),qAvg(ITM,18),qAvg(ITM,21), qAvg(ITM,24)];
+  const hstQ = [qAvg(HST,0),qAvg(HST,3),qAvg(HST,6),qAvg(HST,9), qAvg(HST,12),qAvg(HST,15),qAvg(HST,18),qAvg(HST,21), qAvg(HST,24)];
   const convQ = [
     ((conv[0]+conv[1]+conv[2])/3).toFixed(1),
     ((conv[3]+conv[4]+conv[5])/3).toFixed(1),
@@ -835,7 +835,8 @@ const CHART_DEFAULTS = {
     ((conv[12]+conv[13]+conv[14])/3).toFixed(1),
     ((conv[15]+conv[16]+conv[17])/3).toFixed(1),
     ((conv[18]+conv[19]+conv[20])/3).toFixed(1),
-    ((conv[21]+conv[22]+conv[23])/3).toFixed(1)
+    ((conv[21]+conv[22]+conv[23])/3).toFixed(1),
+    ((conv[24]+conv[25]+conv[26])/3).toFixed(1)
   ].map(Number);
 
   new Chart(ctx, {
@@ -1026,7 +1027,7 @@ const CHART_DEFAULTS = {
           <th style="text-align:right;color:#f778ba">HST Direct<br><span style="font-size:9px;color:#8b949e">(Builder can't see)</span></th>
           <th style="text-align:right;color:#f0a500">Buyer Upgrade %<br><span style="font-size:9px;color:#8b949e">(Smart upgrades)</span></th>
           <th style="text-align:right;color:#f85149">$/Home Lost<br><span style="font-size:9px;color:#8b949e">(Unrealized)</span></th>
-          <th style="text-align:left">Builder Story</th>
+          <th style="text-align:left;color:#7ecfe0;text-shadow:0 0 10px rgba(126,207,224,0.9),0 0 20px rgba(126,207,224,0.5);font-weight:800;letter-spacing:0.3px">Builder Story</th>
         </tr>
         ${rows.map((d,i)=>{
           const estHst = Math.round(d.itm * 2);
@@ -1041,7 +1042,7 @@ const CHART_DEFAULTS = {
             <td style="text-align:right;color:#f778ba;font-style:italic">~${estHst.toLocaleString()} *</td>
             <td style="text-align:right;color:#f0a500;font-weight:700">${h?h.smartPct+'%':'—'}</td>
             <td style="text-align:right;color:#f85149;font-weight:700">${h?'$'+h.unrealized:'—'}</td>
-            <td style="font-size:11px;color:#8b949e">${h?'"'+h.smartPct+'% of your buyers already purchase Deako smart upgrades after close — that\'s $'+h.unrealized+'/home you could capture through ITM."':'"Your division has '+d.itm+' confirmed pack sales through ITM — likely '+estCombined+'+ total."'}</td>
+            <td style="font-size:12px;color:#7ecfe0;font-weight:600;text-shadow:0 0 8px rgba(126,207,224,0.75),0 0 16px rgba(126,207,224,0.35);line-height:1.35">${h?'"'+h.smartPct+'% of your buyers already purchase Deako smart upgrades after close — that\'s $'+h.unrealized+'/home you could capture through ITM."':'"Your division has '+d.itm+' confirmed pack sales through ITM — likely '+estCombined+'+ total."'}</td>
           </tr>`;
         }).join('')}
       </table>
