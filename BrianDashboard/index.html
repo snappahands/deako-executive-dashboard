@@ -255,7 +255,7 @@ body.light ::-webkit-scrollbar-thumb{background:#d0d7de !important}
   <div id="content"></div>
 </div>
 
-<div id="version-badge">v9.1</div>
+<div id="version-badge">v9.2</div>
 
 <script>
 // Theme toggle — CSS handles colors; body.light class drives the swap
@@ -2508,14 +2508,29 @@ function exportExecBriefPdf(divName){
   const today = new Date();
   const dateStr = today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
   const filename = `Deako-ExecBrief-${safeName}-${dateStr}.pdf`;
+
+  // Clone into a detached fixed-width wrapper so dark page theme and
+  // sidebar-constrained width don't mess with html2canvas measurements.
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'position:fixed;left:-99999px;top:0;background:#ffffff;width:780px;padding:0;margin:0;z-index:-1';
+  const clone = el.cloneNode(true);
+  clone.style.margin = '0';
+  clone.style.width = '780px';
+  clone.style.maxWidth = 'none';
+  clone.style.boxShadow = 'none';
+  wrap.appendChild(clone);
+  document.body.appendChild(wrap);
+
   html2pdf().set({
     margin: [0.4, 0.4, 0.5, 0.4],
     filename: filename,
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', windowWidth: el.scrollWidth },
+    image: { type: 'png' },
+    html2canvas: { scale: 2, backgroundColor: '#ffffff', logging: false, windowWidth: 780 },
     jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
-    pagebreak: { mode: ['css', 'legacy'] }
-  }).from(el).save();
+    pagebreak: { mode: ['css', 'legacy'], avoid: ['tr', 'table', '.avoid-break'] }
+  }).from(clone).save()
+    .then(() => wrap.remove())
+    .catch(err => { wrap.remove(); console.error('PDF export failed:', err); alert('PDF export failed. See console for details.'); });
 }
 
 function renderExecBrief(divName){
