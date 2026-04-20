@@ -43,8 +43,10 @@
     }
     .stat-card .metric-row { display: flex; justify-content: space-around; gap: 12px; margin: 14px 0 10px; }
     .stat-card .metric-row > div { text-align: center; }
-    .stat-card .metric-row .num { font-size: 36px; font-weight: 800; line-height: 1.1; }
+    .stat-card .metric-row .num { font-size: 44px; font-weight: 800; line-height: 1.1; }
     .stat-card .metric-row .tag { font-size: 13px; color: #8b949e; text-transform: uppercase; letter-spacing: .5px; margin-top: 6px; font-weight: 600; }
+    .num.itm-blue { color: #1f6feb !important; }
+    .num.hst-pink { color: #f778ba !important; }
     .stat-card {
       background: #161b22;
       border: 1px solid #21262d;
@@ -212,24 +214,24 @@
   <div class="stat-card">
     <div class="lbl">2024 (HST Launched)</div>
     <div class="metric-row">
-      <div><div class="num" style="color:#1f6feb">91</div><div class="tag">ITM /mo</div></div>
-      <div><div class="num" style="color:#f778ba">105</div><div class="tag">HST /mo</div></div>
+      <div><div class="num itm-blue">91</div><div class="tag">ITM /mo</div></div>
+      <div><div class="num hst-pink">105</div><div class="tag">HST /mo</div></div>
     </div>
     <div class="sub red">1.54% conv · HST +15% vs ITM</div>
   </div>
   <div class="stat-card">
     <div class="lbl">2025</div>
     <div class="metric-row">
-      <div><div class="num" style="color:#1f6feb">74</div><div class="tag">ITM /mo</div></div>
-      <div><div class="num" style="color:#f778ba">125</div><div class="tag">HST /mo</div></div>
+      <div><div class="num itm-blue">74</div><div class="tag">ITM /mo</div></div>
+      <div><div class="num hst-pink">125</div><div class="tag">HST /mo</div></div>
     </div>
     <div class="sub red">1.33% conv · HST +69% vs ITM</div>
   </div>
   <div class="stat-card">
     <div class="lbl">2026 Q1 (Post-Contraction)</div>
     <div class="metric-row">
-      <div><div class="num" style="color:#1f6feb">48</div><div class="tag">ITM /mo</div></div>
-      <div><div class="num" style="color:#f778ba">114</div><div class="tag">HST /mo</div></div>
+      <div><div class="num itm-blue">48</div><div class="tag">ITM /mo</div></div>
+      <div><div class="num hst-pink">114</div><div class="tag">HST /mo</div></div>
     </div>
     <div class="sub red">0.81% conv · 27 divisions only</div>
   </div>
@@ -271,12 +273,21 @@
 
 <!-- ── Chart: Quarterly averages ── -->
 <div class="chart-section">
-  <h2>Quarterly Averages — ITM vs HST Direct (Q1 2024 – Q4 2025)</h2>
+  <h2>Quarterly Averages — ITM vs HST Direct (Q1 2024 – Q1 2026)</h2>
   <p class="chart-note">
     ITM is weakest in Q2 and Q4 each year — the same quarters where HST tends to be strongest. Q2 2025 shows the starkest split:
     HST averaged 164 packs/month while ITM averaged just 92. Seasonality may play a role, but the directional gap consistently favors HST.
   </p>
   <canvas id="quarterlyChart" height="90"></canvas>
+
+  <!-- ── Month-over-Month trend cards (last 12 months) ── -->
+  <div style="margin-top:24px;padding-top:20px;border-top:1px solid #21262d">
+    <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px">
+      <h3 style="font-size:15px;font-weight:700;color:#e6edf3;letter-spacing:.3px">Month-over-Month Trend — Last 12 Months</h3>
+      <span style="font-size:12px;color:#8b949e">ITM <span style="color:#1f6feb;font-weight:700">blue</span> · HST <span style="color:#f778ba;font-weight:700">pink</span> · Δ vs prior month</span>
+    </div>
+    <div id="momCards" style="display:grid;grid-template-columns:repeat(12,1fr);gap:10px"></div>
+  </div>
 </div>
 
 <!-- ── Charts 2 + 3 ── -->
@@ -960,6 +971,36 @@ const CHART_DEFAULTS = {
       }
     }]
   });
+})();
+
+// ── Month-over-Month trend cards (last 12 months) ──
+(function() {
+  const host = document.getElementById('momCards');
+  if (!host) return;
+  const n = ITM.length;
+  const start = Math.max(0, n - 12);
+  const arr = [];
+  for (let i = start; i < n; i++) {
+    const itm = ITM[i], hst = HST[i];
+    const itmPrev = i > 0 ? ITM[i-1] : null;
+    const hstPrev = i > 0 ? HST[i-1] : null;
+    const itmDelta = itmPrev != null ? itm - itmPrev : null;
+    const hstDelta = hstPrev != null ? hst - hstPrev : null;
+    arr.push({ label: labels26[i], itm, hst, itmDelta, hstDelta, conv: conv[i] });
+  }
+  const fmtDelta = d => d === null ? '' : (d >= 0 ? '+' : '') + d;
+  const deltaColor = d => d === null ? '#484f58' : d > 0 ? '#3fb950' : d < 0 ? '#f85149' : '#8b949e';
+  host.innerHTML = arr.map(m => `
+    <div style="background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:10px 8px;text-align:center">
+      <div style="font-size:11px;color:#8b949e;font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">${m.label.replace(/'/g,'')}</div>
+      <div style="font-size:22px;font-weight:800;color:#1f6feb;line-height:1.1">${m.itm}</div>
+      <div style="font-size:10px;color:${deltaColor(m.itmDelta)};font-weight:700;margin-top:2px">${fmtDelta(m.itmDelta)}</div>
+      <div style="height:1px;background:#21262d;margin:6px 0"></div>
+      <div style="font-size:22px;font-weight:800;color:#f778ba;line-height:1.1">${m.hst}</div>
+      <div style="font-size:10px;color:${deltaColor(m.hstDelta)};font-weight:700;margin-top:2px">${fmtDelta(m.hstDelta)}</div>
+      <div style="font-size:10px;color:#8b949e;margin-top:4px">${m.conv.toFixed(2)}%</div>
+    </div>
+  `).join('');
 })();
 
 // ── Hidden Deako Value Table ──
