@@ -6,6 +6,7 @@
 <title>Brian's Dashboard — DR Horton National Sales Training</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
 <script src="rainmakers.js"></script>
 <script src="rainmakers_baseline.js"></script>
 <script src="conv_data.js"></script>
@@ -254,7 +255,7 @@ body.light ::-webkit-scrollbar-thumb{background:#d0d7de !important}
   <div id="content"></div>
 </div>
 
-<div id="version-badge">v8.9</div>
+<div id="version-badge">v9.0</div>
 
 <script>
 // Theme toggle — CSS handles colors; body.light class drives the swap
@@ -2496,6 +2497,27 @@ function showExecBrief(){
   renderExecBrief(_execBriefDiv);
 }
 
+function exportExecBriefPdf(divName){
+  if (typeof html2pdf === 'undefined') {
+    alert('PDF library failed to load. Check your internet connection and refresh.');
+    return;
+  }
+  const el = document.getElementById('exec-brief-content');
+  if (!el) return;
+  const safeName = (divName||'Division').replace(/[^a-z0-9]+/gi,'-').replace(/^-|-$/g,'');
+  const today = new Date();
+  const dateStr = today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
+  const filename = `Deako-ExecBrief-${safeName}-${dateStr}.pdf`;
+  html2pdf().set({
+    margin: [0.4, 0.4, 0.5, 0.4],
+    filename: filename,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', windowWidth: el.scrollWidth },
+    jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
+    pagebreak: { mode: ['css', 'legacy'] }
+  }).from(el).save();
+}
+
 function renderExecBrief(divName){
   _execBriefDiv = divName;
   const dk = findDivKey(divName);
@@ -2579,11 +2601,12 @@ function renderExecBrief(divName){
   document.getElementById('content').innerHTML = `
     <div style="max-width:720px;margin:0 auto">
       <!-- Division Selector -->
-      <div style="margin-bottom:16px;display:flex;align-items:center;gap:12px">
+      <div style="margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
         <select onchange="renderExecBrief(this.value)" style="background:var(--bg-card);color:var(--text-h);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:14px;font-weight:600;cursor:pointer">
           ${divSelect}
         </select>
-        <span style="color:var(--text-m);font-size:12px">Select division to preview exec brief</span>
+        <button onclick="exportExecBriefPdf('${divName.replace(/'/g,String.fromCharCode(39))}')" style="background:#f0883e;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:14px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;box-shadow:0 0 12px rgba(240,136,62,0.4)" title="Download this brief as PDF">📄 Export as PDF</button>
+        <span style="color:var(--text-m);font-size:12px">Select division to preview · download to attach to newsletter</span>
       </div>
 
       <!-- THE BRIEF — email-ready -->
