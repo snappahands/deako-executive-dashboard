@@ -37,10 +37,14 @@
     /* ── Stat cards ── */
     .stats-row {
       display: grid;
-      grid-template-columns: repeat(6, 1fr);
+      grid-template-columns: repeat(5, 1fr);
       gap: 12px;
       margin-bottom: 22px;
     }
+    .stat-card .metric-row { display: flex; justify-content: space-around; gap: 8px; margin: 6px 0 4px; }
+    .stat-card .metric-row > div { text-align: center; }
+    .stat-card .metric-row .num { font-size: 20px; font-weight: 700; line-height: 1.1; }
+    .stat-card .metric-row .tag { font-size: 9px; color: #8b949e; text-transform: uppercase; letter-spacing: .4px; margin-top: 2px; }
     .stat-card {
       background: #161b22;
       border: 1px solid #21262d;
@@ -197,47 +201,46 @@
 <!-- ── Key Stats ── -->
 <div class="stats-row">
   <div class="stat-card">
-    <div class="lbl">2023 ITM Avg/Mo</div>
-    <div class="val" style="color:#c9d1d9">106</div>
-    <div class="sub muted">Pre-HST baseline</div>
-  </div>
-  <div class="stat-card">
-    <div class="lbl">2024 ITM Avg/Mo</div>
-    <div class="val red">73</div>
-    <div class="sub red">↓ 31% vs 2023</div>
-  </div>
-  <div class="stat-card">
-    <div class="lbl">2024 HST Avg/Mo</div>
-    <div class="val blue">122</div>
-    <div class="sub green">68% more than ITM</div>
-  </div>
-  <div class="stat-card">
-    <div class="lbl">2025 ITM Avg/Mo</div>
-    <div class="val red">69</div>
-    <div class="sub red">↓ 35% vs 2023</div>
-  </div>
-  <div class="stat-card">
-    <div class="lbl">2025 HST Avg/Mo</div>
-    <div class="val blue">134</div>
-    <div class="sub green">↑ 9.4% vs 2024</div>
-  </div>
-  <div class="stat-card">
-    <div class="lbl">ITM Conv Rate</div>
-    <div style="display:flex;justify-content:space-around;margin:8px 0 4px">
-      <span style="text-align:center">
-        <div class="val" style="font-size:18px;color:#c9d1d9">3.2%</div>
-        <div class="sub muted">2023</div>
-      </span>
-      <span style="text-align:center">
-        <div class="val" style="font-size:18px" class="red">2.1%</div>
-        <div class="sub muted">2024</div>
-      </span>
-      <span style="text-align:center">
-        <div class="val" style="font-size:18px;color:#f85149">1.5%</div>
-        <div class="sub muted">2025</div>
-      </span>
+    <div class="lbl">2023 (Pre-HST)</div>
+    <div class="metric-row">
+      <div><div class="num" style="color:#c9d1d9">84</div><div class="tag">ITM /mo</div></div>
+      <div><div class="num" style="color:#484f58">—</div><div class="tag">HST /mo</div></div>
     </div>
-    <div class="sub red">↓ 53% decline</div>
+    <div class="sub muted">Baseline · 3.75% conv</div>
+  </div>
+  <div class="stat-card">
+    <div class="lbl">2024 (HST Launched)</div>
+    <div class="metric-row">
+      <div><div class="num red">91</div><div class="tag">ITM /mo</div></div>
+      <div><div class="num blue">105</div><div class="tag">HST /mo</div></div>
+    </div>
+    <div class="sub red">1.54% conv · HST +15% vs ITM</div>
+  </div>
+  <div class="stat-card">
+    <div class="lbl">2025</div>
+    <div class="metric-row">
+      <div><div class="num red">74</div><div class="tag">ITM /mo</div></div>
+      <div><div class="num blue">125</div><div class="tag">HST /mo</div></div>
+    </div>
+    <div class="sub red">1.33% conv · HST +69% vs ITM</div>
+  </div>
+  <div class="stat-card">
+    <div class="lbl">2026 Q1 (Post-Contraction)</div>
+    <div class="metric-row">
+      <div><div class="num red">48</div><div class="tag">ITM /mo</div></div>
+      <div><div class="num blue">114</div><div class="tag">HST /mo</div></div>
+    </div>
+    <div class="sub red">0.81% conv · 27 divisions only</div>
+  </div>
+  <div class="stat-card">
+    <div class="lbl">ITM Conv Rate Trend</div>
+    <div style="display:flex;justify-content:space-around;margin:6px 0 4px;gap:4px">
+      <span style="text-align:center"><div class="val" style="font-size:16px;color:#c9d1d9">3.75%</div><div class="sub muted">'23</div></span>
+      <span style="text-align:center"><div class="val" style="font-size:16px;color:#f85149">1.54%</div><div class="sub muted">'24</div></span>
+      <span style="text-align:center"><div class="val" style="font-size:16px;color:#f85149">1.33%</div><div class="sub muted">'25</div></span>
+      <span style="text-align:center"><div class="val" style="font-size:16px;color:#f85149">0.81%</div><div class="sub muted">'26</div></span>
+    </div>
+    <div class="sub red">↓ 78% vs 2023 baseline</div>
   </div>
 </div>
 
