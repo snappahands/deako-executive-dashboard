@@ -167,8 +167,11 @@ body.light .period-btn{background:#eaeef2 !important;border-color:#d0d7de !impor
 body.light .period-tab{background:#eaeef2 !important;border-color:#d0d7de !important;color:#656d76 !important}
 body.light .rm-bar-wrap{background:#d0d7de !important}
 body.light #version-badge{background:#fff !important;border-color:#d0d7de !important;color:#1f6feb !important}
-#themeToggle{background:#000 !important;border:1px solid #fff !important;border-radius:50% !important;color:#fff !important;width:40px !important;height:40px !important;padding:0 !important}
-body.light #themeToggle{background:#fff !important;border:1px solid #000 !important;color:#000 !important}
+#themeToggle{background:#000 !important;border:2px solid #fff !important;border-radius:50% !important;color:#fff !important;width:48px !important;height:48px !important;min-width:48px !important;padding:0 !important;flex-shrink:0 !important;display:inline-flex !important;align-items:center !important;justify-content:center !important;cursor:pointer !important;transition:transform .15s,box-shadow .15s;box-shadow:0 0 0 0 rgba(255,255,255,0)}
+#themeToggle:hover{transform:scale(1.08);box-shadow:0 0 12px 2px rgba(255,255,255,0.4)}
+#themeToggle svg{pointer-events:none !important}
+body.light #themeToggle{background:#fff !important;border:2px solid #000 !important;color:#000 !important}
+body.light #themeToggle:hover{box-shadow:0 0 12px 2px rgba(0,0,0,0.25)}
 body.light ::-webkit-scrollbar-track{background:#f5f6f8 !important}
 body.light ::-webkit-scrollbar-thumb{background:#d0d7de !important}
 
@@ -245,7 +248,7 @@ body.light ::-webkit-scrollbar-thumb{background:#d0d7de !important}
       <h1>Brian's Dashboard</h1>
       <span class="header-sub">DR Horton · National Sales Training</span>
     </div>
-    <button id="themeToggle" onclick="toggleTheme()" style="cursor:pointer;display:flex;align-items:center;justify-content:center" title="Toggle light/dark mode"><svg width="18" height="22" viewBox="0 0 16 20" style="pointer-events:none"><path d="M9.5 0L0 11.5h6L5 20l11-12.5H9.5z" fill="currentColor"/></svg></button>
+    <button id="themeToggle" onclick="toggleTheme()" aria-label="Toggle light/dark mode" title="Toggle light/dark mode"><svg width="22" height="28" viewBox="0 0 16 20"><path d="M9.5 0L0 11.5h6L5 20l11-12.5H9.5z" fill="currentColor"/></svg></button>
   </div>
   <div id="metrics-bar"></div>
 </div>
@@ -255,7 +258,7 @@ body.light ::-webkit-scrollbar-thumb{background:#d0d7de !important}
   <div id="content"></div>
 </div>
 
-<div id="version-badge">v9.3</div>
+<div id="version-badge">v9.4</div>
 
 <script>
 // Theme toggle — CSS handles colors; body.light class drives the swap
