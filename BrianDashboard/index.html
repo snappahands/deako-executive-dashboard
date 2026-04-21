@@ -260,7 +260,7 @@ body.light ::-webkit-scrollbar-thumb{background:#d0d7de !important}
   <div id="content"></div>
 </div>
 
-<div id="version-badge">v10.3</div>
+<div id="version-badge">v10.4</div>
 
 <script>
 // Theme toggle — CSS handles colors; body.light class drives the swap
@@ -298,7 +298,7 @@ const VISITS = [
   },
   {
     division:'Delaware', state:'DE', date:'10/01/2025',
-    preITM:12, postITM:7,
+    preITM:13, postITM:8,
     type:'Training', reps:14, certified:4,
     ambassadors:[
       {name:'Brett Black', email:'beblack@drhorton.com', phone:'980-238-9777'},
@@ -314,7 +314,7 @@ const VISITS = [
   },
   {
     division:'Fort Wayne', state:'IN', date:'10/20/2025',
-    preITM:1, postITM:1,
+    preITM:1, postITM:5,
     type:'PDP', reps:8, certified:2,
     ambassadors:[
       {name:'Kathy Klinger', email:'klklinger@drhorton.com', phone:'260-237-5077'},
@@ -448,7 +448,7 @@ const VISITS = [
   },
   {
     division:'Baldwin', state:'AL', date:'02/02/2026',
-    preITM:9, postITM:20,
+    preITM:11, postITM:25,
     type:'Training', reps:35, certified:9,
     ambassadors:[],
     modelHomes:[],
@@ -491,7 +491,7 @@ const VISITS = [
   },
   {
     division:'Greenville', state:'SC', date:'03/06/2026',
-    preITM:1, postITM:5,
+    preITM:3, postITM:8,
     type:'Presentation', reps:70, certified:4,
     ambassadors:[],
     modelHomes:['4 Barred Owl Rd, Travelers Rest, SC 29690','4 Higbie Dr, Piedmont, SC 29673'],
@@ -502,7 +502,7 @@ const VISITS = [
   },
   {
     division:'Indianapolis', state:'IN', date:'03/09/2026',
-    preITM:null, postITM:null,
+    preITM:1, postITM:1,
     type:'Presentation', reps:50, certified:2,
     ambassadors:[
       {name:'Tyler', email:'', phone:''},
@@ -524,7 +524,7 @@ const VISITS = [
     status:'completed'
   },
   {
-    division:'Kansas City', state:'MO', date:'05/20/2026',
+    division:'Kansas City', state:'MO', date:'05/29/2026',
     preITM:null, postITM:null,
     type:'Training', reps:20, certified:0,
     ambassadors:[],
@@ -1189,8 +1189,9 @@ function renderOverview(){
       <div style="position:relative;height:320px"><canvas id="dpupChart"></canvas></div>
     </div>
     <div class="full-chart-card">
-      <h3>ITM Before &amp; After Deako Training</h3>
+      <h3>ITM Before &amp; After Deako Training <span style="font-size:10px;font-weight:400;color:#484f58;margin-left:8px">Gray = prior-year ITM packs (baseline) · Teal = post-training packs with days-since-training · Green/red data-label = annualized pace vs prior year</span></h3>
       <div class="full-chart-wrap"><canvas id="itmChart"></canvas></div>
+      <div id="itmPaceTable" style="margin-top:18px"></div>
     </div>
 
     <!-- DIVISION LEADERBOARD -->
@@ -1357,34 +1358,117 @@ function renderOverview(){
     plugins:[ChartDataLabels]
   });
 
-  /* Before/After per-division chart */
+  /* Before/After per-division chart with days-since-training + pace vs prior */
+  const today = new Date();
+  function daysSince(mdy) {
+    if (!mdy) return null;
+    const parts = mdy.split('/');
+    if (parts.length !== 3) return null;
+    const d = new Date(+parts[2], +parts[0]-1, +parts[1]);
+    const diff = Math.floor((today - d) / 86400000);
+    return diff >= 0 ? diff : null;
+  }
+  // Build enriched per-visit rows used both by chart labels and the summary table
+  const itmRows = itmVisits.map(v => {
+    const dp = daysSince(v.date);
+    const projAnnual = (dp && dp > 0) ? Math.round(v.postITM * 365 / dp) : null;
+    const paceDelta  = (projAnnual != null && v.preITM > 0) ? projAnnual - v.preITM : null;
+    const pacePct    = (projAnnual != null && v.preITM > 0) ? Math.round((projAnnual - v.preITM) / v.preITM * 100) : null;
+    return { div:v.division, date:v.date, pre:v.preITM, post:v.postITM, dp, projAnnual, paceDelta, pacePct };
+  });
+  const chartLabels = itmRows.map(r => r.dp != null ? `${r.div} (${r.dp}d)` : r.div);
+
   new Chart(document.getElementById('itmChart'), {
     type:'bar',
     data:{
-      labels,
+      labels: chartLabels,
       datasets:[
-        {label:'Pre-Training ITM Packs', data:pre, backgroundColor:'#30363d', borderRadius:4},
-        {label:'Post-Training ITM Packs', data:post, backgroundColor:'#3fb950', borderRadius:4}
+        {label:'Prior-Year ITM (pre-training baseline)', data:pre, backgroundColor:'#30363d', borderRadius:4,
+         datalabels:{ anchor:'end', align:'end', color:'#8b949e', font:{size:10,weight:'bold'}, formatter:v=>v }},
+        {label:'Post-Training ITM (current YTD)', data:post, backgroundColor:'#3fb950', borderRadius:4,
+         datalabels:{
+           anchor:'end', align:'end',
+           font:{size:10,weight:'bold'},
+           color:(ctx) => {
+             const r = itmRows[ctx.dataIndex];
+             if (r.paceDelta == null) return '#e6edf3';
+             return r.paceDelta >= 0 ? '#3fb950' : '#f85149';
+           },
+           formatter:(v, ctx) => {
+             const r = itmRows[ctx.dataIndex];
+             if (r.paceDelta == null) return v;
+             const sign = r.paceDelta >= 0 ? '+' : '';
+             return `${v}  (proj ${r.projAnnual}/yr, ${sign}${r.pacePct}%)`;
+           }
+         }}
       ]
     },
     options:{
       responsive:true, maintainAspectRatio:false,
+      layout:{ padding:{ top:28 } },
       plugins:{
         legend:{labels:{color:'#8b949e',font:{size:11}}},
-        datalabels:{
-          anchor:'end', align:'end',
-          color:'#e6edf3',
-          font:{size:10,weight:'bold'},
-          formatter:v=>v
+        tooltip:{
+          callbacks:{
+            afterBody:(items) => {
+              const r = itmRows[items[0].dataIndex];
+              const lines = [];
+              if (r.date) lines.push(`Trained: ${r.date}`);
+              if (r.dp != null) lines.push(`Days since training: ${r.dp}`);
+              if (r.projAnnual != null) {
+                lines.push(`Projected full-year ITM at current pace: ${r.projAnnual}`);
+                if (r.pacePct != null) {
+                  const sign = r.pacePct >= 0 ? '+' : '';
+                  lines.push(`vs Prior Year baseline (${r.pre}): ${sign}${r.pacePct}%`);
+                }
+              }
+              return lines;
+            }
+          }
         }
       },
       scales:{
-        x:{ticks:{color:'#8b949e',font:{size:11}},grid:{color:'#21262d'}},
+        x:{ticks:{color:'#8b949e',font:{size:10}},grid:{color:'#21262d'}},
         y:{ticks:{color:'#8b949e',font:{size:11}},grid:{color:'#21262d'},beginAtZero:true}
       }
     },
     plugins:[ChartDataLabels]
   });
+
+  // Pace summary table under the chart
+  const paceEl = document.getElementById('itmPaceTable');
+  if (paceEl) {
+    const sorted = [...itmRows].sort((a,b) => (b.pacePct ?? -999) - (a.pacePct ?? -999));
+    paceEl.innerHTML = `
+      <table class="summary-table" style="font-size:12px">
+        <tr>
+          <th>Division</th><th>Trained</th><th>Days Post</th>
+          <th style="text-align:right">Prior-Year ITM</th>
+          <th style="text-align:right">Post-Training ITM</th>
+          <th style="text-align:right">Projected Full-Year Pace</th>
+          <th style="text-align:right">Δ vs Prior</th>
+        </tr>
+        ${sorted.map(r => {
+          const pctCls = r.pacePct == null ? 'color:#8b949e'
+            : r.pacePct >= 0 ? 'color:#3fb950;font-weight:700' : 'color:#f85149;font-weight:700';
+          const proj = r.projAnnual != null ? r.projAnnual : '—';
+          const pctText = r.pacePct == null ? '—' : (r.pacePct >= 0 ? '+' : '') + r.pacePct + '%';
+          const monthsPost = r.dp != null ? (r.dp/30).toFixed(1) : '—';
+          return `<tr>
+            <td><strong>${r.div}</strong></td>
+            <td style="color:#8b949e">${r.date||'—'}</td>
+            <td style="color:#8b949e">${r.dp!=null?`${r.dp}d (${monthsPost}mo)`:'—'}</td>
+            <td style="text-align:right;color:#8b949e">${r.pre}</td>
+            <td style="text-align:right;color:#3fb950;font-weight:700">${r.post}</td>
+            <td style="text-align:right;color:#d2a8ff;font-weight:700">${proj}</td>
+            <td style="text-align:right;${pctCls}">${pctText}</td>
+          </tr>`;
+        }).join('')}
+      </table>
+      <div style="font-size:11px;color:#484f58;margin-top:8px;font-style:italic">
+        Projected full-year pace = Post-Training ITM × (365 / Days Post). Δ vs Prior compares that projection to the Prior-Year baseline (col D of the training log).
+      </div>`;
+  }
 
 }
 
