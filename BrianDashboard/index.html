@@ -260,7 +260,7 @@ body.light ::-webkit-scrollbar-thumb{background:#d0d7de !important}
   <div id="content"></div>
 </div>
 
-<div id="version-badge">v10.4</div>
+<div id="version-badge">v10.5</div>
 
 <script>
 // Theme toggle — CSS handles colors; body.light class drives the swap
@@ -2230,6 +2230,103 @@ function showRainmakers(){
   renderRainmakers('','');
 }
 
+/* ── OUTREACH LOG (localStorage-backed) ── */
+const OUTREACH_KEY = 'brian_rm_outreach_v1';
+function outreachLoad() {
+  try { return JSON.parse(localStorage.getItem(OUTREACH_KEY) || '{}'); }
+  catch(e) { console.warn('Outreach load failed', e); return {}; }
+}
+function outreachSave(map) {
+  try { localStorage.setItem(OUTREACH_KEY, JSON.stringify(map)); }
+  catch(e) { console.warn('Outreach save failed', e); alert('Could not save — is localStorage disabled?'); }
+}
+function outreachKey(name, div) { return (name||'') + '|' + (div||''); }
+function outreachGet(name, div) {
+  const m = outreachLoad();
+  return m[outreachKey(name,div)] || { c:false, e:false, t:false, notes:'', updated:null };
+}
+function outreachSet(name, div, partial) {
+  const m = outreachLoad();
+  const k = outreachKey(name,div);
+  m[k] = Object.assign({ c:false, e:false, t:false, notes:'' }, m[k]||{}, partial, { updated: new Date().toISOString() });
+  outreachSave(m);
+  return m[k];
+}
+function outreachTotals() {
+  const m = outreachLoad();
+  let c=0, e=0, t=0, notes=0, agents=0;
+  for (const k in m) {
+    const r = m[k];
+    if (r.c) c++; if (r.e) e++; if (r.t) t++;
+    if ((r.notes||'').trim()) notes++;
+    if (r.c || r.e || r.t || (r.notes||'').trim()) agents++;
+  }
+  return { c, e, t, notes, agents };
+}
+function onOutreachCheckbox(chk, name, div, field) {
+  outreachSet(name, div, { [field]: chk.checked });
+  const st = chk.closest('.rm-row-outreach')?.querySelector('.rm-outreach-saved');
+  if (st) { st.style.opacity = 1; setTimeout(()=>{ st.style.opacity = 0; }, 1200); }
+  // Update top-of-view summary in place (cheap re-render of stats block)
+  const sEl = document.getElementById('outreach-summary');
+  if (sEl) sEl.innerHTML = _outreachSummaryHtml();
+}
+function _outreachSummaryHtml() {
+  const t = outreachTotals();
+  return `
+    <div class="rm-stat" style="border-color:#3fb950"><div class="rm-stat-val" style="color:#3fb950">${t.c}</div><div class="rm-stat-label">📞 Calls Logged</div></div>
+    <div class="rm-stat" style="border-color:#7ecfe0"><div class="rm-stat-val" style="color:#7ecfe0">${t.e}</div><div class="rm-stat-label">📧 Emails Sent</div></div>
+    <div class="rm-stat" style="border-color:#d2a8ff"><div class="rm-stat-val" style="color:#d2a8ff">${t.t}</div><div class="rm-stat-label">💬 Texts Sent</div></div>
+    <div class="rm-stat"><div class="rm-stat-val" style="color:#f0a500">${t.notes}</div><div class="rm-stat-label">📝 Notes Logged</div></div>
+    <div class="rm-stat"><div class="rm-stat-val">${t.agents}</div><div class="rm-stat-label">Agents Touched</div></div>
+    <div class="rm-stat" style="cursor:pointer;border-color:#30363d" onclick="exportOutreachCsv()" title="Download outreach log for manager review"><div class="rm-stat-val" style="color:#c9d1d9;font-size:18px;line-height:1.8">⬇ CSV</div><div class="rm-stat-label">Export for Manager</div></div>
+  `;
+}
+function exportOutreachCsv() {
+  const m = outreachLoad();
+  const rows = [['Agent','Division','Community','Called','Emailed','Texted','Notes','Last Updated']];
+  RAINMAKERS.forEach(a => {
+    const r = m[outreachKey(a.n, a.d)];
+    if (!r) return;
+    if (!r.c && !r.e && !r.t && !(r.notes||'').trim()) return;
+    const esc = s => '"' + String(s||'').replace(/"/g,'""') + '"';
+    rows.push([
+      esc(a.n), esc(a.d), esc(a.cm||''),
+      r.c?'Yes':'', r.e?'Yes':'', r.t?'Yes':'',
+      esc((r.notes||'').replace(/\r?\n/g,' · ')),
+      r.updated ? new Date(r.updated).toLocaleString() : ''
+    ]);
+  });
+  if (rows.length === 1) { alert('No outreach logged yet.'); return; }
+  const csv = rows.map(r => r.join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `rainmaker-outreach-${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 500);
+}
+function saveAgentNotes(name, div) {
+  const ta = document.getElementById('agentNotesTa');
+  if (!ta) return;
+  outreachSet(name, div, { notes: ta.value });
+  const btn = document.getElementById('agentNotesSaveBtn');
+  if (btn) {
+    const orig = btn.textContent;
+    btn.textContent = '✓ Saved';
+    btn.style.background = '#3fb950';
+    setTimeout(()=>{ btn.textContent = orig; btn.style.background = '#1f6feb'; }, 1400);
+  }
+  const sEl = document.getElementById('outreach-summary');
+  if (sEl) sEl.innerHTML = _outreachSummaryHtml();
+}
+function onAgentOutreachBox(chk, name, div, field) {
+  outreachSet(name, div, { [field]: chk.checked });
+  const sEl = document.getElementById('outreach-summary');
+  if (sEl) sEl.innerHTML = _outreachSummaryHtml();
+}
+
 function renderRainmakers(filter, divFilter, sortBy='t'){
   const divs = [...new Set(RAINMAKERS.map(r=>r.d))].sort();
   const getSV = (r,k) => k==='rev' ? r.p25*2700+r.p10*1125+r.p8*399 : (r[k]||0);
@@ -2275,6 +2372,10 @@ function renderRainmakers(filter, divFilter, sortBy='t'){
         ${newAgents.map(r => `<span style="display:inline-flex;gap:6px;align-items:center;background:#21262d;border:1px solid #30363d;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer" onclick="renderRainmakers('${r.n.replace(/'/g,String.fromCharCode(39))}','','${sortBy}')"><strong style="color:#e6edf3">${r.n}</strong><span style="color:#79c0ff;font-size:11px">${r.d}</span><span style="color:#3fb950;font-weight:700">${r.t} pack${r.t!==1?'s':''}</span></span>`).join('')}
       </div>
     </div>` : ''}
+    <div style="margin:16px 0 10px 0">
+      <div style="font-size:13px;font-weight:700;color:#3fb950;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">📋 Outreach Log</div>
+      <div class="rm-stats" id="outreach-summary">${_outreachSummaryHtml()}</div>
+    </div>
     <div class="rm-controls">
       <input type="text" id="rm-search" placeholder="Search agent name..." value="${filter}" oninput="renderRainmakers(this.value, document.getElementById('rm-div').value, '${sortBy}')">
       <select id="rm-div" onchange="renderRainmakers(document.getElementById('rm-search').value, this.value, '${sortBy}')">
@@ -2284,7 +2385,7 @@ function renderRainmakers(filter, divFilter, sortBy='t'){
     </div>
     <div style="background:#161b22;border:1px solid #21262d;border-radius:10px;overflow:hidden">
       <table class="rm-table">
-        <tr><th>#</th><th>Agent</th><th style="${divFilter?'cursor:pointer;color:#f0a500':''}" title="${divFilter?'Click to clear division filter':''}" onclick="${divFilter?`renderRainmakers('${filter.replace(/'/g,"\\'")}','','${sortBy}')`:''}">Division${divFilter?` → ALL`:''}</th><th>Community</th><th>Homes Sold</th><th>Packs Sold (3 Mo.)</th><th>Total Packs</th><th>Deako Revenue</th><th>Pack Mix</th><th>Contact</th></tr>
+        <tr><th>#</th><th>Agent</th><th style="${divFilter?'cursor:pointer;color:#f0a500':''}" title="${divFilter?'Click to clear division filter':''}" onclick="${divFilter?`renderRainmakers('${filter.replace(/'/g,"\\'")}','','${sortBy}')`:''}">Division${divFilter?` → ALL`:''}</th><th>Community</th><th>Homes Sold</th><th>Packs Sold (3 Mo.)</th><th>Total Packs</th><th>Deako Revenue</th><th>Pack Mix</th><th>Contact</th><th style="text-align:center">Outreach</th></tr>
         ${filtered.slice(0,200).map((r,i)=>{
           const pct = Math.round(getSV(r,sortBy)/maxVal*100);
           const medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
@@ -2295,10 +2396,20 @@ function renderRainmakers(filter, divFilter, sortBy='t'){
             : r.em ? `<a href="mailto:${r.em}" title="${r.em}" style="color:#7ecfe0;text-decoration:none">📧</a>`
             : r.ph ? `<a href="tel:${r.ph}" title="${r.ph}" style="color:#3fb950;text-decoration:none">📞</a>`
             : '';
+          const o = outreachGet(r.n, r.d);
+          const nameE = r.n.replace(/'/g,String.fromCharCode(39));
+          const divE  = r.d.replace(/'/g,String.fromCharCode(39));
+          const outreachCell = `<div class="rm-row-outreach" style="display:inline-flex;align-items:center;gap:6px;font-size:11px">
+            <label style="cursor:pointer;display:inline-flex;align-items:center;gap:3px" title="Called"><input type="checkbox" ${o.c?'checked':''} onchange="onOutreachCheckbox(this,'${nameE}','${divE}','c')" style="accent-color:#3fb950;cursor:pointer"> <span style="color:${o.c?'#3fb950':'#8b949e'}">📞</span></label>
+            <label style="cursor:pointer;display:inline-flex;align-items:center;gap:3px" title="Emailed"><input type="checkbox" ${o.e?'checked':''} onchange="onOutreachCheckbox(this,'${nameE}','${divE}','e')" style="accent-color:#7ecfe0;cursor:pointer"> <span style="color:${o.e?'#7ecfe0':'#8b949e'}">📧</span></label>
+            <label style="cursor:pointer;display:inline-flex;align-items:center;gap:3px" title="Texted"><input type="checkbox" ${o.t?'checked':''} onchange="onOutreachCheckbox(this,'${nameE}','${divE}','t')" style="accent-color:#d2a8ff;cursor:pointer"> <span style="color:${o.t?'#d2a8ff':'#8b949e'}">💬</span></label>
+            <button onclick="openAgentReport('${nameE}','${divE}')" title="Open brief to add notes" style="background:transparent;border:1px solid #30363d;border-radius:4px;color:${(o.notes||'').trim()?'#f0a500':'#8b949e'};padding:2px 6px;cursor:pointer;font-size:11px">📝${(o.notes||'').trim()?'*':''}</button>
+            <span class="rm-outreach-saved" style="color:#3fb950;font-size:10px;opacity:0;transition:opacity .3s">✓</span>
+          </div>`;
           return `<tr>
             <td class="rm-rank${i<3?' top3':''}">${medal||('#'+(i+1))}</td>
-            <td><strong style="cursor:pointer;color:#7ecfe0;text-decoration:underline dotted;text-underline-offset:3px" onclick="openAgentReport('${r.n.replace(/'/g,String.fromCharCode(39))}','${r.d.replace(/'/g,String.fromCharCode(39))}')" title="Click for full agent brief">${r.n}</strong></td>
-            <td style="color:#79c0ff;cursor:pointer;text-decoration:underline dotted" title="Filter by ${r.d}" onclick="renderRainmakers('','${r.d.replace(/'/g,String.fromCharCode(39))}','${sortBy}')">${r.d}</td>
+            <td><strong style="cursor:pointer;color:#7ecfe0;text-decoration:underline dotted;text-underline-offset:3px" onclick="openAgentReport('${nameE}','${divE}')" title="Click for full agent brief">${r.n}</strong></td>
+            <td style="color:#79c0ff;cursor:pointer;text-decoration:underline dotted" title="Filter by ${r.d}" onclick="renderRainmakers('','${divE}','${sortBy}')">${r.d}</td>
             <td style="color:#8b949e;font-size:11px">${r.cm||'—'}</td>
             <td style="color:#7ecfe0;font-weight:700">${r.h3||0}</td>
             <td style="color:#d2a8ff;font-weight:700">${r.l3||0}</td>
@@ -2310,9 +2421,10 @@ function renderRainmakers(filter, divFilter, sortBy='t'){
               ${r.p8>0?`<span class="rm-pack-badge rm-p8">8×${r.p8}</span>`:''}
             </td>
             <td style="text-align:center">${contactHtml}</td>
+            <td style="text-align:center;white-space:nowrap">${outreachCell}</td>
           </tr>`;
         }).join('')}
-        ${filtered.length>200?`<tr><td colspan="10" style="text-align:center;color:#484f58;padding:10px">Showing top 200 of ${filtered.length} — refine search to see more</td></tr>`:''}
+        ${filtered.length>200?`<tr><td colspan="11" style="text-align:center;color:#484f58;padding:10px">Showing top 200 of ${filtered.length} — refine search to see more</td></tr>`:''}
       </table>
     </div>
   `;
@@ -3102,6 +3214,32 @@ function openAgentReport(name, divKey){
       </div>
 
       ${hiddenValue}
+
+      <!-- Outreach log -->
+      <div style="font-size:13px;font-weight:700;color:#3fb950;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px">📋 Outreach Log</div>
+      <div style="background:#0d1117;border-left:3px solid #3fb950;border-radius:0 8px 8px 0;padding:14px 18px;margin-bottom:16px">
+        <div style="display:flex;gap:18px;flex-wrap:wrap;margin-bottom:12px">
+          <label style="cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#c9d1d9">
+            <input type="checkbox" ${(() => {const o=outreachGet(name,divKey); return o.c?'checked':'';})()} onchange="onAgentOutreachBox(this,'${name.replace(/'/g,String.fromCharCode(39))}','${divKey}','c')" style="accent-color:#3fb950;width:16px;height:16px;cursor:pointer">
+            <span style="color:#3fb950;font-weight:700">📞 Called</span>
+          </label>
+          <label style="cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#c9d1d9">
+            <input type="checkbox" ${(() => {const o=outreachGet(name,divKey); return o.e?'checked':'';})()} onchange="onAgentOutreachBox(this,'${name.replace(/'/g,String.fromCharCode(39))}','${divKey}','e')" style="accent-color:#7ecfe0;width:16px;height:16px;cursor:pointer">
+            <span style="color:#7ecfe0;font-weight:700">📧 Emailed</span>
+          </label>
+          <label style="cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#c9d1d9">
+            <input type="checkbox" ${(() => {const o=outreachGet(name,divKey); return o.t?'checked':'';})()} onchange="onAgentOutreachBox(this,'${name.replace(/'/g,String.fromCharCode(39))}','${divKey}','t')" style="accent-color:#d2a8ff;width:16px;height:16px;cursor:pointer">
+            <span style="color:#d2a8ff;font-weight:700">💬 Texted</span>
+          </label>
+          ${(() => { const o=outreachGet(name,divKey); return o.updated ? `<span style="color:#484f58;font-size:11px;font-style:italic;align-self:center">Last updated: ${new Date(o.updated).toLocaleString()}</span>` : ''; })()}
+        </div>
+        <div style="font-size:11px;color:#8b949e;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;font-weight:600">Notes from the conversation</div>
+        <textarea id="agentNotesTa" placeholder="What did you discuss? Any follow-up needed? What's working for them?" style="width:100%;min-height:100px;background:#161b22;border:1px solid #30363d;border-radius:6px;padding:10px 12px;color:#e6edf3;font-family:inherit;font-size:13px;line-height:1.5;resize:vertical;box-sizing:border-box">${(() => {const o=outreachGet(name,divKey); return (o.notes||'').replace(/</g,'&lt;');})()}</textarea>
+        <div style="margin-top:10px;display:flex;gap:8px;align-items:center">
+          <button id="agentNotesSaveBtn" onclick="saveAgentNotes('${name.replace(/'/g,String.fromCharCode(39))}','${divKey}')" style="background:#1f6feb;color:#fff;border:none;border-radius:6px;padding:8px 18px;font-size:13px;font-weight:700;cursor:pointer">💾 Save Notes</button>
+          <span style="font-size:11px;color:#484f58">Checkboxes save automatically · Notes require save · Data stored in your browser</span>
+        </div>
+      </div>
 
       <!-- Talking points -->
       <div style="font-size:13px;font-weight:700;color:#3fb950;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px">Talking Points for ${name.split(' ')[0]}</div>
