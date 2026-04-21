@@ -28,7 +28,7 @@ const HST_TOP10 = {
 {div:"socal_south",total:14,unique_jobs:14,p10:4,p25:10,months_active:8,recent3:5,prev3:1,trend:"up",trend_pct:400,first_order:"2025-03",last_order:"2026-04"},
 {div:"southwest_florida",total:48,unique_jobs:48,p10:30,p25:18,months_active:24,recent3:5,prev3:1,trend:"up",trend_pct:400,first_order:"2023-06",last_order:"2026-03"},
 {div:"reno",total:39,unique_jobs:39,p10:26,p25:13,months_active:23,recent3:4,prev3:1,trend:"up",trend_pct:300,first_order:"2024-01",last_order:"2026-04"},
-{div:"knoxville",total:21,unique_jobs:21,p10:9,p25:12,months_active:11,recent3:3,prev3:1,trend:"up",trend_pct:200,first_order:"2025-01",last_order:"2026-04"}],
+{div:"des_moines",total:34,unique_jobs:34,p10:24,p25:10,months_active:20,recent3:3,prev3:1,trend:"up",trend_pct:200,first_order:"2023-06",last_order:"2026-04"}],
   declining: [{div:"fort_worth_south",total:55,unique_jobs:55,p10:35,p25:20,months_active:25,recent3:0,prev3:5,trend:"down",trend_pct:-100,first_order:"2023-10",last_order:"2026-01"},
 {div:"delaware",total:56,unique_jobs:55,p10:35,p25:21,months_active:25,recent3:0,prev3:6,trend:"down",trend_pct:-100,first_order:"2023-09",last_order:"2026-01"},
 {div:"fort_wayne",total:21,unique_jobs:21,p10:13,p25:8,months_active:15,recent3:0,prev3:3,trend:"down",trend_pct:-100,first_order:"2023-05",last_order:"2026-01"},
