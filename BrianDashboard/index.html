@@ -259,7 +259,7 @@ body.light ::-webkit-scrollbar-thumb{background:#d0d7de !important}
   <div id="content"></div>
 </div>
 
-<div id="version-badge">v10.0</div>
+<div id="version-badge">v10.1</div>
 
 <script>
 // Theme toggle — CSS handles colors; body.light class drives the swap
@@ -1634,12 +1634,17 @@ function renderConvRates(period, value){
   let rows = src.filter(d=>d.p===value);
 
   // Union with STAYING divisions (Holly's sheet): show every staying division
-  // even if it has no conversion data for the selected period
+  // even if it has no conversion data for the selected period. Until the
+  // upstream export includes these divisions, use Holly's FY26 home-starts
+  // estimate as a placeholder for eligible homes (scaled to the period) so
+  // the pipeline isn't empty.
   if (typeof STAYING_DIVISIONS !== 'undefined') {
     const have = new Set(rows.map(r=>r.div));
+    const scale = period === 'yearly' ? 1 : period === 'quarterly' ? 1/4 : 1/12;
     STAYING_DIVISIONS.forEach(sd => {
       if (!have.has(sd.key)) {
-        rows.push({ div: sd.key, p: value, e: 0, pk: 0, r: 0 });
+        const estE = Math.round((sd.homes || 0) * scale);
+        rows.push({ div: sd.key, p: value, e: estE, pk: 0, r: 0, _estimated: true });
       }
     });
   }
@@ -1699,7 +1704,7 @@ function renderConvRates(period, value){
           <td style="color:#484f58;font-weight:700">#${i+1}</td>
           <td><strong>${fmtDiv(d.div)}</strong></td>
           <td style="color:#d2a8ff;font-weight:700">${ph!=null?ph.toLocaleString():'—'}</td>
-          <td style="color:#8b949e">${d.e.toLocaleString()}</td>
+          <td style="color:${d._estimated?'#e3b341':'#8b949e'}${d._estimated?';font-style:italic':''}" title="${d._estimated?'Estimated from FY26 home-starts (placeholder until conversion export catches up)':''}">${d.e.toLocaleString()}${d._estimated?' *':''}</td>
           <td style="color:#1f6feb;font-weight:700">${d.pk}</td>
           <td style="color:${d.r>=5?'#3fb950':d.r>=2?'#f0a500':'#f85149'};font-weight:700">${d.r.toFixed(2)}%</td>
           <td style="color:#7ecfe0">${rf!=null?rf.toLocaleString():'—'}</td>
@@ -1708,6 +1713,7 @@ function renderConvRates(period, value){
           ${(()=>{ const p=getPO(d.div); return p?`<td style="color:#3fb950;font-weight:700">${p.i}</td><td style="color:#da3633;font-weight:700">${p.m1}</td>`:'<td>—</td><td>—</td>'; })()}
         </tr>`;}).join('')}
       </table>
+      <div style="font-size:11px;color:#8b949e;margin-top:10px"><span style="color:#e3b341">*</span> Eligible Homes shown in amber italic are estimated from FY2026 home-starts (scaled to the selected period) — placeholder until the conversion export includes these divisions.</div>
     </div>
 
     ${typeof HST_TOP10!=='undefined' ? `
