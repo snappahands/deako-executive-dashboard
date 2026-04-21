@@ -259,7 +259,7 @@ body.light ::-webkit-scrollbar-thumb{background:#d0d7de !important}
   <div id="content"></div>
 </div>
 
-<div id="version-badge">v10.1</div>
+<div id="version-badge">v10.2</div>
 
 <script>
 // Theme toggle — CSS handles colors; body.light class drives the swap
@@ -588,6 +588,7 @@ function renderSidebar(){
   sb.innerHTML = `<div class="div-item${selectedIdx===null?' active':''}" onclick="goHome()" style="font-weight:700;color:#7ecfe0;border-left-color:${selectedIdx===null?'#7ecfe0':'transparent'}">🏠 Home</div>
   <div class="div-item${selectedIdx==='conv'?' active':''}" onclick="showConvRates('monthly','')" style="font-weight:700;color:#7ecfe0;border-left-color:${selectedIdx==='conv'?'#7ecfe0':'transparent'}">📈 Conv. by Division</div>
   <div class="div-item${selectedIdx==='rainmakers'?' active':''}" onclick="showRainmakers()" style="font-weight:700;color:#f0a500;border-left-color:${selectedIdx==='rainmakers'?'#f0a500':'transparent'}">🏆 Rainmakers</div>
+  <div class="div-item${selectedIdx==='keydivrm'?' active':''}" onclick="showKeyDivRainmakers()" style="font-weight:700;color:#7ecfe0;border-left-color:${selectedIdx==='keydivrm'?'#7ecfe0':'transparent'}">🔑 Key Div. Rainmakers</div>
   <div class="div-item${selectedIdx==='divisions'?' active':''}" onclick="showDivisions()" style="font-weight:700;color:#d2a8ff;border-left-color:${selectedIdx==='divisions'?'#d2a8ff':'transparent'}">📋 Training Summary</div>
   <div class="div-item${selectedIdx==='summary'?' active':''}" onclick="showSummary()" style="font-weight:700;color:#f85149;border-left-color:${selectedIdx==='summary'?'#f85149':'transparent'}">📊 Performance Summary</div>
   <div class="div-item${selectedIdx==='hst'?' active':''}" onclick="showHstAnalysis()" style="font-weight:700;color:#8b949e;border-left-color:${selectedIdx==='hst'?'#8b949e':'transparent'}">🔍 HST vs ITM Analysis</div>
@@ -2211,7 +2212,7 @@ function renderRainmakers(filter, divFilter, sortBy='t'){
             : '';
           return `<tr>
             <td class="rm-rank${i<3?' top3':''}">${medal||('#'+(i+1))}</td>
-            <td><strong>${r.n}</strong></td>
+            <td><strong style="cursor:pointer;color:#7ecfe0;text-decoration:underline dotted;text-underline-offset:3px" onclick="openAgentReport('${r.n.replace(/'/g,String.fromCharCode(39))}','${r.d.replace(/'/g,String.fromCharCode(39))}')" title="Click for full agent brief">${r.n}</strong></td>
             <td style="color:#79c0ff;cursor:pointer;text-decoration:underline dotted" title="Filter by ${r.d}" onclick="renderRainmakers('','${r.d.replace(/'/g,String.fromCharCode(39))}','${sortBy}')">${r.d}</td>
             <td style="color:#8b949e;font-size:11px">${r.cm||'—'}</td>
             <td style="color:#7ecfe0;font-weight:700">${r.h3||0}</td>
@@ -2876,10 +2877,298 @@ function renderExecBrief(divName){
 /* ── INIT ── */
 renderMetrics();
 renderSidebar();
+/* ── AGENT REPORT MODAL ── */
+function closeAgentReport(){
+  const m = document.getElementById('agentModal');
+  if (m) m.style.display = 'none';
+}
+
+function _getDivMetrics(divKey){
+  const period = 'yearly';
+  const latest = [...new Set((CONV_DATA?.[period]||[]).map(d=>d.p))].sort().pop();
+  const cv = (CONV_DATA?.[period]||[]).find(d=>d.div===divKey && d.p===latest);
+  const st = (typeof STAYING_DIVISIONS!=='undefined') ? STAYING_DIVISIONS.find(s=>s.key===divKey) : null;
+  const cl = (CLOSES_DATA?.yearly||[]).find(d=>d.div===divKey && d.p===latest);
+  const rf = (RATIF_DATA?.yearly||[]).find(d=>d.div===divKey && d.p===latest);
+  const hst = (SS1_DATA?.yearly||[]).find(d=>d.div===divKey && d.p===latest);
+  const po = (typeof PO_STATUS!=='undefined')
+    ? (Object.entries(PO_STATUS).find(([k])=>k.replace(/^\d+-/,'')===divKey)||[null,null])[1]
+    : null;
+  // Horton upgrades match (display names e.g. "Greensboro")
+  const displayName = fmtDiv(divKey);
+  const hu = (typeof HORTON_UPGRADES!=='undefined')
+    ? HORTON_UPGRADES.find(h=>h.div.toLowerCase()===displayName.toLowerCase()
+      || fmtDiv(h.div.toLowerCase().replace(/\s+/g,'_'))===displayName) : null;
+  return {
+    displayName, latest,
+    eligibleHomes: cv?.e ?? (st?.homes ?? null),
+    packsSold: cv?.pk ?? 0,
+    convRate: cv?.r ?? 0,
+    closes: cl?.n ?? 0,
+    ratif: rf?.n ?? 0,
+    hstDirect: hst?.n ?? 0,
+    projHomes: st?.homes ?? null,
+    po, hu,
+    isStaying: !!st,
+  };
+}
+
+function openAgentReport(name, divKey){
+  const agent = RAINMAKERS.find(r=>r.n===name && r.d===divKey);
+  if (!agent) return;
+  const m = _getDivMetrics(divKey);
+
+  const deakoRev = agent.p25*2700 + agent.p10*1125 + agent.p8*399;
+  const divPkRank = (() => {
+    const divAgents = RAINMAKERS.filter(r=>r.d===divKey).sort((a,b)=>b.t-a.t);
+    return divAgents.findIndex(r=>r.n===name)+1 + ' of ' + divAgents.length;
+  })();
+  const isNew = (typeof RAINMAKERS_BASELINE !== 'undefined' && !RAINMAKERS_BASELINE.has(name.trim().toLowerCase()));
+
+  // Tier determines tone
+  const tier = agent.t >= 15 ? 'top' : agent.t >= 5 ? 'mid' : agent.t >= 1 ? 'low' : 'zero';
+
+  // Talking points
+  const tp = [];
+  if (tier === 'top') {
+    tp.push(`<strong>Congratulations, ${name.split(' ')[0]}.</strong> You're in the top tier of Deako rainmakers nationally with ${agent.t} total packs sold — that's $${deakoRev.toLocaleString()} in revenue you've driven for Deako.`);
+    if (agent.l3 > 0) tp.push(`You've sold ${agent.l3} packs in the last 3 months alone — keep that momentum going.`);
+    tp.push(`What's working for you? Share it with peers in ${m.displayName} — we'd love to turn your playbook into a division-wide lift.`);
+  } else if (tier === 'mid') {
+    tp.push(`<strong>${name.split(' ')[0]}, you're already contributing.</strong> ${agent.t} total packs sold translates to $${deakoRev.toLocaleString()} in Deako revenue.`);
+    tp.push(`There's room to grow — your division rank is #${divPkRank.split(' ')[0]}. One extra pack per month moves you up the board.`);
+  } else if (tier === 'low') {
+    tp.push(`<strong>${name.split(' ')[0]}, you've made a start — ${agent.t} pack${agent.t===1?'':'s'} so far.</strong>`);
+    tp.push(`The agents above you in ${m.displayName} are selling 10+. What would it take to match that? We can get you the training support.`);
+  } else {
+    tp.push(`<strong>${name.split(' ')[0]}, your buyers are already buying Deako — just not through you.</strong>`);
+    tp.push(`${m.displayName} has ${m.hstDirect} HST Direct orders this year (buyers ordering packs themselves after closing). If those conversations happen at contract time through you, that's the same revenue — but you earn the credit.`);
+  }
+
+  // Hidden value from HORTON_UPGRADES
+  let hiddenValue = '';
+  if (m.hu) {
+    hiddenValue = `
+      <div style="background:#1e1609;border-left:3px solid #f0a500;border-radius:0 8px 8px 0;padding:14px 18px;margin-bottom:16px">
+        <div style="font-size:13px;font-weight:700;color:#f0a500;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">💡 Hidden Value — What Your Buyers Already Do</div>
+        <div style="font-size:14px;color:#c9d1d9;line-height:1.7">
+          Across <strong>${m.hu.closes.toLocaleString()} closed homes</strong> in ${m.hu.div}, <strong style="color:#7ecfe0">${m.hu.smartPct}% of buyers (${m.hu.smartRatio})</strong> already purchase Deako smart upgrades <em>after close</em> — without you in the loop.
+          <br><br>
+          That's <strong style="color:#f85149">$${m.hu.unrealizedPerHome}/home</strong> in revenue walking out the door. If you integrate Deako into the buyer conversation at time of sale, that money flows through Horton instead.
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px">
+          <div style="background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:10px;text-align:center"><div style="font-size:18px;font-weight:700;color:#7ecfe0">${m.hu.simplePct}%</div><div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:.4px;margin-top:2px">Buy Simple Upgrades</div></div>
+          <div style="background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:10px;text-align:center"><div style="font-size:18px;font-weight:700;color:#1f6feb">${m.hu.smartPct}%</div><div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:.4px;margin-top:2px">Buy Smart Upgrades</div></div>
+          <div style="background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:10px;text-align:center"><div style="font-size:18px;font-weight:700;color:#3fb950">$${(m.hu.totalRev/1000).toFixed(0)}K</div><div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:.4px;margin-top:2px">Total Horton Rev</div></div>
+        </div>
+      </div>`;
+  } else {
+    // Fallback using national 2:1 HST:ITM ratio
+    const estCombined = m.packsSold + m.hstDirect;
+    hiddenValue = `
+      <div style="background:#1e1609;border-left:3px solid #f0a500;border-radius:0 8px 8px 0;padding:14px 18px;margin-bottom:16px">
+        <div style="font-size:13px;font-weight:700;color:#f0a500;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">💡 Hidden Value — Talking Points</div>
+        <div style="font-size:14px;color:#c9d1d9;line-height:1.7">
+          ${m.displayName} shows <strong style="color:#1f6feb">${m.packsSold} ITM packs</strong> and <strong style="color:#f778ba">${m.hstDirect} HST Direct orders</strong> this year — that's <strong style="color:#3fb950">${estCombined} homes</strong> of real Deako adoption in your division. Buyers are choosing Deako; use that as proof when the next one hesitates.
+        </div>
+      </div>`;
+  }
+
+  const contactLine = (agent.em || agent.ph)
+    ? `${agent.em?`<a href="mailto:${agent.em}" style="color:#7ecfe0;text-decoration:none">📧 ${agent.em}</a>`:''}${agent.em&&agent.ph?'  ·  ':''}${agent.ph?`<a href="tel:${agent.ph}" style="color:#3fb950;text-decoration:none">📞 ${agent.ph}</a>`:''}`
+    : '<span style="color:#484f58">No contact on file</span>';
+
+  const body = `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:20px 24px;border-bottom:1px solid #21262d;position:sticky;top:0;background:#161b22;z-index:5">
+      <div>
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:#f0a500;font-weight:700">🏆 Agent Brief</div>
+        <div style="font-size:24px;font-weight:800;color:#e6edf3;margin-top:4px">${name}${isNew?' <span style="font-size:11px;color:#f0a500;background:rgba(240,165,0,0.15);border:1px solid #f0a500;padding:2px 8px;border-radius:10px;font-weight:700;vertical-align:middle">NEW</span>':''}</div>
+        <div style="font-size:13px;color:#8b949e;margin-top:3px">${m.displayName}${m.isStaying?' · STAYING FY26':''} · ${agent.cm||'—'}</div>
+        <div style="font-size:12px;margin-top:6px">${contactLine}</div>
+      </div>
+      <button onclick="closeAgentReport()" style="background:transparent;border:1px solid #30363d;color:#8b949e;border-radius:6px;padding:6px 12px;font-size:13px;cursor:pointer">✕ Close</button>
+    </div>
+
+    <div style="padding:20px 24px">
+      <!-- Agent numbers -->
+      <div style="font-size:13px;font-weight:700;color:#f0a500;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px">Your Numbers</div>
+      <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:18px">
+        <div style="background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:12px;text-align:center"><div style="font-size:24px;font-weight:800;color:#f0a500">${agent.t}</div><div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:.4px;margin-top:2px">Total Packs</div></div>
+        <div style="background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:12px;text-align:center"><div style="font-size:24px;font-weight:800;color:#3fb950">${agent.p25}</div><div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:.4px;margin-top:2px">25-Pack</div></div>
+        <div style="background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:12px;text-align:center"><div style="font-size:24px;font-weight:800;color:#79c0ff">${agent.p10}</div><div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:.4px;margin-top:2px">10-Pack</div></div>
+        <div style="background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:12px;text-align:center"><div style="font-size:24px;font-weight:800;color:#f0883e">${agent.p8}</div><div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:.4px;margin-top:2px">8-Pack</div></div>
+        <div style="background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:12px;text-align:center"><div style="font-size:24px;font-weight:800;color:#d2a8ff">${agent.l3||0}</div><div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:.4px;margin-top:2px">Packs L3 Mo</div></div>
+        <div style="background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:#3fb950">$${deakoRev.toLocaleString()}</div><div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:.4px;margin-top:2px">Deako Rev</div></div>
+      </div>
+      <div style="font-size:12px;color:#8b949e;margin-bottom:20px">Rank in ${m.displayName}: <strong style="color:#e6edf3">#${divPkRank}</strong> · Homes sold (3 mo): <strong style="color:#e6edf3">${agent.h3||0}</strong></div>
+
+      <!-- Division context -->
+      <div style="font-size:13px;font-weight:700;color:#7ecfe0;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px">Division Context — ${m.displayName}</div>
+      <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:18px">
+        <div style="background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:#d2a8ff">${m.projHomes?m.projHomes.toLocaleString():'—'}</div><div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:.4px;margin-top:2px">FY26 Homes</div></div>
+        <div style="background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:#7ecfe0">${m.eligibleHomes!=null?m.eligibleHomes.toLocaleString():'—'}</div><div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:.4px;margin-top:2px">Eligible Homes</div></div>
+        <div style="background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:#1f6feb">${m.packsSold}</div><div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:.4px;margin-top:2px">Div ITM Packs</div></div>
+        <div style="background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:${m.convRate>=3?'#3fb950':m.convRate>=1.5?'#f0a500':'#f85149'}">${m.convRate.toFixed(2)}%</div><div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:.4px;margin-top:2px">Conv Rate</div></div>
+        <div style="background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:#f778ba">${m.hstDirect}</div><div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:.4px;margin-top:2px">HST Direct</div></div>
+        <div style="background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:#f0a500">${m.closes.toLocaleString()}</div><div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:.4px;margin-top:2px">Home Closes</div></div>
+      </div>
+
+      ${hiddenValue}
+
+      <!-- Talking points -->
+      <div style="font-size:13px;font-weight:700;color:#3fb950;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px">Talking Points for ${name.split(' ')[0]}</div>
+      <div style="background:#0d1117;border-left:3px solid #3fb950;border-radius:0 8px 8px 0;padding:14px 18px">
+        ${tp.map(p=>`<p style="font-size:14px;color:#c9d1d9;line-height:1.7;margin-bottom:10px">${p}</p>`).join('')}
+      </div>
+
+      <div style="font-size:11px;color:#484f58;margin-top:14px;font-style:italic">
+        Data auto-refreshes when new rainmaker / conversion / HST exports are loaded into the dashboard.
+      </div>
+    </div>
+  `;
+  const modal = document.getElementById('agentModal');
+  const content = document.getElementById('agentModalBody');
+  content.innerHTML = body;
+  modal.style.display = 'flex';
+  content.scrollTop = 0;
+}
+
+/* ── KEY DIVISION RAINMAKERS ── */
+const KEY_DIVISIONS = ['greensboro','greenville','raleigh_north','raleigh_south','indianapolis','delaware','atlanta_west','kansas_city'];
+
+function showKeyDivRainmakers(){
+  selectedIdx = 'keydivrm';
+  renderSidebar();
+
+  const divs = KEY_DIVISIONS.map(key => {
+    const agents = RAINMAKERS.filter(r=>r.d===key).slice().sort((a,b)=>b.t-a.t);
+    const m = _getDivMetrics(key);
+    const totalPacks = agents.reduce((s,r)=>s+r.t, 0);
+    const totalRev   = agents.reduce((s,r)=>s+r.p25*2700+r.p10*1125+r.p8*399, 0);
+    const totalL3    = agents.reduce((s,r)=>s+(r.l3||0), 0);
+    const top = agents[0];
+    const hot = agents.slice().sort((a,b)=>(b.l3||0)-(a.l3||0))[0];
+    const newlyAdded = (typeof RAINMAKERS_BASELINE!=='undefined')
+      ? agents.filter(a => !RAINMAKERS_BASELINE.has(a.n.trim().toLowerCase()))
+      : [];
+    return { key, m, agents, totalPacks, totalRev, totalL3, top, hot, newlyAdded };
+  });
+
+  const grandTotals = {
+    agents: divs.reduce((s,d)=>s+d.agents.length,0),
+    packs:  divs.reduce((s,d)=>s+d.totalPacks,0),
+    rev:    divs.reduce((s,d)=>s+d.totalRev,0),
+    homes:  divs.reduce((s,d)=>s+(d.m.projHomes||0),0),
+  };
+
+  document.getElementById('content').innerHTML = `
+    <div style="margin-bottom:14px">
+      <div style="font-size:22px;font-weight:700;color:#7ecfe0">🔑 Key Division Rainmakers</div>
+      <div style="font-size:13px;color:#8b949e;margin-top:3px">${KEY_DIVISIONS.length} priority divisions · ${grandTotals.agents.toLocaleString()} agents · click any agent name for their full brief</div>
+    </div>
+    <div class="rm-stats" style="margin-bottom:16px">
+      <div class="rm-stat" style="border-color:#7ecfe0;box-shadow:0 0 10px 2px rgba(126,207,224,0.35)"><div class="rm-stat-val" style="color:#7ecfe0">${grandTotals.agents.toLocaleString()}</div><div class="rm-stat-label">Total Agents</div></div>
+      <div class="rm-stat"><div class="rm-stat-val" style="color:#f0a500">${grandTotals.packs.toLocaleString()}</div><div class="rm-stat-label">All-Time Packs</div></div>
+      <div class="rm-stat"><div class="rm-stat-val" style="color:#3fb950">$${(grandTotals.rev/1000).toFixed(0)}K</div><div class="rm-stat-label">All-Time Revenue</div></div>
+      <div class="rm-stat"><div class="rm-stat-val" style="color:#d2a8ff">${grandTotals.homes.toLocaleString()}</div><div class="rm-stat-label">FY26 Home Starts</div></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px">
+      ${divs.map(d => {
+        const displayName = d.m.displayName;
+        const activeFlag = d.hot && d.hot.l3 > 0;
+        return `
+        <div class="full-chart-card" style="margin-bottom:0">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+            <div>
+              <h3 style="font-size:16px;color:#e6edf3;margin:0">${displayName}</h3>
+              <div style="font-size:11px;color:#8b949e;margin-top:2px">${d.m.projHomes?d.m.projHomes.toLocaleString()+' FY26 homes':''} · ${d.m.convRate.toFixed(2)}% conv · ${d.m.hstDirect} HST</div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-size:20px;font-weight:800;color:#f0a500">${d.agents.length}</div>
+              <div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:.4px">agents</div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">
+            <div style="background:#0d1117;border:1px solid #21262d;border-radius:6px;padding:8px;text-align:center"><div style="font-size:16px;font-weight:700;color:#f0a500">${d.totalPacks}</div><div style="font-size:9px;color:#8b949e;text-transform:uppercase;letter-spacing:.4px">Packs</div></div>
+            <div style="background:#0d1117;border:1px solid #21262d;border-radius:6px;padding:8px;text-align:center"><div style="font-size:16px;font-weight:700;color:#d2a8ff">${d.totalL3}</div><div style="font-size:9px;color:#8b949e;text-transform:uppercase;letter-spacing:.4px">L3 Mo</div></div>
+            <div style="background:#0d1117;border:1px solid #21262d;border-radius:6px;padding:8px;text-align:center"><div style="font-size:16px;font-weight:700;color:#3fb950">$${(d.totalRev/1000).toFixed(0)}K</div><div style="font-size:9px;color:#8b949e;text-transform:uppercase;letter-spacing:.4px">Revenue</div></div>
+          </div>
+          ${d.top ? `
+          <div style="background:#0d1117;border:1px solid #f0a500;border-radius:6px;padding:10px;margin-bottom:8px">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <div style="font-size:10px;color:#f0a500;text-transform:uppercase;letter-spacing:.5px;font-weight:700">🥇 Top Rainmaker</div>
+                <strong style="cursor:pointer;color:#7ecfe0;text-decoration:underline dotted;text-underline-offset:3px;font-size:14px" onclick="openAgentReport('${d.top.n.replace(/'/g,String.fromCharCode(39))}','${d.key}')">${d.top.n}</strong>
+                <div style="font-size:11px;color:#8b949e">${d.top.cm||'—'}</div>
+              </div>
+              <div style="text-align:right">
+                <div style="font-size:18px;font-weight:800;color:#f0a500">${d.top.t}</div>
+                <div style="font-size:9px;color:#8b949e;text-transform:uppercase;letter-spacing:.4px">packs</div>
+              </div>
+            </div>
+          </div>` : ''}
+          ${d.hot && d.hot.l3 > 0 && d.hot.n !== d.top?.n ? `
+          <div style="background:#0d1117;border:1px solid #d2a8ff;border-radius:6px;padding:10px;margin-bottom:8px">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <div style="font-size:10px;color:#d2a8ff;text-transform:uppercase;letter-spacing:.5px;font-weight:700">🔥 Hot (Last 3 Mo)</div>
+                <strong style="cursor:pointer;color:#7ecfe0;text-decoration:underline dotted;text-underline-offset:3px;font-size:14px" onclick="openAgentReport('${d.hot.n.replace(/'/g,String.fromCharCode(39))}','${d.key}')">${d.hot.n}</strong>
+                <div style="font-size:11px;color:#8b949e">${d.hot.cm||'—'}</div>
+              </div>
+              <div style="text-align:right">
+                <div style="font-size:18px;font-weight:800;color:#d2a8ff">${d.hot.l3}</div>
+                <div style="font-size:9px;color:#8b949e;text-transform:uppercase;letter-spacing:.4px">L3 mo</div>
+              </div>
+            </div>
+          </div>` : ''}
+          ${d.newlyAdded.length ? `
+          <div style="background:#0d1117;border:1px dashed #30363d;border-radius:6px;padding:8px 10px;margin-bottom:8px">
+            <div style="font-size:10px;color:#f0a500;text-transform:uppercase;letter-spacing:.5px;font-weight:700;margin-bottom:4px">✨ Newly Added (${d.newlyAdded.length})</div>
+            ${d.newlyAdded.map(a=>`<span style="display:inline-block;margin:2px 6px 2px 0;font-size:12px"><strong style="cursor:pointer;color:#7ecfe0;text-decoration:underline dotted" onclick="openAgentReport('${a.n.replace(/'/g,String.fromCharCode(39))}','${d.key}')">${a.n}</strong> <span style="color:#8b949e">(${a.t}p)</span></span>`).join('')}
+          </div>` : ''}
+          <details style="margin-top:4px">
+            <summary style="cursor:pointer;font-size:12px;color:#8b949e;font-weight:600">Show all ${d.agents.length} agents</summary>
+            <table style="width:100%;margin-top:8px;font-size:12px;border-collapse:collapse">
+              <tr style="color:#8b949e;text-align:left"><th style="padding:4px 6px">#</th><th>Agent</th><th style="text-align:right">Packs</th><th style="text-align:right">L3</th><th style="text-align:right">Rev</th></tr>
+              ${d.agents.map((a,i)=>{
+                const r = a.p25*2700+a.p10*1125+a.p8*399;
+                return `<tr style="border-top:1px solid #21262d">
+                  <td style="color:#484f58;padding:4px 6px">${i+1}</td>
+                  <td><strong style="cursor:pointer;color:#7ecfe0;text-decoration:underline dotted" onclick="openAgentReport('${a.n.replace(/'/g,String.fromCharCode(39))}','${d.key}')">${a.n}</strong></td>
+                  <td style="text-align:right;color:#f0a500;font-weight:700">${a.t}</td>
+                  <td style="text-align:right;color:#d2a8ff;font-weight:700">${a.l3||0}</td>
+                  <td style="text-align:right;color:#3fb950">$${(r/1000).toFixed(1)}K</td>
+                </tr>`;
+              }).join('')}
+            </table>
+          </details>
+        </div>`;
+      }).join('')}
+    </div>
+  `;
+}
+
 renderOverview();
 document.getElementById('sidebar').addEventListener('click', function(e){
   if(!e.target.closest('.div-item')) return;
 });
+
+// Close modal on backdrop click or Escape
+document.addEventListener('click', e => {
+  if (e.target.id === 'agentModal') closeAgentReport();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeAgentReport();
+});
 </script>
+
+<!-- Agent Report Modal -->
+<div id="agentModal" style="display:none;position:fixed;inset:0;background:rgba(13,17,23,0.85);z-index:1000;align-items:flex-start;justify-content:center;padding:30px 20px;overflow-y:auto">
+  <div style="background:#161b22;border:1px solid #30363d;border-radius:12px;width:100%;max-width:1100px;max-height:calc(100vh - 60px);overflow-y:auto;box-shadow:0 10px 50px rgba(0,0,0,0.6)">
+    <div id="agentModalBody"></div>
+  </div>
+</div>
+
 </body>
 </html>
