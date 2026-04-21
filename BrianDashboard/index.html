@@ -17,6 +17,7 @@
 <script src="po_status_data.js"></script>
 <script src="hst_top10.js"></script>
 <script src="staying_divisions.js"></script>
+<script src="backlog_homes.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{--bg:#0d1117;--bg-card:#161b22;--bg-hover:#1c2128;--border:#21262d;--text:#c9d1d9;--text-h:#e6edf3;--text-m:#8b949e;--text-d:#484f58}
@@ -259,7 +260,7 @@ body.light ::-webkit-scrollbar-thumb{background:#d0d7de !important}
   <div id="content"></div>
 </div>
 
-<div id="version-badge">v10.2</div>
+<div id="version-badge">v10.3</div>
 
 <script>
 // Theme toggle — CSS handles colors; body.light class drives the swap
@@ -2899,6 +2900,7 @@ function _getDivMetrics(divKey){
   const hu = (typeof HORTON_UPGRADES!=='undefined')
     ? HORTON_UPGRADES.find(h=>h.div.toLowerCase()===displayName.toLowerCase()
       || fmtDiv(h.div.toLowerCase().replace(/\s+/g,'_'))===displayName) : null;
+  const backlog = (typeof BACKLOG_HOMES !== 'undefined' && BACKLOG_HOMES[divKey] != null) ? BACKLOG_HOMES[divKey] : null;
   return {
     displayName, latest,
     eligibleHomes: cv?.e ?? (st?.homes ?? null),
@@ -2908,6 +2910,7 @@ function _getDivMetrics(divKey){
     ratif: rf?.n ?? 0,
     hstDirect: hst?.n ?? 0,
     projHomes: st?.homes ?? null,
+    backlog,
     po, hu,
     isStaying: !!st,
   };
@@ -3004,8 +3007,9 @@ function openAgentReport(name, divKey){
 
       <!-- Division context -->
       <div style="font-size:13px;font-weight:700;color:#7ecfe0;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px">Division Context — ${m.displayName}</div>
-      <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:18px">
+      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin-bottom:18px">
         <div style="background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:#d2a8ff">${m.projHomes?m.projHomes.toLocaleString():'—'}</div><div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:.4px;margin-top:2px">FY26 Homes</div></div>
+        <div style="background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:${m.backlog!=null?'#e3b341':'#484f58'}">${m.backlog!=null?m.backlog.toLocaleString():'—'}</div><div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:.4px;margin-top:2px">Backlog</div></div>
         <div style="background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:#7ecfe0">${m.eligibleHomes!=null?m.eligibleHomes.toLocaleString():'—'}</div><div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:.4px;margin-top:2px">Eligible Homes</div></div>
         <div style="background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:#1f6feb">${m.packsSold}</div><div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:.4px;margin-top:2px">Div ITM Packs</div></div>
         <div style="background:#0d1117;border:1px solid #21262d;border-radius:8px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:${m.convRate>=3?'#3fb950':m.convRate>=1.5?'#f0a500':'#f85149'}">${m.convRate.toFixed(2)}%</div><div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:.4px;margin-top:2px">Conv Rate</div></div>
@@ -3059,6 +3063,8 @@ function showKeyDivRainmakers(){
     packs:  divs.reduce((s,d)=>s+d.totalPacks,0),
     rev:    divs.reduce((s,d)=>s+d.totalRev,0),
     homes:  divs.reduce((s,d)=>s+(d.m.projHomes||0),0),
+    backlog:   divs.reduce((s,d)=>s+(d.m.backlog||0),0),
+    backlogHave: divs.filter(d=>d.m.backlog!=null).length,
   };
 
   document.getElementById('content').innerHTML = `
@@ -3071,6 +3077,7 @@ function showKeyDivRainmakers(){
       <div class="rm-stat"><div class="rm-stat-val" style="color:#f0a500">${grandTotals.packs.toLocaleString()}</div><div class="rm-stat-label">All-Time Packs</div></div>
       <div class="rm-stat"><div class="rm-stat-val" style="color:#3fb950">$${(grandTotals.rev/1000).toFixed(0)}K</div><div class="rm-stat-label">All-Time Revenue</div></div>
       <div class="rm-stat"><div class="rm-stat-val" style="color:#d2a8ff">${grandTotals.homes.toLocaleString()}</div><div class="rm-stat-label">FY26 Home Starts</div></div>
+      <div class="rm-stat" style="border-color:#e3b341"><div class="rm-stat-val" style="color:#e3b341">${grandTotals.backlogHave>0?grandTotals.backlog.toLocaleString():'—'}</div><div class="rm-stat-label">Homes in Backlog${grandTotals.backlogHave<KEY_DIVISIONS.length?` (${grandTotals.backlogHave}/${KEY_DIVISIONS.length})`:''}</div></div>
     </div>
 
     <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px">
@@ -3089,7 +3096,8 @@ function showKeyDivRainmakers(){
               <div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:.4px">agents</div>
             </div>
           </div>
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px">
+            <div style="background:#0d1117;border:1px solid ${d.m.backlog!=null?'#e3b341':'#21262d'};border-radius:6px;padding:8px;text-align:center" title="Homes in Backlog"><div style="font-size:16px;font-weight:700;color:${d.m.backlog!=null?'#e3b341':'#484f58'}">${d.m.backlog!=null?d.m.backlog.toLocaleString():'—'}</div><div style="font-size:9px;color:#8b949e;text-transform:uppercase;letter-spacing:.4px">Backlog</div></div>
             <div style="background:#0d1117;border:1px solid #21262d;border-radius:6px;padding:8px;text-align:center"><div style="font-size:16px;font-weight:700;color:#f0a500">${d.totalPacks}</div><div style="font-size:9px;color:#8b949e;text-transform:uppercase;letter-spacing:.4px">Packs</div></div>
             <div style="background:#0d1117;border:1px solid #21262d;border-radius:6px;padding:8px;text-align:center"><div style="font-size:16px;font-weight:700;color:#d2a8ff">${d.totalL3}</div><div style="font-size:9px;color:#8b949e;text-transform:uppercase;letter-spacing:.4px">L3 Mo</div></div>
             <div style="background:#0d1117;border:1px solid #21262d;border-radius:6px;padding:8px;text-align:center"><div style="font-size:16px;font-weight:700;color:#3fb950">$${(d.totalRev/1000).toFixed(0)}K</div><div style="font-size:9px;color:#8b949e;text-transform:uppercase;letter-spacing:.4px">Revenue</div></div>
