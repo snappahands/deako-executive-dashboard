@@ -176,6 +176,10 @@ body.light #themeToggle{background:#fff !important;border:2px solid #000 !import
 body.light #themeToggle:hover{box-shadow:0 0 12px 2px rgba(0,0,0,0.25)}
 body.light ::-webkit-scrollbar-track{background:#f5f6f8 !important}
 body.light ::-webkit-scrollbar-thumb{background:#d0d7de !important}
+/* Shimmer gold/silver for high-focus titles (Great 8, HST vs ITM) */
+.shimmer-gs{background:linear-gradient(90deg,#c0c0c0 0%,#f0d070 20%,#f7c65c 40%,#fff8d6 50%,#f7c65c 60%,#f0d070 80%,#c0c0c0 100%);background-size:200% auto;-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;animation:shimmerGS 3.2s linear infinite;font-weight:800 !important;text-shadow:none !important;letter-spacing:.5px}
+@keyframes shimmerGS{0%{background-position:0% center}100%{background-position:200% center}}
+body.light .shimmer-gs{background:linear-gradient(90deg,#8b8b8b 0%,#b8860b 20%,#daa520 40%,#444 50%,#daa520 60%,#b8860b 80%,#8b8b8b 100%);background-size:200% auto;-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
 
 /* ACTIVE FILTER GLOW */
 .filter-active{box-shadow:0 0 8px 2px rgba(126,207,224,0.6);font-weight:700 !important;color:#fff !important;background:#1f6feb !important;border-color:#1f6feb !important}
@@ -260,7 +264,7 @@ body.light ::-webkit-scrollbar-thumb{background:#d0d7de !important}
   <div id="content"></div>
 </div>
 
-<div id="version-badge">v10.9</div>
+<div id="version-badge">v11.0</div>
 
 <script>
 // Theme toggle — CSS handles colors; body.light class drives the swap
@@ -589,10 +593,10 @@ function renderSidebar(){
   sb.innerHTML = `<div class="div-item${selectedIdx===null?' active':''}" onclick="goHome()" style="font-weight:700;color:#7ecfe0;border-left-color:${selectedIdx===null?'#7ecfe0':'transparent'}">🏠 Home</div>
   <div class="div-item${selectedIdx==='conv'?' active':''}" onclick="showConvRates('monthly','')" style="font-weight:700;color:#7ecfe0;border-left-color:${selectedIdx==='conv'?'#7ecfe0':'transparent'}">📈 Conv. by Division</div>
   <div class="div-item${selectedIdx==='rainmakers'?' active':''}" onclick="showRainmakers()" style="font-weight:700;color:#f0a500;border-left-color:${selectedIdx==='rainmakers'?'#f0a500':'transparent'}">🏆 Rainmakers</div>
-  <div class="div-item${selectedIdx==='keydivrm'?' active':''}" onclick="showKeyDivRainmakers()" style="font-weight:700;color:#7ecfe0;border-left-color:${selectedIdx==='keydivrm'?'#7ecfe0':'transparent'}">🔑 Great 8 Rainmakers</div>
+  <div class="div-item${selectedIdx==='keydivrm'?' active':''}" onclick="showKeyDivRainmakers()" style="font-weight:700;border-left-color:${selectedIdx==='keydivrm'?'#f7c65c':'transparent'}">🔑 <span class="shimmer-gs">Great 8 Rainmakers</span></div>
   <div class="div-item${selectedIdx==='divisions'?' active':''}" onclick="showDivisions()" style="font-weight:700;color:#d2a8ff;border-left-color:${selectedIdx==='divisions'?'#d2a8ff':'transparent'}">📋 Training Summary</div>
   <div class="div-item${selectedIdx==='summary'?' active':''}" onclick="showSummary()" style="font-weight:700;color:#f85149;border-left-color:${selectedIdx==='summary'?'#f85149':'transparent'}">📊 Performance Summary</div>
-  <div class="div-item${selectedIdx==='hst'?' active':''}" onclick="showHstAnalysis()" style="font-weight:700;color:#8b949e;border-left-color:${selectedIdx==='hst'?'#8b949e':'transparent'}">🔍 HST vs ITM Analysis</div>
+  <div class="div-item${selectedIdx==='hst'?' active':''}" onclick="showHstAnalysis()" style="font-weight:700;border-left-color:${selectedIdx==='hst'?'#f7c65c':'transparent'}">🔍 <span class="shimmer-gs">HST vs ITM Analysis</span></div>
   <div class="div-item${selectedIdx==='horton'?' active':''}" onclick="showHortonReport()" style="font-weight:700;color:#3fb950;border-left-color:${selectedIdx==='horton'?'#3fb950':'transparent'}">💰 Horton Upgrades Report</div>
   <div class="div-item${selectedIdx==='chase'?' active':''}" onclick="showChase()" style="font-weight:700;color:#da3633;border-left-color:${selectedIdx==='chase'?'#da3633':'transparent'}">🎯 1SS & 4SS Chase</div>
   <div class="div-item${selectedIdx==='execbrief'?' active':''}" onclick="showExecBrief()" style="font-weight:700;color:#f0883e;border-left-color:${selectedIdx==='execbrief'?'#f0883e':'transparent'}">📧 Division Exec Brief</div>
@@ -3420,7 +3424,7 @@ function showKeyDivRainmakers(){
 
   document.getElementById('content').innerHTML = `
     <div style="margin-bottom:14px">
-      <div style="font-size:22px;font-weight:700;color:#7ecfe0">🔑 Great 8 Rainmakers</div>
+      <div style="font-size:26px;font-weight:800">🔑 <span class="shimmer-gs">Great 8 Rainmakers</span></div>
       <div style="font-size:13px;color:#8b949e;margin-top:3px">${KEY_DIVISIONS.length} priority divisions · ${grandTotals.agents.toLocaleString()} agents · click any agent name for their full brief</div>
     </div>
     <div class="rm-stats" style="margin-bottom:16px">

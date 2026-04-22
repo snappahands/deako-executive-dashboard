@@ -25,7 +25,9 @@
       align-items: flex-end;
       justify-content: space-between;
     }
-    header h1 { font-size: 32px; font-weight: 700; margin-bottom: 8px; }
+    header h1 { font-size: 32px; font-weight: 800; margin-bottom: 8px; letter-spacing: .5px; }
+    .shimmer-gs{background:linear-gradient(90deg,#c0c0c0 0%,#f0d070 20%,#f7c65c 40%,#fff8d6 50%,#f7c65c 60%,#f0d070 80%,#c0c0c0 100%);background-size:200% auto;-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;animation:shimmerGS 3.2s linear infinite}
+    @keyframes shimmerGS{0%{background-position:0% center}100%{background-position:200% center}}
     .subtitle { font-size: 15px; color: #8b949e; }
     a.back-link {
       font-size: 13px;
@@ -195,7 +197,7 @@
 
 <header>
   <div>
-    <h1>HST Direct vs. ITM — Pack Sales Impact Analysis</h1>
+    <h1><span class="shimmer-gs">HST Direct vs. ITM — Pack Sales Impact Analysis</span></h1>
     <p class="subtitle">January 2024 – February 2026 &nbsp;·&nbsp; 26 months of dual-channel data &nbsp;·&nbsp; 125 divisions (2023–2025) → 27 divisions (Jan 2026)</p>
   </div>
   <a class="back-link" href="index.html">← Back to Dashboard</a>
