@@ -260,7 +260,7 @@ body.light ::-webkit-scrollbar-thumb{background:#d0d7de !important}
   <div id="content"></div>
 </div>
 
-<div id="version-badge">v10.7</div>
+<div id="version-badge">v10.8</div>
 
 <script>
 // Theme toggle — CSS handles colors; body.light class drives the swap
@@ -3324,21 +3324,28 @@ function showKeyDivRainmakers(){
             <div style="background:#0d1117;border:1px solid #21262d;border-radius:6px;padding:8px;text-align:center"><div style="font-size:16px;font-weight:700;color:#d2a8ff">${d.totalL3}</div><div style="font-size:9px;color:#8b949e;text-transform:uppercase;letter-spacing:.4px">L3 Mo</div></div>
             <div style="background:#0d1117;border:1px solid #21262d;border-radius:6px;padding:8px;text-align:center"><div style="font-size:16px;font-weight:700;color:#3fb950">$${(d.totalRev/1000).toFixed(0)}K</div><div style="font-size:9px;color:#8b949e;text-transform:uppercase;letter-spacing:.4px">Revenue</div></div>
           </div>
-          ${d.top ? `
+          ${d.agents.length ? `
           <div style="background:#0d1117;border:1px solid #f0a500;border-radius:6px;padding:10px;margin-bottom:8px">
-            <div style="display:flex;justify-content:space-between;align-items:center">
-              <div>
-                <div style="font-size:10px;color:#f0a500;text-transform:uppercase;letter-spacing:.5px;font-weight:700">🥇 Top Rainmaker</div>
-                <strong style="cursor:pointer;color:#7ecfe0;text-decoration:underline dotted;text-underline-offset:3px;font-size:14px" onclick="openAgentReport('${d.top.n.replace(/'/g,String.fromCharCode(39))}','${d.key}')">${d.top.n}</strong>
-                <div style="font-size:11px;color:#8b949e">${d.top.cm||'—'}</div>
-              </div>
-              <div style="text-align:right">
-                <div style="font-size:18px;font-weight:800;color:#f0a500">${d.top.t}</div>
-                <div style="font-size:9px;color:#8b949e;text-transform:uppercase;letter-spacing:.4px">packs</div>
-              </div>
-            </div>
+            <div style="font-size:10px;color:#f0a500;text-transform:uppercase;letter-spacing:.5px;font-weight:700;margin-bottom:6px">🏆 Top 3 Rainmakers</div>
+            ${d.agents.slice(0,3).map((a,i)=>{
+              const medal = i===0?'🥇':i===1?'🥈':'🥉';
+              const color = i===0?'#f0a500':i===1?'#c9d1d9':'#cd7f32';
+              return `<div style="display:flex;justify-content:space-between;align-items:center;${i>0?'border-top:1px solid #21262d;padding-top:6px;margin-top:6px':''}">
+                <div style="display:flex;align-items:center;gap:8px;min-width:0;flex:1">
+                  <span style="font-size:15px">${medal}</span>
+                  <div style="min-width:0">
+                    <strong style="cursor:pointer;color:#7ecfe0;text-decoration:underline dotted;text-underline-offset:3px;font-size:14px" onclick="openAgentReport('${a.n.replace(/'/g,String.fromCharCode(39))}','${d.key}')">${a.n}</strong>
+                    <div style="font-size:11px;color:#8b949e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${a.cm||'—'}</div>
+                  </div>
+                </div>
+                <div style="text-align:right;flex-shrink:0;margin-left:8px">
+                  <div style="font-size:16px;font-weight:800;color:${color}">${a.t}</div>
+                  <div style="font-size:9px;color:#8b949e;text-transform:uppercase;letter-spacing:.4px">packs</div>
+                </div>
+              </div>`;
+            }).join('')}
           </div>` : ''}
-          ${d.hot && d.hot.l3 > 0 && d.hot.n !== d.top?.n ? `
+          ${d.hot && d.hot.l3 > 0 && !d.agents.slice(0,3).some(a => a.n === d.hot.n) ? `
           <div style="background:#0d1117;border:1px solid #d2a8ff;border-radius:6px;padding:10px;margin-bottom:8px">
             <div style="display:flex;justify-content:space-between;align-items:center">
               <div>
