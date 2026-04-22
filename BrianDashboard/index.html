@@ -260,7 +260,7 @@ body.light ::-webkit-scrollbar-thumb{background:#d0d7de !important}
   <div id="content"></div>
 </div>
 
-<div id="version-badge">v10.8</div>
+<div id="version-badge">v10.9</div>
 
 <script>
 // Theme toggle — CSS handles colors; body.light class drives the swap
@@ -2230,7 +2230,7 @@ function showRainmakers(){
   renderRainmakers('','');
 }
 
-/* ── OUTREACH LOG (localStorage-backed) ── */
+/* ── OUTREACH LOG (localStorage-backed, with event history) ── */
 const OUTREACH_KEY = 'brian_rm_outreach_v1';
 function outreachLoad() {
   try { return JSON.parse(localStorage.getItem(OUTREACH_KEY) || '{}'); }
@@ -2243,12 +2243,19 @@ function outreachSave(map) {
 function outreachKey(name, div) { return (name||'') + '|' + (div||''); }
 function outreachGet(name, div) {
   const m = outreachLoad();
-  return m[outreachKey(name,div)] || { c:false, e:false, t:false, notes:'', updated:null };
+  return m[outreachKey(name,div)] || { c:false, e:false, t:false, notes:'', updated:null, events:[] };
 }
-function outreachSet(name, div, partial) {
+// partial can include c/e/t/notes; events is an optional array of {type,ts} to append
+function outreachSet(name, div, partial, appendEvents) {
   const m = outreachLoad();
   const k = outreachKey(name,div);
-  m[k] = Object.assign({ c:false, e:false, t:false, notes:'' }, m[k]||{}, partial, { updated: new Date().toISOString() });
+  const prev = m[k] || { c:false, e:false, t:false, notes:'', events:[] };
+  const events = Array.isArray(prev.events) ? prev.events.slice() : [];
+  if (appendEvents && appendEvents.length) {
+    const now = new Date().toISOString();
+    appendEvents.forEach(t => events.push({ type: t, ts: now }));
+  }
+  m[k] = Object.assign({}, prev, partial, { updated: new Date().toISOString(), events });
   outreachSave(m);
   return m[k];
 }
@@ -2263,13 +2270,103 @@ function outreachTotals() {
   }
   return { c, e, t, notes, agents };
 }
+// Aggregate event counts across all agents within a date range
+function outreachActivity(startMs, endMs) {
+  const m = outreachLoad();
+  const out = { c:0, e:0, t:0, n:0 };
+  for (const k in m) {
+    const evs = m[k].events || [];
+    evs.forEach(ev => {
+      const ts = Date.parse(ev.ts);
+      if (isNaN(ts)) return;
+      if ((startMs == null || ts >= startMs) && (endMs == null || ts < endMs)) {
+        if (out[ev.type] != null) out[ev.type]++;
+      }
+    });
+  }
+  return out;
+}
+function outreachFirstEventMs() {
+  const m = outreachLoad();
+  let min = null;
+  for (const k in m) {
+    (m[k].events || []).forEach(ev => {
+      const ts = Date.parse(ev.ts);
+      if (isNaN(ts)) return;
+      if (min == null || ts < min) min = ts;
+    });
+  }
+  return min;
+}
+function startOfDay(d){ const x=new Date(d); x.setHours(0,0,0,0); return x; }
+function startOfWeek(d){ const x=startOfDay(d); x.setDate(x.getDate() - x.getDay()); return x; } // Sunday start
+function startOfMonth(d){ const x=new Date(d); x.setDate(1); x.setHours(0,0,0,0); return x; }
+function startOfQuarter(d){ const x=new Date(d); const q=Math.floor(x.getMonth()/3)*3; x.setMonth(q,1); x.setHours(0,0,0,0); return x; }
 function onOutreachCheckbox(chk, name, div, field) {
-  outreachSet(name, div, { [field]: chk.checked });
+  const wasChecked = outreachGet(name, div)[field];
+  // Only log an event on transition false -> true (adds an action)
+  const events = (!wasChecked && chk.checked) ? [field] : [];
+  outreachSet(name, div, { [field]: chk.checked }, events);
   const st = chk.closest('.rm-row-outreach')?.querySelector('.rm-outreach-saved');
   if (st) { st.style.opacity = 1; setTimeout(()=>{ st.style.opacity = 0; }, 1200); }
-  // Update top-of-view summary in place (cheap re-render of stats block)
   const sEl = document.getElementById('outreach-summary');
   if (sEl) sEl.innerHTML = _outreachSummaryHtml();
+  const aEl = document.getElementById('outreach-activity');
+  if (aEl) aEl.innerHTML = _outreachActivityHtml();
+}
+function _outreachActivityHtml() {
+  const now = new Date();
+  const todayS = startOfDay(now).getTime();
+  const weekS  = startOfWeek(now).getTime();
+  const monthS = startOfMonth(now).getTime();
+  const qS     = startOfQuarter(now).getTime();
+  const allT   = outreachActivity(null, null);
+  const today  = outreachActivity(todayS, null);
+  const week   = outreachActivity(weekS,  null);
+  const month  = outreachActivity(monthS, null);
+  const qtr    = outreachActivity(qS,     null);
+
+  const firstMs = outreachFirstEventMs();
+  const daysActive = firstMs
+    ? Math.max(1, Math.ceil((now.getTime() - firstMs) / 86400000))
+    : 0;
+  const perDay = (allT, days) => days > 0 ? (allT/days).toFixed(daysActive>30?1:2) : '—';
+
+  const cell = (n, color) => `<td style="text-align:right;padding:6px 10px;color:${color};font-weight:700">${n}</td>`;
+  const row = (label, d, isHead=false) => {
+    const cls = isHead ? 'font-weight:700;color:#e6edf3' : 'color:#c9d1d9';
+    return `<tr style="${isHead?'border-bottom:1px solid #30363d':'border-bottom:1px solid #21262d'}">
+      <td style="padding:6px 10px;${cls}">${label}</td>
+      ${cell(d.c, '#3fb950')}${cell(d.e, '#7ecfe0')}${cell(d.t, '#d2a8ff')}${cell(d.n, '#f0a500')}
+    </tr>`;
+  };
+  const avgRow = daysActive > 0 ? `
+    <tr style="background:#0d1117">
+      <td style="padding:6px 10px;color:#8b949e;font-style:italic;font-size:12px">Per-Day Avg (${daysActive}d active)</td>
+      <td style="text-align:right;padding:6px 10px;color:#3fb950;font-weight:600;font-size:12px">${perDay(allT.c, daysActive)}</td>
+      <td style="text-align:right;padding:6px 10px;color:#7ecfe0;font-weight:600;font-size:12px">${perDay(allT.e, daysActive)}</td>
+      <td style="text-align:right;padding:6px 10px;color:#d2a8ff;font-weight:600;font-size:12px">${perDay(allT.t, daysActive)}</td>
+      <td style="text-align:right;padding:6px 10px;color:#f0a500;font-weight:600;font-size:12px">${perDay(allT.n, daysActive)}</td>
+    </tr>` : '';
+
+  return `
+    <div style="background:#161b22;border:1px solid #21262d;border-radius:10px;overflow:hidden">
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <tr style="background:#0d1117;color:#8b949e;font-size:11px;text-transform:uppercase;letter-spacing:.5px">
+          <th style="text-align:left;padding:8px 10px">Period</th>
+          <th style="text-align:right;padding:8px 10px">📞 Calls</th>
+          <th style="text-align:right;padding:8px 10px">📧 Emails</th>
+          <th style="text-align:right;padding:8px 10px">💬 Texts</th>
+          <th style="text-align:right;padding:8px 10px">📝 Notes</th>
+        </tr>
+        ${row('Today', today, true)}
+        ${row('This Week', week)}
+        ${row('This Month', month)}
+        ${row('This Quarter', qtr)}
+        ${row('All Time', allT)}
+        ${avgRow}
+      </table>
+    </div>`;
 }
 function _outreachSummaryHtml() {
   const t = outreachTotals();
@@ -2284,22 +2381,40 @@ function _outreachSummaryHtml() {
 }
 function exportOutreachCsv() {
   const m = outreachLoad();
-  const rows = [['Agent','Division','Community','Called','Emailed','Texted','Notes','Last Updated']];
+  const esc = s => '"' + String(s||'').replace(/"/g,'""') + '"';
+  // Sheet 1: cumulative state (one row per agent)
+  const summary = [['Agent','Division','Community','Called','Emailed','Texted','Notes','Last Updated','Total Actions Logged']];
+  // Sheet 2: event log (one row per action, with timestamp)
+  const events = [['Agent','Division','Community','Action Type','Timestamp','Date','Day of Week']];
+  const typeLabel = { c:'Call', e:'Email', t:'Text', n:'Note' };
   RAINMAKERS.forEach(a => {
     const r = m[outreachKey(a.n, a.d)];
     if (!r) return;
     if (!r.c && !r.e && !r.t && !(r.notes||'').trim()) return;
-    const esc = s => '"' + String(s||'').replace(/"/g,'""') + '"';
-    rows.push([
+    summary.push([
       esc(a.n), esc(a.d), esc(a.cm||''),
       r.c?'Yes':'', r.e?'Yes':'', r.t?'Yes':'',
       esc((r.notes||'').replace(/\r?\n/g,' · ')),
-      r.updated ? new Date(r.updated).toLocaleString() : ''
+      r.updated ? new Date(r.updated).toLocaleString() : '',
+      (r.events||[]).length
     ]);
+    (r.events||[]).forEach(ev => {
+      const d = new Date(ev.ts);
+      events.push([
+        esc(a.n), esc(a.d), esc(a.cm||''),
+        typeLabel[ev.type] || ev.type,
+        ev.ts,
+        d.toLocaleDateString(),
+        d.toLocaleDateString('en-US',{weekday:'long'})
+      ]);
+    });
   });
-  if (rows.length === 1) { alert('No outreach logged yet.'); return; }
-  const csv = rows.map(r => r.join(',')).join('\n');
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  if (summary.length === 1) { alert('No outreach logged yet.'); return; }
+  const combined = 'OUTREACH SUMMARY (one row per agent)\n' +
+    summary.map(r => r.join(',')).join('\n') +
+    '\n\nEVENT LOG (timestamped actions)\n' +
+    events.map(r => r.join(',')).join('\n');
+  const blob = new Blob([combined], { type: 'text/csv;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
@@ -2310,7 +2425,11 @@ function exportOutreachCsv() {
 function saveAgentNotes(name, div) {
   const ta = document.getElementById('agentNotesTa');
   if (!ta) return;
-  outreachSet(name, div, { notes: ta.value });
+  const prev = outreachGet(name, div);
+  const newVal = ta.value;
+  // Log a 'n' event only if notes actually changed and aren't empty
+  const events = (newVal.trim() && newVal !== (prev.notes||'')) ? ['n'] : [];
+  outreachSet(name, div, { notes: newVal }, events);
   const btn = document.getElementById('agentNotesSaveBtn');
   if (btn) {
     const orig = btn.textContent;
@@ -2320,11 +2439,17 @@ function saveAgentNotes(name, div) {
   }
   const sEl = document.getElementById('outreach-summary');
   if (sEl) sEl.innerHTML = _outreachSummaryHtml();
+  const aEl = document.getElementById('outreach-activity');
+  if (aEl) aEl.innerHTML = _outreachActivityHtml();
 }
 function onAgentOutreachBox(chk, name, div, field) {
-  outreachSet(name, div, { [field]: chk.checked });
+  const wasChecked = outreachGet(name, div)[field];
+  const events = (!wasChecked && chk.checked) ? [field] : [];
+  outreachSet(name, div, { [field]: chk.checked }, events);
   const sEl = document.getElementById('outreach-summary');
   if (sEl) sEl.innerHTML = _outreachSummaryHtml();
+  const aEl = document.getElementById('outreach-activity');
+  if (aEl) aEl.innerHTML = _outreachActivityHtml();
 }
 
 function renderRainmakers(filter, divFilter, sortBy='t'){
@@ -2373,8 +2498,12 @@ function renderRainmakers(filter, divFilter, sortBy='t'){
       </div>
     </div>` : ''}
     <div style="margin:16px 0 10px 0">
-      <div style="font-size:13px;font-weight:700;color:#3fb950;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">📋 Outreach Log</div>
+      <div style="font-size:13px;font-weight:700;color:#3fb950;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">📋 Outreach Log — Cumulative (Current State)</div>
       <div class="rm-stats" id="outreach-summary">${_outreachSummaryHtml()}</div>
+    </div>
+    <div style="margin:16px 0 10px 0">
+      <div style="font-size:13px;font-weight:700;color:#f0a500;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">⏱ Outreach Activity Over Time</div>
+      <div id="outreach-activity">${_outreachActivityHtml()}</div>
     </div>
     <div class="rm-controls">
       <input type="text" id="rm-search" placeholder="Search agent name..." value="${filter}" oninput="renderRainmakers(this.value, document.getElementById('rm-div').value, '${sortBy}')">
