@@ -264,7 +264,7 @@ body.light .shimmer-gs{background:linear-gradient(90deg,#8b8b8b 0%,#b8860b 20%,#
   <div id="content"></div>
 </div>
 
-<div id="version-badge">v11.1</div>
+<div id="version-badge">v11.2</div>
 
 <script>
 // Theme toggle — CSS handles colors; body.light class drives the swap
@@ -1193,7 +1193,7 @@ function renderOverview(){
       <div style="position:relative;height:320px"><canvas id="dpupChart"></canvas></div>
     </div>
     <div class="full-chart-card">
-      <h3>ITM Before &amp; After Deako Training <span style="font-size:10px;font-weight:400;color:#484f58;margin-left:8px">Gray = prior-year ITM packs (baseline) · Teal = post-training packs with days-since-training · Green/red data-label = annualized pace vs prior year</span></h3>
+      <h3>ITM Before &amp; After Deako Training <span style="font-size:10px;font-weight:400;color:#484f58;margin-left:8px">Gray = prior-year ITM packs (baseline) · Green = post-training packs with days-since-training · Dashed purple = projected full-year pace · Green/red data-label = % vs prior year</span></h3>
       <div class="full-chart-wrap"><canvas id="itmChart"></canvas></div>
       <div id="itmPaceTable" style="margin-top:18px"></div>
     </div>
@@ -1402,7 +1402,7 @@ function renderOverview(){
              const r = itmRows[ctx.dataIndex];
              if (r.paceDelta == null) return v;
              const sign = r.paceDelta >= 0 ? '+' : '';
-             return `${v}  (proj ${r.projAnnual}/yr, ${sign}${r.pacePct}%)`;
+             return `${v}  (${sign}${r.pacePct}%)`;
            }
          }}
       ]
@@ -1433,10 +1433,38 @@ function renderOverview(){
       },
       scales:{
         x:{ticks:{color:'#8b949e',font:{size:10}},grid:{color:'#21262d'}},
-        y:{ticks:{color:'#8b949e',font:{size:11}},grid:{color:'#21262d'},beginAtZero:true}
+        y:{ticks:{color:'#8b949e',font:{size:11}},grid:{color:'#21262d'},beginAtZero:true,
+           suggestedMax: Math.max(...itmRows.map(r => Math.max(r.pre||0, r.post||0, r.projAnnual||0))) * 1.15
+        }
       }
     },
-    plugins:[ChartDataLabels]
+    plugins:[ChartDataLabels, {
+      id:'projectionOverlay',
+      afterDatasetsDraw(chart){
+        const postMeta = chart.getDatasetMeta(1);
+        if (!postMeta || postMeta.hidden) return;
+        const {ctx, scales:{y}} = chart;
+        const baseY = y.getPixelForValue(0);
+        ctx.save();
+        ctx.strokeStyle = '#d2a8ff';
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([5,4]);
+        ctx.font = 'bold 10px sans-serif';
+        ctx.fillStyle = '#d2a8ff';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'bottom';
+        postMeta.data.forEach((bar, i) => {
+          const r = itmRows[i];
+          if (r.projAnnual == null || r.projAnnual <= 0) return;
+          const projY = y.getPixelForValue(r.projAnnual);
+          const w = bar.width;
+          const left = bar.x - w/2;
+          ctx.strokeRect(left, projY, w, baseY - projY);
+          ctx.fillText(`proj ${r.projAnnual}`, bar.x, projY - 3);
+        });
+        ctx.restore();
+      }
+    }]
   });
 
   // Pace summary table under the chart
