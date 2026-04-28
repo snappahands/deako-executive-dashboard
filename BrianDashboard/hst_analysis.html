@@ -264,10 +264,11 @@
 
 <!-- ── Chart 1: Monthly side-by-side + conv rate ── -->
 <div class="chart-section">
-  <h2>Monthly Pack Sales — ITM vs HST Direct, with ITM Conversion Rate</h2>
+  <h2>Monthly Pack Sales — ITM vs HST Direct, with Conversion Rates</h2>
   <p class="chart-note">
     HST Direct launched January 2024. ITM volumes dropped sharply the same month and have never recovered to 2023 levels.
-    The green line (conversion rate, right axis) has trended down alongside ITM's decline.
+    The <span style="color:#3fb950;font-weight:700">green line</span> tracks ITM-only conversion (right axis) — trending down alongside ITM's decline.
+    The <span style="color:#d2a8ff;font-weight:700">purple line</span> tracks the <strong>combined ITM + HST</strong> conversion rate against the same eligible-home denominator — the truer picture of total Deako attach to closes.
   </p>
   <canvas id="monthlyChart" height="110"></canvas>
   <p class="footnote">* Feb 2026 ITM = 5 packs — likely incomplete/partial-month data; treat as an outlier.</p>
@@ -525,6 +526,8 @@ const labels26 = ["Jan '24","Feb '24","Mar '24","Apr '24","May '24","Jun '24","J
 const ITM  = [118,115,134,88,119,51,75,85,75,101,65,67, 59,93,78,96,85,76,95,106,65,54,48,38, 51,44,48,23];
 const HST  = [98,111,127,74,106,128,85,96,107,118,116,90, 112,119,148,142,145,168,88,124,142,119,112,76, 103,102,138,34];
 const conv = [1.75,1.80,1.96,1.39,2.08,0.90,1.40,1.64,1.68,2.00,1.37,1.52, 1.03,1.76,1.16,1.44,1.45,1.36,1.59,1.85,1.40,1.10,0.97,0.81, 0.87,0.80,0.75,0.73];
+// Combined ITM+HST conv rate, derived from `conv`: eligible_homes ≈ ITM / conv × 100, so combined = (ITM+HST)/eligible × 100 = (ITM+HST) × conv / ITM
+const convCombined = ITM.map((v, i) => v > 0 ? +(((v + HST[i]) * conv[i] / v).toFixed(2)) : 0);
 
 const CHART_DEFAULTS = {
   responsive: true,
@@ -585,6 +588,20 @@ const CHART_DEFAULTS = {
           tension: 0.35,
           fill: false,
           order: 1
+        },
+        {
+          label: 'Combined ITM+HST Conv Rate % (right axis)',
+          data: convCombined,
+          type: 'line',
+          yAxisID: 'y2',
+          borderColor: '#d2a8ff',
+          backgroundColor: '#d2a8ff22',
+          pointBackgroundColor: '#d2a8ff',
+          pointRadius: 3,
+          borderWidth: 2.5,
+          tension: 0.35,
+          fill: false,
+          order: 0
         }
       ]
     },
@@ -599,11 +616,11 @@ const CHART_DEFAULTS = {
         },
         y2: {
           position: 'right',
-          title: { display: true, text: 'ITM Conv. Rate %', color: '#3fb950', font: { size: 11 } },
-          ticks: { color: '#3fb950', font: { size: 11 }, callback: v => v + '%' },
+          title: { display: true, text: 'Conv. Rate % (ITM / Combined)', color: '#8b949e', font: { size: 11 } },
+          ticks: { color: '#8b949e', font: { size: 11 }, callback: v => v + '%' },
           grid: { drawOnChartArea: false },
           min: 0,
-          max: 5
+          max: 6
         }
       },
       plugins: {
@@ -615,7 +632,8 @@ const CHART_DEFAULTS = {
           callbacks: {
             label(ctx) {
               if (ctx.dataset.type === 'line') {
-                return ` ITM Conv Rate: ${ctx.parsed.y}%`;
+                const label = ctx.dataset.label.startsWith('Combined') ? 'Combined Conv Rate' : 'ITM Conv Rate';
+                return ` ${label}: ${ctx.parsed.y}%`;
               }
               return ` ${ctx.dataset.label}: ${ctx.parsed.y} packs`;
             },
