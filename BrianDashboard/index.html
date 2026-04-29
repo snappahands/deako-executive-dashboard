@@ -298,7 +298,7 @@ body.light .shimmer-gs{background:linear-gradient(90deg,#8b8b8b 0%,#b8860b 20%,#
   <div id="content"></div>
 </div>
 
-<div id="version-badge">v11.7</div>
+<div id="version-badge">v11.8</div>
 
 <script>
 // Theme toggle — CSS handles colors; body.light class drives the swap
@@ -1668,23 +1668,67 @@ function renderConvRates(period, value){
         </select>
       </div>
       <div class="full-chart-card">
-        <h3>${fmtDiv(selDiv)} — Monthly Trend <span style="font-size:10px;font-weight:400;color:#484f58;margin-left:8px">Eligible Homes · Packs Sold · Conv. Rate %</span></h3>
+        <h3>${fmtDiv(selDiv)} — Monthly Trend <span style="font-size:10px;font-weight:400;color:#484f58;margin-left:8px">Eligible Homes · ITM Packs · HST Direct · Conv. Rate %</span></h3>
         <div style="position:relative;height:320px"><canvas id="convMonthChart"></canvas></div>
       </div>
       <div class="full-chart-card">
         <h3 style="margin-bottom:10px">${fmtDiv(selDiv)} — Monthly Detail</h3>
         <table class="summary-table">
-          <tr><th>Month</th><th>Eligible Homes</th><th>Packs Sold</th><th>Conv. Rate %</th><th>Home Closes</th></tr>
-          ${(()=>{ const clm=(CLOSES_DATA||{}).monthly||[]; const clmo={}; clm.forEach(r=>{if(r.div===selDiv)clmo[r.p]=r.n;}); return divData.slice().reverse().map(d=>`<tr>
-            <td>${fmtPeriod(d.p)}</td>
-            <td style="color:#8b949e">${d.e.toLocaleString()}</td>
-            <td style="color:#3fb950;font-weight:700">${d.pk}</td>
-            <td style="color:${d.r>=5?'#3fb950':d.r>=2?'#f0a500':'#f85149'};font-weight:700">${d.r.toFixed(2)}%</td>
-            <td style="color:#7ecfe0;font-weight:700">${clmo[d.p]!=null?clmo[d.p].toLocaleString():'—'}</td>
-          </tr>`).join(''); })()}
+          <tr><th>Month</th><th>Eligible Homes</th><th>ITM Packs</th><th>HST Direct</th><th>Total Packs</th><th>Conv. Rate %</th><th>Home Closes</th></tr>
+          ${(()=>{
+            const clm=(CLOSES_DATA||{}).monthly||[]; const clmo={}; clm.forEach(r=>{if(r.div===selDiv)clmo[r.p]=r.n;});
+            const hstMo=(typeof SS1_DATA!=='undefined'?(SS1_DATA.monthly||[]):[]).filter(d=>d.div===selDiv);
+            const hstBy={}; hstMo.forEach(d=>{hstBy[d.p]=d.n;});
+            return divData.slice().reverse().map(d=>{
+              const hst=hstBy[d.p]||0;
+              const total=(d.pk||0)+hst;
+              return `<tr>
+                <td>${fmtPeriod(d.p)}</td>
+                <td style="color:#8b949e">${d.e.toLocaleString()}</td>
+                <td style="color:#3fb950;font-weight:700">${d.pk}</td>
+                <td style="color:#f778ba;font-weight:700">${hst||'—'}</td>
+                <td style="color:#e6edf3;font-weight:700">${total||'—'}</td>
+                <td style="color:${d.r>=5?'#3fb950':d.r>=2?'#f0a500':'#f85149'};font-weight:700">${d.r.toFixed(2)}%</td>
+                <td style="color:#7ecfe0;font-weight:700">${clmo[d.p]!=null?clmo[d.p].toLocaleString():'—'}</td>
+              </tr>`;
+            }).join('');
+          })()}
         </table>
-      </div>`;
+      </div>
+      ${(()=>{
+        const team = (typeof RAINMAKERS!=='undefined'?RAINMAKERS:[]).filter(r=>r.d===selDiv).slice().sort((a,b)=>(b.t||0)-(a.t||0));
+        if (!team.length) return `<div class="full-chart-card"><h3 style="margin-bottom:6px">${fmtDiv(selDiv)} — Sales Team</h3><div style="font-size:12px;color:#8b949e">No agents on file for this division.</div></div>`;
+        const totalPacks = team.reduce((s,a)=>s+(a.t||0),0);
+        const totalHomes3 = team.reduce((s,a)=>s+(a.h3||0),0);
+        const totalL3 = team.reduce((s,a)=>s+(a.l3||0),0);
+        return `
+        <div class="full-chart-card">
+          <h3 style="margin-bottom:6px">${fmtDiv(selDiv)} — Sales Team <span style="font-size:10px;font-weight:400;color:#484f58;margin-left:8px">${team.length} agents · ${totalHomes3.toLocaleString()} homes sold (last 3mo) · ${totalPacks.toLocaleString()} Deako packs (career) · click any name for full agent brief</span></h3>
+          <table class="summary-table">
+            <tr><th>#</th><th>Agent</th><th>Community</th><th style="text-align:right">Homes Sold (3mo)</th><th style="text-align:right">Deako Packs (3mo)</th><th style="text-align:right">Deako Packs (career)</th></tr>
+            ${team.map((a,i)=>`<tr>
+              <td style="color:#484f58;font-weight:700">${i+1}</td>
+              <td><strong style="cursor:pointer;color:#7ecfe0;text-decoration:underline dotted" onclick="openAgentReport('${(a.n||'').replace(/'/g,String.fromCharCode(39))}','${selDiv}')">${a.n||''}</strong></td>
+              <td style="color:#8b949e">${a.cm||'—'}</td>
+              <td style="text-align:right;color:#7ecfe0;font-weight:700">${a.h3||0}</td>
+              <td style="text-align:right;color:#d2a8ff;font-weight:700">${a.l3||0}</td>
+              <td style="text-align:right;color:#f0a500;font-weight:700">${a.t||0}</td>
+            </tr>`).join('')}
+            <tr style="border-top:2px solid #30363d;background:#0d1117">
+              <td colspan="3" style="font-weight:700;color:#8b949e">Totals</td>
+              <td style="text-align:right;color:#7ecfe0;font-weight:800">${totalHomes3.toLocaleString()}</td>
+              <td style="text-align:right;color:#d2a8ff;font-weight:800">${totalL3.toLocaleString()}</td>
+              <td style="text-align:right;color:#f0a500;font-weight:800">${totalPacks.toLocaleString()}</td>
+            </tr>
+          </table>
+        </div>`;
+      })()}`;
     _ce.scrollTop = _sv;
+
+    // HST Direct (pink bars) — pulled from SS1_DATA monthly for this division
+    const _hstMo = (typeof SS1_DATA!=='undefined'?(SS1_DATA.monthly||[]):[]).filter(d=>d.div===selDiv);
+    const _hstByP = {}; _hstMo.forEach(d=>{_hstByP[d.p]=d.n;});
+    const hstSeries = divData.map(d => _hstByP[d.p] || 0);
 
     new Chart(document.getElementById('convMonthChart'),{
       type:'bar',
@@ -1693,8 +1737,10 @@ function renderConvRates(period, value){
         datasets:[
           {label:'Eligible Homes', data:divData.map(d=>d.e), backgroundColor:'#1f6feb', borderRadius:2, yAxisID:'y',
            datalabels:{anchor:'end',align:'end',color:'#8b949e',font:{size:8},formatter:v=>v>=1000?(v/1000).toFixed(1)+'k':v}},
-          {label:'Packs Sold',     data:divData.map(d=>d.pk), backgroundColor:'#3fb950', borderRadius:2, yAxisID:'y',
+          {label:'ITM Packs',      data:divData.map(d=>d.pk), backgroundColor:'#3fb950', borderRadius:2, yAxisID:'y',
            datalabels:{anchor:'end',align:'end',color:'#3fb950',font:{size:8}}},
+          {label:'HST Direct',     data:hstSeries,            backgroundColor:'#f778ba', borderRadius:2, yAxisID:'y',
+           datalabels:{anchor:'end',align:'end',color:'#f778ba',font:{size:8},display:ctx=>(ctx.dataset.data[ctx.dataIndex]||0)>0}},
           {label:'Conv. Rate %',   data:divData.map(d=>d.r), type:'line', borderColor:'#f85149', backgroundColor:'transparent', borderWidth:2, pointRadius:3, pointStyle:'line', yAxisID:'y2', tension:0.3,
            datalabels:{anchor:'center',align:'top',color:'#f85149',font:{size:8},formatter:v=>v==null?'':v.toFixed(1)+'%'}}
         ]
