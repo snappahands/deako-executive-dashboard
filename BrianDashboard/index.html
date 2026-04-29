@@ -298,7 +298,7 @@ body.light .shimmer-gs{background:linear-gradient(90deg,#8b8b8b 0%,#b8860b 20%,#
   <div id="content"></div>
 </div>
 
-<div id="version-badge">v11.8</div>
+<div id="version-badge">v11.9</div>
 
 <script>
 // Theme toggle — CSS handles colors; body.light class drives the swap
@@ -2342,16 +2342,85 @@ function showRainmakers(){
   renderRainmakers('','');
 }
 
-/* ── OUTREACH LOG (localStorage-backed, with event history) ── */
+/* ── OUTREACH LOG (JSONBin-backed, localStorage cache, shared across users) ──
+ * Synchronous read API preserved: callers see _OUTREACH (an in-memory map).
+ * Writes update local cache immediately, then debounce-push to JSONBin.
+ * On startup we hydrate from localStorage (instant) then merge JSONBin
+ * (last-updated-wins per agent key) and re-render visible UI.
+ */
 const OUTREACH_KEY = 'brian_rm_outreach_v1';
-function outreachLoad() {
+const OUTREACH_BIN = '69f24b0e36566621a807df56';
+const OUTREACH_API_KEY = '$2a$10$n3ZhnPN0Xdadh1FWGX2YKeQ1T/bvshlOQLl6VlKelRJmskftR5Q62';
+
+let _OUTREACH = {};
+let _outreachPushTimer = null;
+
+function _outreachReadLocal() {
   try { return JSON.parse(localStorage.getItem(OUTREACH_KEY) || '{}'); }
-  catch(e) { console.warn('Outreach load failed', e); return {}; }
+  catch(_) { return {}; }
 }
+function _outreachWriteLocal() {
+  try { localStorage.setItem(OUTREACH_KEY, JSON.stringify(_OUTREACH)); }
+  catch(_) {}
+}
+async function _outreachPullJsonbin() {
+  try {
+    const r = await fetch(`https://api.jsonbin.io/v3/b/${OUTREACH_BIN}/latest`, {
+      headers: { 'X-Master-Key': OUTREACH_API_KEY }
+    });
+    if (!r.ok) return null;
+    const j = await r.json();
+    const rec = j.record || {};
+    return rec.agents || {};
+  } catch(_) { return null; }
+}
+async function _outreachPushJsonbin() {
+  try {
+    await fetch(`https://api.jsonbin.io/v3/b/${OUTREACH_BIN}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'X-Master-Key': OUTREACH_API_KEY },
+      body: JSON.stringify({ agents: _OUTREACH, updatedAt: new Date().toISOString() })
+    });
+  } catch(_) {}
+}
+function _outreachSchedulePush() {
+  clearTimeout(_outreachPushTimer);
+  _outreachPushTimer = setTimeout(_outreachPushJsonbin, 600);
+}
+function outreachLoad() { return _OUTREACH; }
 function outreachSave(map) {
-  try { localStorage.setItem(OUTREACH_KEY, JSON.stringify(map)); }
-  catch(e) { console.warn('Outreach save failed', e); alert('Could not save — is localStorage disabled?'); }
+  if (map !== _OUTREACH) _OUTREACH = map; // accept either same ref or replacement
+  _outreachWriteLocal();
+  _outreachSchedulePush();
 }
+
+(function _outreachInit() {
+  _OUTREACH = _outreachReadLocal();
+  _outreachPullJsonbin().then(remote => {
+    if (!remote) return;
+    // Merge: prefer the entry with the newer `updated` per agent key.
+    const merged = Object.assign({}, _OUTREACH);
+    let changed = false;
+    for (const [k, v] of Object.entries(remote)) {
+      const local = merged[k];
+      const localUpd = local && local.updated;
+      const remoteUpd = v && v.updated;
+      if (!local || (remoteUpd && (!localUpd || remoteUpd > localUpd))) {
+        merged[k] = v; changed = true;
+      }
+    }
+    // If our local has entries the remote doesn't — keep those (already in merged) and push back.
+    const localOnly = Object.keys(_OUTREACH).some(k => !(k in remote));
+    _OUTREACH = merged;
+    _outreachWriteLocal();
+    if (changed) {
+      const sEl = document.getElementById('outreach-summary'); if (sEl) sEl.innerHTML = _outreachSummaryHtml();
+      const aEl = document.getElementById('outreach-activity'); if (aEl) aEl.innerHTML = _outreachActivityHtml();
+    }
+    // If local had data the remote was missing (first migration / new entries), push our merged view up.
+    if (localOnly || changed) _outreachSchedulePush();
+  });
+})();
 function outreachKey(name, div) { return (name||'') + '|' + (div||''); }
 function outreachGet(name, div) {
   const m = outreachLoad();
