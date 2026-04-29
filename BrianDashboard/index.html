@@ -298,7 +298,7 @@ body.light .shimmer-gs{background:linear-gradient(90deg,#8b8b8b 0%,#b8860b 20%,#
   <div id="content"></div>
 </div>
 
-<div id="version-badge">v12.6</div>
+<div id="version-badge">v12.7</div>
 
 <script>
 // Theme toggle — CSS handles colors; body.light class drives the swap
@@ -1167,16 +1167,38 @@ function fmtDiv(d){ return d.replace(/_/g,' ').replace(/-/g,' ').replace(/\b\w/g
 var _divSortCol = 'packs';
 var _commSortCol = 'last3';
 
+function _hstByDivForTab(tab){
+  const monthly = (typeof SS1_DATA !== 'undefined') ? (SS1_DATA.monthly || []) : [];
+  let filtered;
+  if (tab === 'allTime') filtered = monthly;
+  else if (tab === 'y2025') filtered = monthly.filter(d => (d.p||'').startsWith('2025'));
+  else { // 'last3' — latest 3 periods present in the data
+    const periods = [...new Set(monthly.map(d => d.p))].sort();
+    const last = new Set(periods.slice(-3));
+    filtered = monthly.filter(d => last.has(d.p));
+  }
+  const out = {};
+  filtered.forEach(d => { out[d.div] = (out[d.div]||0) + (d.n||0); });
+  return out;
+}
+
 function renderDivTable(tab){
-  const data = DIV_PERF[tab].slice().sort((a,b)=>b[_divSortCol]-a[_divSortCol]);
-  const maxPacks = data.length ? data[0].packs : 1;
+  const hstByDiv = _hstByDivForTab(tab);
+  const data = DIV_PERF[tab].map(d => {
+    const key = findDivKey(d.div);
+    const hst = key ? (hstByDiv[key]||0) : 0;
+    return Object.assign({}, d, { hst, total: (d.packs||0) + hst });
+  }).sort((a,b) => (b[_divSortCol]||0) - (a[_divSortCol]||0));
+  const maxPacks = data.length ? Math.max(...data.map(r=>r.packs||0), 1) : 1;
   const hdr = (label,key) => `<th style="cursor:pointer;user-select:none${_divSortCol===key?';color:#58a6ff':''}" onclick="_divSortCol='${key}';switchDivTab('${tab}')">${label}${_divSortCol===key?' ▼':''}</th>`;
   return `<table class="summary-table">
-    <tr><th>#</th><th>Division</th>${hdr('Packs Sold','packs')}${hdr('Revenue','rev')}${hdr('Profit','profit')}</tr>
+    <tr><th>#</th><th>Division</th>${hdr('ITM Packs Sold','packs')}${hdr('HST Direct','hst')}${hdr('Total Packs Sold','total')}${hdr('ITM Revenue','rev')}${hdr('ITM Profit','profit')}</tr>
     ${data.map((d,i)=>`<tr>
       <td style="color:#484f58;font-weight:700">#${i+1}</td>
       <td><strong>${d.div}</strong></td>
-      <td>${d.packs}<span class="rm-bar-wrap"><span class="rm-bar-fill" style="width:${Math.round(d.packs/maxPacks*100)}%"></span></span></td>
+      <td>${d.packs}<span class="rm-bar-wrap"><span class="rm-bar-fill" style="width:${Math.round((d.packs||0)/maxPacks*100)}%"></span></span></td>
+      <td style="color:#f778ba;font-weight:700">${d.hst||'—'}</td>
+      <td style="color:#e6edf3;font-weight:700">${d.total}</td>
       <td style="color:#3fb950">${fmtK(d.rev)}</td>
       <td style="color:#8b949e">${fmtK(d.profit)}</td>
     </tr>`).join('')}
