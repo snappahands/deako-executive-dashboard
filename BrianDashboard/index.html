@@ -298,7 +298,7 @@ body.light .shimmer-gs{background:linear-gradient(90deg,#8b8b8b 0%,#b8860b 20%,#
   <div id="content"></div>
 </div>
 
-<div id="version-badge">v12.8</div>
+<div id="version-badge">v12.9</div>
 
 <script>
 // Theme toggle — CSS handles colors; body.light class drives the swap
@@ -1218,10 +1218,13 @@ function renderDivTable(tab){
   rows.sort((a,b) => (b[_divSortCol]||0) - (a[_divSortCol]||0));
 
   const maxPacks = rows.length ? Math.max(...rows.map(r=>r.packs||0), 1) : 1;
-  const hdr = (label,key) => `<th style="cursor:pointer;user-select:none${_divSortCol===key?';color:#58a6ff':''}" onclick="_divSortCol='${key}';switchDivTab('${tab}')">${label}${_divSortCol===key?' ▼':''}</th>`;
+  const hdr = (label,key,fixedColor) => {
+    const color = fixedColor || (_divSortCol===key ? '#58a6ff' : '');
+    return `<th style="cursor:pointer;user-select:none${color?';color:'+color:''}" onclick="_divSortCol='${key}';switchDivTab('${tab}')">${label}${_divSortCol===key?' ▼':''}</th>`;
+  };
   const fmtMoney = v => v > 0 ? fmtK(v) : '—';
   return `<table class="summary-table">
-    <tr><th>#</th><th>Division</th>${hdr("Proj. '26 Starts",'starts')}${hdr('ITM Packs Sold','packs')}${hdr('HST Direct','hst')}${hdr('Total Packs Sold','total')}${hdr('ITM Revenue','rev')}${hdr('ITM Profit','profit')}</tr>
+    <tr><th>#</th><th>Division</th>${hdr("Proj. '26 Starts",'starts')}${hdr('ITM Packs Sold','packs')}${hdr('HST Direct','hst','#f778ba')}${hdr('Total Packs Sold','total')}${hdr('ITM Revenue','rev')}${hdr('ITM Profit','profit')}</tr>
     ${rows.map((d,i)=>`<tr>
       <td style="color:#484f58;font-weight:700">#${i+1}</td>
       <td><strong>${d.div}</strong></td>
@@ -1264,7 +1267,7 @@ function renderOverview(){
       <div style="position:relative;height:320px"><canvas id="dpupChart"></canvas></div>
     </div>
     <div class="full-chart-card">
-      <h3>ITM Before &amp; After Deako Training <span style="font-size:10px;font-weight:400;color:#484f58;margin-left:8px">Gray = prior-year ITM packs (baseline) · Green = post-training packs with days-since-training · Dashed purple = projected full-year pace · Green/red data-label = % vs prior year</span></h3>
+      <h3>ITM Before &amp; After Deako Training <span style="font-size:10px;font-weight:400;color:#484f58;margin-left:8px">Gray = prior-year ITM (baseline) · Green = post-training ITM packs · Pink = HST Direct since training · Dashed purple = projected full-year pace (ITM + HST) · Green/red data-label = % vs prior year</span></h3>
       <div class="full-chart-wrap"><canvas id="itmChart"></canvas></div>
       <div id="itmPaceTable" style="margin-top:18px"></div>
     </div>
@@ -1402,39 +1405,43 @@ function renderOverview(){
     const diff = Math.floor((today - d) / 86400000);
     return diff >= 0 ? diff : null;
   }
+  // HST Direct counted from the training month forward (per-division), so the
+  // post-training section of the bar reflects both ITM packs AND HST direct
+  // sales accumulated since training. Projection scales accordingly.
+  function _hstSinceTraining(divName, trainStr) {
+    const key = (typeof findDivKey === 'function') ? findDivKey(divName) : null;
+    if (!key) return 0;
+    if (!trainStr) return 0;
+    const parts = trainStr.split('/');
+    if (parts.length !== 3) return 0;
+    const trainYM = `${+parts[2]}-${String(+parts[0]).padStart(2,'0')}`;
+    const monthly = (typeof SS1_DATA !== 'undefined') ? (SS1_DATA.monthly || []) : [];
+    return monthly.filter(d => d.div === key && d.p >= trainYM).reduce((s,d) => s + (d.n||0), 0);
+  }
   // Build enriched per-visit rows used both by chart labels and the summary table
   const itmRows = itmVisits.map(v => {
     const dp = daysSince(v.date);
-    const projAnnual = (dp && dp > 0) ? Math.round(v.postITM * 365 / dp) : null;
+    const hst = _hstSinceTraining(v.division, v.date);
+    const totalPost = (v.postITM || 0) + hst;
+    const projAnnual = (dp && dp > 0) ? Math.round(totalPost * 365 / dp) : null;
     const paceDelta  = (projAnnual != null && v.preITM > 0) ? projAnnual - v.preITM : null;
     const pacePct    = (projAnnual != null && v.preITM > 0) ? Math.round((projAnnual - v.preITM) / v.preITM * 100) : null;
-    return { div:v.division, date:v.date, pre:v.preITM, post:v.postITM, dp, projAnnual, paceDelta, pacePct };
+    return { div:v.division, date:v.date, pre:v.preITM, post:v.postITM, hst, totalPost, dp, projAnnual, paceDelta, pacePct };
   });
   const chartLabels = itmRows.map(r => r.dp != null ? `${r.div} (${r.dp}d)` : r.div);
+  const hstSeries = itmRows.map(r => r.hst);
 
   new Chart(document.getElementById('itmChart'), {
     type:'bar',
     data:{
       labels: chartLabels,
       datasets:[
-        {label:'Prior-Year ITM (pre-training baseline)', data:pre, backgroundColor:'#30363d', borderRadius:4,
+        {label:'Prior-Year ITM (pre-training baseline)', data:pre, backgroundColor:'#30363d', borderRadius:4, stack:'pre',
          datalabels:{ anchor:'end', align:'end', color:'#8b949e', font:{size:10,weight:'bold'}, formatter:v=>v }},
-        {label:'Post-Training ITM (current YTD)', data:post, backgroundColor:'#3fb950', borderRadius:4,
-         datalabels:{
-           anchor:'end', align:'end',
-           font:{size:10,weight:'bold'},
-           color:(ctx) => {
-             const r = itmRows[ctx.dataIndex];
-             if (r.paceDelta == null) return '#e6edf3';
-             return r.paceDelta >= 0 ? '#3fb950' : '#f85149';
-           },
-           formatter:(v, ctx) => {
-             const r = itmRows[ctx.dataIndex];
-             if (r.paceDelta == null) return v;
-             const sign = r.paceDelta >= 0 ? '+' : '';
-             return `${v}  (${sign}${r.pacePct}%)`;
-           }
-         }}
+        {label:'Post-Training ITM (current YTD)', data:post, backgroundColor:'#3fb950', borderRadius:0, stack:'post',
+         datalabels:{ display:false }},
+        {label:'Post-Training HST Direct',         data:hstSeries, backgroundColor:'#f778ba', borderRadius:4, stack:'post',
+         datalabels:{ display:false }}
       ]
     },
     options:{
@@ -1449,8 +1456,9 @@ function renderOverview(){
               const lines = [];
               if (r.date) lines.push(`Trained: ${r.date}`);
               if (r.dp != null) lines.push(`Days since training: ${r.dp}`);
+              lines.push(`Post-training packs: ${r.post} ITM + ${r.hst} HST = ${r.totalPost}`);
               if (r.projAnnual != null) {
-                lines.push(`Projected full-year ITM at current pace: ${r.projAnnual}`);
+                lines.push(`Projected full-year pace (ITM + HST): ${r.projAnnual}`);
                 if (r.pacePct != null) {
                   const sign = r.pacePct >= 0 ? '+' : '';
                   lines.push(`vs Prior Year baseline (${r.pre}): ${sign}${r.pacePct}%`);
@@ -1464,10 +1472,10 @@ function renderOverview(){
       scales:{
         x:{ticks:{color:'#8b949e',font:{size:10}},grid:{color:'#21262d'}},
         y:{ticks:{color:'#8b949e',font:{size:11}},grid:{color:'#21262d'},beginAtZero:true,
-           // Scale only to the actual pre/post bars so they fill the chart.
+           // Scale to the actual stack heights so the bars fill the chart.
            // Projection outlines that exceed this max get clipped to the
            // top of the plot area in the projectionOverlay plugin below.
-           suggestedMax: Math.max(...itmRows.map(r => Math.max(r.pre||0, r.post||0))) * 1.25
+           suggestedMax: Math.max(...itmRows.map(r => Math.max(r.pre||0, (r.post||0) + (r.hst||0)))) * 1.25
         }
       }
     },
@@ -1498,12 +1506,37 @@ function renderOverview(){
           const w = bar.width;
           const left = bar.x - w/2;
           ctx.strokeRect(left, projY, w, baseY - projY);
-          // Label sits just above the rectangle if there's room, otherwise
-          // just below the top of the plot area when clipped.
           const labelY = clippedAbove ? projY + 12 : projY - 3;
           if (clippedAbove) ctx.textBaseline = 'top';
           ctx.fillText(`proj ${r.projAnnual}`, bar.x, labelY);
           if (clippedAbove) ctx.textBaseline = 'bottom';
+        });
+        ctx.restore();
+      }
+    }, {
+      id:'postHstStackLabel',
+      afterDatasetsDraw(chart){
+        const postMeta = chart.getDatasetMeta(1);
+        const hstMeta = chart.getDatasetMeta(2);
+        if (!postMeta) return;
+        const ctx = chart.ctx;
+        ctx.save();
+        ctx.font = 'bold 10px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'bottom';
+        postMeta.data.forEach((bar, i) => {
+          const r = itmRows[i];
+          if (r.paceDelta == null) return;
+          const total = (r.post||0) + (r.hst||0);
+          const sign = r.paceDelta >= 0 ? '+' : '';
+          // Top of stack: HST top if HST > 0 and visible, else post top.
+          let topY = bar.y;
+          if (r.hst > 0 && hstMeta && chart.isDatasetVisible(2)){
+            const hstBar = hstMeta.data[i];
+            if (hstBar) topY = hstBar.y;
+          }
+          ctx.fillStyle = r.paceDelta >= 0 ? '#3fb950' : '#f85149';
+          ctx.fillText(`${total}  (${sign}${r.pacePct}%)`, bar.x, topY - 3);
         });
         ctx.restore();
       }
@@ -1520,6 +1553,8 @@ function renderOverview(){
           <th>Division</th><th>Trained</th><th>Days Post</th>
           <th style="text-align:right">Prior-Year ITM</th>
           <th style="text-align:right">Post-Training ITM</th>
+          <th style="text-align:right;color:#f778ba">HST Direct</th>
+          <th style="text-align:right">Total Post Packs</th>
           <th style="text-align:right">Projected Full-Year Pace</th>
           <th style="text-align:right">Δ vs Prior</th>
         </tr>
@@ -1535,13 +1570,15 @@ function renderOverview(){
             <td style="color:#8b949e">${r.dp!=null?`${r.dp}d (${monthsPost}mo)`:'—'}</td>
             <td style="text-align:right;color:#8b949e">${r.pre}</td>
             <td style="text-align:right;color:#3fb950;font-weight:700">${r.post}</td>
+            <td style="text-align:right;color:#f778ba;font-weight:700">${r.hst||'—'}</td>
+            <td style="text-align:right;color:#e6edf3;font-weight:700">${r.totalPost}</td>
             <td style="text-align:right;color:#d2a8ff;font-weight:700">${proj}</td>
             <td style="text-align:right;${pctCls}">${pctText}</td>
           </tr>`;
         }).join('')}
       </table>
       <div style="font-size:11px;color:#484f58;margin-top:8px;font-style:italic">
-        Projected full-year pace = Post-Training ITM × (365 / Days Post). Δ vs Prior compares that projection to the Prior-Year baseline (col D of the training log).
+        Projected full-year pace = (Post-Training ITM + HST Direct since training) × (365 / Days Post). Δ vs Prior compares that projection to the Prior-Year baseline (col D of the training log).
       </div>`;
   }
 
@@ -1683,7 +1720,7 @@ function renderConvRates(period, value){
       <div class="full-chart-card">
         <h3 style="margin-bottom:10px">${fmtDiv(selDiv)} — Monthly Detail</h3>
         <table class="summary-table">
-          <tr><th>Month</th><th>Eligible Homes</th><th>ITM Packs</th><th>HST Direct</th><th>Total Packs</th><th>Conv. Rate %</th><th>Home Closes</th></tr>
+          <tr><th>Month</th><th>Eligible Homes</th><th>ITM Packs</th><th style="color:#f778ba">HST Direct</th><th>Total Packs</th><th>Conv. Rate %</th><th>Home Closes</th></tr>
           ${(()=>{
             const clm=(CLOSES_DATA||{}).monthly||[]; const clmo={}; clm.forEach(r=>{if(r.div===selDiv)clmo[r.p]=r.n;});
             const hstMo=(typeof SS1_DATA!=='undefined'?(SS1_DATA.monthly||[]):[]).filter(d=>d.div===selDiv);
@@ -1908,7 +1945,7 @@ function renderConvRates(period, value){
     <div class="full-chart-card">
       <h3 style="margin-bottom:12px">Division Breakdown — ${fmtPeriod(value)}</h3>
       <table class="summary-table">
-        <tr><th>#</th><th>Division</th><th style="cursor:pointer" onclick="divSortBy='proj';renderConvRates('${period}','${value}')">${divSortBy==='proj'?'↓ ':''}<span style="color:${divSortBy==='proj'?'#d2a8ff':'inherit'}">Proj. Homes '26</span></th><th style="cursor:pointer" onclick="divSortBy='e';renderConvRates('${period}','${value}')">${divSortBy==='e'?'↓ ':''}<span style="color:${divSortBy==='e'?'#7ecfe0':'inherit'}">Eligible Homes</span></th><th style="cursor:pointer" onclick="divSortBy='pk';renderConvRates('${period}','${value}')">${divSortBy==='pk'?'↓ ':''}<span style="color:${divSortBy==='pk'?'#1f6feb':'inherit'}">ITM Packs Sold</span></th><th style="cursor:pointer" onclick="divSortBy='hst';renderConvRates('${period}','${value}')">${divSortBy==='hst'?'↓ ':''}<span style="color:${divSortBy==='hst'?'#f778ba':'inherit'}">HST Direct</span></th><th style="cursor:pointer" onclick="divSortBy='preclose';renderConvRates('${period}','${value}')">${divSortBy==='preclose'?'↓ ':''}<span style="color:${divSortBy==='preclose'?'#e6edf3':'inherit'}">Pre-Close Packs Sold</span></th><th style="cursor:pointer" onclick="divSortBy='r';renderConvRates('${period}','${value}')">${divSortBy==='r'?'↓ ':''}<span style="color:${divSortBy==='r'?'#3fb950':'inherit'}">ITM Conv. Rate %</span></th><th style="cursor:pointer" onclick="divSortBy='preconv';renderConvRates('${period}','${value}')">${divSortBy==='preconv'?'↓ ':''}<span style="color:${divSortBy==='preconv'?'#d2a8ff':'inherit'}">Pre-Close Conv. Rate %</span></th><th style="cursor:pointer" onclick="divSortBy='ratif';renderConvRates('${period}','${value}')">${divSortBy==='ratif'?'↓ ':''}<span style="color:${divSortBy==='ratif'?'#7ecfe0':'inherit'}">Ratification</span></th><th style="cursor:pointer" onclick="divSortBy='closes';renderConvRates('${period}','${value}')">${divSortBy==='closes'?'↓ ':''}<span style="color:${divSortBy==='closes'?'#f0a500':'inherit'}">Closes</span></th></tr>
+        <tr><th>#</th><th>Division</th><th style="cursor:pointer" onclick="divSortBy='proj';renderConvRates('${period}','${value}')">${divSortBy==='proj'?'↓ ':''}<span style="color:${divSortBy==='proj'?'#d2a8ff':'inherit'}">Proj. Homes '26</span></th><th style="cursor:pointer" onclick="divSortBy='e';renderConvRates('${period}','${value}')">${divSortBy==='e'?'↓ ':''}<span style="color:${divSortBy==='e'?'#7ecfe0':'inherit'}">Eligible Homes</span></th><th style="cursor:pointer" onclick="divSortBy='pk';renderConvRates('${period}','${value}')">${divSortBy==='pk'?'↓ ':''}<span style="color:${divSortBy==='pk'?'#1f6feb':'inherit'}">ITM Packs Sold</span></th><th style="cursor:pointer" onclick="divSortBy='hst';renderConvRates('${period}','${value}')">${divSortBy==='hst'?'↓ ':''}<span style="color:#f778ba">HST Direct</span></th><th style="cursor:pointer" onclick="divSortBy='preclose';renderConvRates('${period}','${value}')">${divSortBy==='preclose'?'↓ ':''}<span style="color:${divSortBy==='preclose'?'#e6edf3':'inherit'}">Pre-Close Packs Sold</span></th><th style="cursor:pointer" onclick="divSortBy='r';renderConvRates('${period}','${value}')">${divSortBy==='r'?'↓ ':''}<span style="color:${divSortBy==='r'?'#3fb950':'inherit'}">ITM Conv. Rate %</span></th><th style="cursor:pointer" onclick="divSortBy='preconv';renderConvRates('${period}','${value}')">${divSortBy==='preconv'?'↓ ':''}<span style="color:${divSortBy==='preconv'?'#d2a8ff':'inherit'}">Pre-Close Conv. Rate %</span></th><th style="cursor:pointer" onclick="divSortBy='ratif';renderConvRates('${period}','${value}')">${divSortBy==='ratif'?'↓ ':''}<span style="color:${divSortBy==='ratif'?'#7ecfe0':'inherit'}">Ratification</span></th><th style="cursor:pointer" onclick="divSortBy='closes';renderConvRates('${period}','${value}')">${divSortBy==='closes'?'↓ ':''}<span style="color:${divSortBy==='closes'?'#f0a500':'inherit'}">Closes</span></th></tr>
         ${rows.map((d,i)=>{
           const cl=getCloses(d.div);
           const rf=getRatif(d.div);
