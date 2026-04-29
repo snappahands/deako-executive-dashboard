@@ -298,7 +298,7 @@ body.light .shimmer-gs{background:linear-gradient(90deg,#8b8b8b 0%,#b8860b 20%,#
   <div id="content"></div>
 </div>
 
-<div id="version-badge">v12.5</div>
+<div id="version-badge">v12.6</div>
 
 <script>
 // Theme toggle — CSS handles colors; body.light class drives the swap
@@ -1607,7 +1607,7 @@ function renderConvRates(period, value){
     // division picker + that division's trend chart
     const divs = [...new Set(src.map(d=>d.div))].sort();
     // value for monthly is "div|period" or just div initially
-    let selDiv = value.includes('|') ? value.split('|')[0] : (value.length<=7 ? divs[0] : value);
+    let selDiv = value.includes('|') ? value.split('|')[0] : value;
     const divData = src.filter(d=>d.div===selDiv).sort((a,b)=>a.p.localeCompare(b.p));
 
     _ce.innerHTML = `
