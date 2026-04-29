@@ -298,7 +298,7 @@ body.light .shimmer-gs{background:linear-gradient(90deg,#8b8b8b 0%,#b8860b 20%,#
   <div id="content"></div>
 </div>
 
-<div id="version-badge">v12.9</div>
+<div id="version-badge">v13.0</div>
 
 <script>
 // Theme toggle — CSS handles colors; body.light class drives the swap
@@ -1939,10 +1939,6 @@ function renderConvRates(period, value){
       <div style="position:relative;height:320px"><canvas id="convDivChart"></canvas></div>
     </div>
     <div class="full-chart-card">
-      <h3>Division Pipeline — ${fmtPeriod(value)} <span style="font-size:10px;font-weight:400;color:#484f58;margin-left:8px">Eligible pool · Ratifications · Closes · Packs Sold · HST Direct — sorted by ${divSortBy==='e'?'eligible homes':divSortBy==='r'?'ITM conv. rate':divSortBy==='ratif'?'ratification':divSortBy==='closes'?'closes':divSortBy==='hst'?'HST Direct':divSortBy==='proj'?'proj. homes':divSortBy==='preclose'?'pre-close packs':divSortBy==='preconv'?'pre-close conv. rate':'ITM packs sold'}</span></h3>
-      <div style="position:relative;height:580px"><canvas id="pipelineChart"></canvas></div>
-    </div>
-    <div class="full-chart-card">
       <h3 style="margin-bottom:12px">Division Breakdown — ${fmtPeriod(value)}</h3>
       <table class="summary-table">
         <tr><th>#</th><th>Division</th><th style="cursor:pointer" onclick="divSortBy='proj';renderConvRates('${period}','${value}')">${divSortBy==='proj'?'↓ ':''}<span style="color:${divSortBy==='proj'?'#d2a8ff':'inherit'}">Proj. Homes '26</span></th><th style="cursor:pointer" onclick="divSortBy='e';renderConvRates('${period}','${value}')">${divSortBy==='e'?'↓ ':''}<span style="color:${divSortBy==='e'?'#7ecfe0':'inherit'}">Eligible Homes</span></th><th style="cursor:pointer" onclick="divSortBy='pk';renderConvRates('${period}','${value}')">${divSortBy==='pk'?'↓ ':''}<span style="color:${divSortBy==='pk'?'#1f6feb':'inherit'}">ITM Packs Sold</span></th><th style="cursor:pointer" onclick="divSortBy='hst';renderConvRates('${period}','${value}')">${divSortBy==='hst'?'↓ ':''}<span style="color:#f778ba">HST Direct</span></th><th style="cursor:pointer" onclick="divSortBy='preclose';renderConvRates('${period}','${value}')">${divSortBy==='preclose'?'↓ ':''}<span style="color:${divSortBy==='preclose'?'#e6edf3':'inherit'}">Pre-Close Packs Sold</span></th><th style="cursor:pointer" onclick="divSortBy='r';renderConvRates('${period}','${value}')">${divSortBy==='r'?'↓ ':''}<span style="color:${divSortBy==='r'?'#3fb950':'inherit'}">ITM Conv. Rate %</span></th><th style="cursor:pointer" onclick="divSortBy='preconv';renderConvRates('${period}','${value}')">${divSortBy==='preconv'?'↓ ':''}<span style="color:${divSortBy==='preconv'?'#d2a8ff':'inherit'}">Pre-Close Conv. Rate %</span></th><th style="cursor:pointer" onclick="divSortBy='ratif';renderConvRates('${period}','${value}')">${divSortBy==='ratif'?'↓ ':''}<span style="color:${divSortBy==='ratif'?'#7ecfe0':'inherit'}">Ratification</span></th><th style="cursor:pointer" onclick="divSortBy='closes';renderConvRates('${period}','${value}')">${divSortBy==='closes'?'↓ ':''}<span style="color:${divSortBy==='closes'?'#f0a500':'inherit'}">Closes</span></th></tr>
@@ -1970,6 +1966,10 @@ function renderConvRates(period, value){
         }).join('')}
       </table>
       <div style="font-size:11px;color:#8b949e;margin-top:10px"><span style="color:#e3b341">*</span> Eligible Homes shown in amber italic are estimated from FY2026 home-starts (scaled to the selected period) — placeholder until the conversion export includes these divisions.</div>
+    </div>
+    <div class="full-chart-card">
+      <h3>Division Pipeline — ${fmtPeriod(value)} <span style="font-size:10px;font-weight:400;color:#484f58;margin-left:8px">Eligible pool · Ratifications · Closes · Packs Sold · HST Direct — sorted by ${divSortBy==='e'?'eligible homes':divSortBy==='r'?'ITM conv. rate':divSortBy==='ratif'?'ratification':divSortBy==='closes'?'closes':divSortBy==='hst'?'HST Direct':divSortBy==='proj'?'proj. homes':divSortBy==='preclose'?'pre-close packs':divSortBy==='preconv'?'pre-close conv. rate':'ITM packs sold'}</span></h3>
+      <div style="position:relative;height:580px"><canvas id="pipelineChart"></canvas></div>
     </div>
 
     ${typeof HST_TOP10!=='undefined' ? `
