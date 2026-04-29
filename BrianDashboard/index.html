@@ -298,7 +298,7 @@ body.light .shimmer-gs{background:linear-gradient(90deg,#8b8b8b 0%,#b8860b 20%,#
   <div id="content"></div>
 </div>
 
-<div id="version-badge">v11.6</div>
+<div id="version-badge">v11.7</div>
 
 <script>
 // Theme toggle — CSS handles colors; body.light class drives the swap
@@ -3624,21 +3624,15 @@ const _DATA_REFS = {
   ITM_MONTHLY, DPUP_MONTHLY, REPORT_CARD
 };
 
-function _deepClone(v){
-  if (v instanceof Set) return new Set([...v].map(_deepClone));
-  if (v instanceof Map) return new Map([...v].map(([k,x])=>[k,_deepClone(x)]));
-  if (Array.isArray(v)) return v.map(_deepClone);
-  if (v && typeof v === 'object'){
-    const out = {};
-    for (const k of Object.keys(v)) out[k] = _deepClone(v[k]);
-    return out;
-  }
-  return v;
+// Native JSON clone for plain data (much faster than recursive). Sets are
+// special-cased because they don't survive JSON.
+function _fastClone(v){
+  if (v instanceof Set) return new Set(v);
+  return JSON.parse(JSON.stringify(v));
 }
 
 function _emptyShape(v){
   if (v instanceof Set) return new Set();
-  if (v instanceof Map) return new Map();
   if (Array.isArray(v)) return [];
   if (v && typeof v === 'object'){
     const out = {};
@@ -3655,29 +3649,49 @@ function _emptyShape(v){
 function _applyInto(target, src){
   if (target instanceof Set){
     target.clear();
-    for (const x of src) target.add(_deepClone(x));
+    for (const x of src) target.add(x);
   } else if (Array.isArray(target)){
     target.length = 0;
-    for (const x of src) target.push(_deepClone(x));
+    for (const x of src) target.push(x);
   } else if (target && typeof target === 'object'){
     for (const k of Object.keys(target)) delete target[k];
-    for (const [k,v] of Object.entries(src)) target[k] = _deepClone(v);
+    for (const [k,v] of Object.entries(src)) target[k] = v;
   }
 }
 
-// Snapshot every DRH data global at startup
-const _DRH_SNAPSHOT = {};
-for (const [name, ref] of Object.entries(_DATA_REFS)) _DRH_SNAPSHOT[name] = _deepClone(ref);
-
+// Lazy DRH snapshot — only taken the first time the user switches AWAY from
+// DRH, since that's when the originals are about to be mutated. Avoids the
+// page-load cost of cloning ~1.5MB of data on every visit.
+let _DRH_SNAPSHOT = null;
 let _currentBuilder = 'drh';
+
+function _ensureDrhSnapshot(){
+  if (_DRH_SNAPSHOT) return;
+  _DRH_SNAPSHOT = {};
+  for (const [name, ref] of Object.entries(_DATA_REFS)){
+    _DRH_SNAPSHOT[name] = _fastClone(ref);
+  }
+}
 
 function setBuilderContext(key){
   if (!MEDIUM_BUILDERS.find(b => b.key === key)) key = 'drh';
-  _currentBuilder = key;
+  if (key === _currentBuilder) return;
   const isDRH = key === 'drh';
-  for (const [name, ref] of Object.entries(_DATA_REFS)){
-    _applyInto(ref, isDRH ? _DRH_SNAPSHOT[name] : _emptyShape(_DRH_SNAPSHOT[name]));
+  if (isDRH){
+    // Restore from snapshot. (If we never took one, globals are still pristine
+    // — nothing to do.)
+    if (_DRH_SNAPSHOT){
+      for (const [name, ref] of Object.entries(_DATA_REFS)){
+        _applyInto(ref, _fastClone(_DRH_SNAPSHOT[name]));
+      }
+    }
+  } else {
+    _ensureDrhSnapshot();
+    for (const [name, ref] of Object.entries(_DATA_REFS)){
+      _applyInto(ref, _emptyShape(_DRH_SNAPSHOT[name]));
+    }
   }
+  _currentBuilder = key;
   // Update header subtitle to reflect the active builder
   const sub = document.getElementById('header-sub-label');
   if (sub){
@@ -3688,8 +3702,8 @@ function setBuilderContext(key){
     }
   }
   try { localStorage.setItem('initiatives_builder', key); } catch(_){}
-  // Re-render whatever view the user is on. If they're on a sub-view and we
-  // just swapped data, simplest is to reset to home so they see a coherent state.
+  // Re-render whatever view the user is on. Simplest is to reset to home so
+  // they see a coherent state for the new context.
   selectedIdx = null;
   renderOverview();
 }
