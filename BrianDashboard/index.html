@@ -43,6 +43,11 @@ html.light{--bg:#ffffff;--bg-card:#ffffff;--bg-hover:#f0f2f5;--border:#d0d7de;--
 .hmetric.orange .hmetric-value{color:#f0a500}
 .hmetric.lift .hmetric-value{color:#3fb950;font-size:22px}
 
+/* BUILDER FILTER */
+#builder-filter{background:var(--bg);border:2px solid #f0a500;color:#f0a500;font-size:13px;font-weight:700;padding:6px 28px 6px 12px;border-radius:8px;cursor:pointer;outline:none;letter-spacing:.02em;margin-right:14px;appearance:none;-webkit-appearance:none;background-image:linear-gradient(45deg,transparent 50%,#f0a500 50%),linear-gradient(135deg,#f0a500 50%,transparent 50%);background-position:calc(100% - 14px) center,calc(100% - 9px) center;background-size:5px 5px,5px 5px;background-repeat:no-repeat}
+#builder-filter:hover{background-color:#1c2128}
+#builder-filter-label{font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:.08em;margin-right:6px;font-weight:700}
+
 /* CROSS-DASHBOARD NAV (shared across Executive / Initiatives / Accounts) */
 .dash-nav{display:flex;gap:12px;padding:12px 16px;background:#0d1117;border-bottom:1px solid #21262d;flex-shrink:0}
 .dash-nav-link{flex:1;display:flex;align-items:center;justify-content:space-between;padding:14px 22px;border-radius:12px;text-decoration:none;font-weight:700;border:2px solid;transition:transform .15s,box-shadow .15s,border-color .15s,background .15s;cursor:pointer}
@@ -277,9 +282,13 @@ body.light .shimmer-gs{background:linear-gradient(90deg,#8b8b8b 0%,#b8860b 20%,#
   <div id="header-title" style="display:flex;align-items:center;gap:10px">
     <div>
       <h1>Initiatives Dashboard</h1>
-      <span class="header-sub">DR Horton · National Sales Training</span>
+      <span class="header-sub" id="header-sub-label">DR Horton · National Sales Training</span>
     </div>
     <button id="themeToggle" onclick="toggleTheme()" aria-label="Toggle light/dark mode" title="Toggle light/dark mode"><svg width="22" height="28" viewBox="0 0 16 20"><path d="M9.5 0L0 11.5h6L5 20l11-12.5H9.5z" fill="currentColor"/></svg></button>
+  </div>
+  <div style="display:flex;align-items:center;padding:0 14px;border-left:1px solid var(--border);border-right:1px solid var(--border);height:46px">
+    <span id="builder-filter-label">Builder</span>
+    <select id="builder-filter" onchange="setBuilderContext(this.value)"></select>
   </div>
   <div id="metrics-bar"></div>
 </div>
@@ -289,7 +298,7 @@ body.light .shimmer-gs{background:linear-gradient(90deg,#8b8b8b 0%,#b8860b 20%,#
   <div id="content"></div>
 </div>
 
-<div id="version-badge">v11.5</div>
+<div id="version-badge">v11.6</div>
 
 <script>
 // Theme toggle — CSS handles colors; body.light class drives the swap
@@ -3571,6 +3580,133 @@ function showKeyDivRainmakers(){
     </div>
   `;
 }
+
+/* ── BUILDER CONTEXT FILTER ──
+ * Lets the user view this dashboard scoped to any of the medium builders
+ * (matching the Executive Dashboard's list). When a non-DRH builder is
+ * selected, every data global is mutated to empty (shape-preserving) so all
+ * charts, sidebar items, and tables render in their normal layout but with
+ * no data — pending future per-builder uploads.
+ */
+const MEDIUM_BUILDERS = [
+  {key:'drh',          name:'DR Horton (default)'},
+  {key:'maronda',      name:'Maronda Homes'},
+  {key:'stonemartin',  name:'Stone Martin Builders'},
+  {key:'hc_okc',       name:'Home Creations - OKC'},
+  {key:'hc_houston',   name:'Home Creations - Houston'},
+  {key:'hc_glenwood',  name:'Home Creations - Glenwood'},
+  {key:'risewell',     name:'Risewell Homes (Total)'},
+  {key:'risewell_sac', name:'Risewell - Sacramento'},
+  {key:'risewell_or',  name:'Risewell - Oregon'},
+  {key:'nhc_co',       name:'New Home Co. - Colorado'},
+  {key:'candlelight',  name:'Candlelight Homes'},
+  {key:'schumacher',   name:'Schumacher (Electrician)'},
+  {key:'kdh',          name:'KDH Builders'},
+  {key:'toa',          name:'TOA via Denney Electric'},
+  {key:'conner',       name:'Conner Homes'},
+  {key:'tollraleigh',  name:'Toll Brothers - Raleigh'},
+  {key:'meritage',     name:'Meritage Homes'},
+  {key:'adams',        name:'Adams Homes'},
+  {key:'drees',        name:'Drees Homes'},
+  {key:'rolwes',       name:'Rolwes Company'},
+  {key:'apple',        name:'Apple / 1st Oklahoma'},
+  {key:'gentry',       name:'Gentry Homes'},
+  {key:'cambridge',    name:'Cambridge Homes'}
+];
+
+// Stash live references to every mutable data global so we can mutate them
+// without reassigning the const bindings.
+const _DATA_REFS = {
+  RAINMAKERS, RAINMAKERS_BASELINE,
+  CONV_DATA, CLOSES_DATA, RATIF_DATA, SS1_DATA, CHASE_DATA,
+  HST_TOP10, STAYING_DIVISIONS, BACKLOG_HOMES, PO_STATUS,
+  KEY_DIVISIONS, PROJ_HOMES_2026, VISITS,
+  ITM_MONTHLY, DPUP_MONTHLY, REPORT_CARD
+};
+
+function _deepClone(v){
+  if (v instanceof Set) return new Set([...v].map(_deepClone));
+  if (v instanceof Map) return new Map([...v].map(([k,x])=>[k,_deepClone(x)]));
+  if (Array.isArray(v)) return v.map(_deepClone);
+  if (v && typeof v === 'object'){
+    const out = {};
+    for (const k of Object.keys(v)) out[k] = _deepClone(v[k]);
+    return out;
+  }
+  return v;
+}
+
+function _emptyShape(v){
+  if (v instanceof Set) return new Set();
+  if (v instanceof Map) return new Map();
+  if (Array.isArray(v)) return [];
+  if (v && typeof v === 'object'){
+    const out = {};
+    for (const k of Object.keys(v)) out[k] = _emptyShape(v[k]);
+    return out;
+  }
+  if (typeof v === 'number') return 0;
+  if (typeof v === 'string') return '';
+  if (typeof v === 'boolean') return false;
+  return null;
+}
+
+// Mutate `target` so its contents match `src` (preserving target's identity).
+function _applyInto(target, src){
+  if (target instanceof Set){
+    target.clear();
+    for (const x of src) target.add(_deepClone(x));
+  } else if (Array.isArray(target)){
+    target.length = 0;
+    for (const x of src) target.push(_deepClone(x));
+  } else if (target && typeof target === 'object'){
+    for (const k of Object.keys(target)) delete target[k];
+    for (const [k,v] of Object.entries(src)) target[k] = _deepClone(v);
+  }
+}
+
+// Snapshot every DRH data global at startup
+const _DRH_SNAPSHOT = {};
+for (const [name, ref] of Object.entries(_DATA_REFS)) _DRH_SNAPSHOT[name] = _deepClone(ref);
+
+let _currentBuilder = 'drh';
+
+function setBuilderContext(key){
+  if (!MEDIUM_BUILDERS.find(b => b.key === key)) key = 'drh';
+  _currentBuilder = key;
+  const isDRH = key === 'drh';
+  for (const [name, ref] of Object.entries(_DATA_REFS)){
+    _applyInto(ref, isDRH ? _DRH_SNAPSHOT[name] : _emptyShape(_DRH_SNAPSHOT[name]));
+  }
+  // Update header subtitle to reflect the active builder
+  const sub = document.getElementById('header-sub-label');
+  if (sub){
+    if (isDRH) sub.textContent = 'DR Horton · National Sales Training';
+    else {
+      const meta = MEDIUM_BUILDERS.find(b => b.key === key);
+      sub.textContent = `${meta.name} · No data uploaded yet`;
+    }
+  }
+  try { localStorage.setItem('initiatives_builder', key); } catch(_){}
+  // Re-render whatever view the user is on. If they're on a sub-view and we
+  // just swapped data, simplest is to reset to home so they see a coherent state.
+  selectedIdx = null;
+  renderOverview();
+}
+
+function _initBuilderFilter(){
+  const sel = document.getElementById('builder-filter');
+  if (!sel) return;
+  sel.innerHTML = MEDIUM_BUILDERS.map(b =>
+    `<option value="${b.key}">${b.name}</option>`).join('');
+  let saved = 'drh';
+  try { saved = localStorage.getItem('initiatives_builder') || 'drh'; } catch(_){}
+  if (!MEDIUM_BUILDERS.find(b => b.key === saved)) saved = 'drh';
+  sel.value = saved;
+  if (saved !== 'drh') setBuilderContext(saved);
+}
+
+_initBuilderFilter();
 
 renderOverview();
 document.getElementById('sidebar').addEventListener('click', function(e){
