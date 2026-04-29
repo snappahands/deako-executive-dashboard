@@ -479,9 +479,34 @@
       padding-top: 18px;
       border-top: 1px solid var(--border);
     }
+
+    /* CROSS-DASHBOARD NAV (shared across Executive / Initiatives / Accounts) */
+    .dash-nav{display:flex;gap:12px;padding:12px 16px;background:var(--card-alt);border-bottom:1px solid var(--border)}
+    .dash-nav-link{flex:1;display:flex;align-items:center;justify-content:space-between;padding:14px 22px;border-radius:12px;text-decoration:none;font-weight:700;border:2px solid;transition:transform .15s,box-shadow .15s,border-color .15s,background .15s;cursor:pointer}
+    .dash-nav-link:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.45)}
+    .dash-nav-link .nav-title{font-size:16px;letter-spacing:.02em}
+    .dash-nav-link .nav-sub{font-size:11px;opacity:.78;margin-top:3px;font-weight:500;letter-spacing:.04em;text-transform:uppercase}
+    .dash-nav-link .nav-arrow{font-size:24px;font-weight:300;margin-left:14px}
+    .nav-exec{border-color:#3ecfc6;background:linear-gradient(135deg,rgba(62,207,198,.18),rgba(62,207,198,.05));color:#3ecfc6}
+    .nav-exec:hover{border-color:#5ee0d8;background:linear-gradient(135deg,rgba(62,207,198,.30),rgba(62,207,198,.10))}
+    .nav-init{border-color:#f0a500;background:linear-gradient(135deg,rgba(240,165,0,.18),rgba(240,165,0,.05));color:#f0a500}
+    .nav-init:hover{border-color:#ffbe33;background:linear-gradient(135deg,rgba(240,165,0,.30),rgba(240,165,0,.10))}
+    .nav-acct{border-color:#d2a8ff;background:linear-gradient(135deg,rgba(210,168,255,.18),rgba(210,168,255,.05));color:#d2a8ff}
+    .nav-acct:hover{border-color:#e2c4ff;background:linear-gradient(135deg,rgba(210,168,255,.30),rgba(210,168,255,.10))}
   </style>
 </head>
 <body>
+
+<nav class="dash-nav">
+  <a class="dash-nav-link nav-init" href="BrianDashboard/index.html">
+    <div><div class="nav-title">Initiatives Dashboard</div><div class="nav-sub">DR Horton · National Sales Training</div></div>
+    <div class="nav-arrow">→</div>
+  </a>
+  <a class="dash-nav-link nav-acct" href="https://snappahands.github.io/amber-dashboard/">
+    <div><div class="nav-title">Accounts Dashboard</div><div class="nav-sub">Deako Builder Accounts</div></div>
+    <div class="nav-arrow">→</div>
+  </a>
+</nav>
 
 <header class="header">
   <div>
@@ -491,7 +516,7 @@
   <div class="header-right">
     <div class="header-date" id="headerDate"></div>
     <div class="header-period" id="headerPeriod"></div>
-    <div style="font-size:11px;color:var(--teal);margin-top:4px;letter-spacing:.04em;font-weight:700">v5.1</div>
+    <div style="font-size:11px;color:var(--teal);margin-top:4px;letter-spacing:.04em;font-weight:700">v5.2</div>
   </div>
 </header>
 
