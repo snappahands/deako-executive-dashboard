@@ -298,7 +298,7 @@ body.light .shimmer-gs{background:linear-gradient(90deg,#8b8b8b 0%,#b8860b 20%,#
   <div id="content"></div>
 </div>
 
-<div id="version-badge">v12.2</div>
+<div id="version-badge">v12.3</div>
 
 <script>
 // Theme toggle — CSS handles colors; body.light class drives the swap
@@ -1398,7 +1398,10 @@ function renderOverview(){
       scales:{
         x:{ticks:{color:'#8b949e',font:{size:10}},grid:{color:'#21262d'}},
         y:{ticks:{color:'#8b949e',font:{size:11}},grid:{color:'#21262d'},beginAtZero:true,
-           suggestedMax: Math.max(...itmRows.map(r => Math.max(r.pre||0, r.post||0, r.projAnnual||0))) * 1.15
+           // Scale only to the actual pre/post bars so they fill the chart.
+           // Projection outlines that exceed this max get clipped to the
+           // top of the plot area in the projectionOverlay plugin below.
+           suggestedMax: Math.max(...itmRows.map(r => Math.max(r.pre||0, r.post||0))) * 1.25
         }
       }
     },
@@ -1407,7 +1410,7 @@ function renderOverview(){
       afterDatasetsDraw(chart){
         const postMeta = chart.getDatasetMeta(1);
         if (!postMeta || postMeta.hidden) return;
-        const {ctx, scales:{y}} = chart;
+        const {ctx, scales:{y}, chartArea} = chart;
         const baseY = y.getPixelForValue(0);
         ctx.save();
         ctx.strokeStyle = '#d2a8ff';
@@ -1420,11 +1423,21 @@ function renderOverview(){
         postMeta.data.forEach((bar, i) => {
           const r = itmRows[i];
           if (r.projAnnual == null || r.projAnnual <= 0) return;
-          const projY = y.getPixelForValue(r.projAnnual);
+          let projY = y.getPixelForValue(r.projAnnual);
+          let clippedAbove = false;
+          if (projY < chartArea.top){
+            projY = chartArea.top;
+            clippedAbove = true;
+          }
           const w = bar.width;
           const left = bar.x - w/2;
           ctx.strokeRect(left, projY, w, baseY - projY);
-          ctx.fillText(`proj ${r.projAnnual}`, bar.x, projY - 3);
+          // Label sits just above the rectangle if there's room, otherwise
+          // just below the top of the plot area when clipped.
+          const labelY = clippedAbove ? projY + 12 : projY - 3;
+          if (clippedAbove) ctx.textBaseline = 'top';
+          ctx.fillText(`proj ${r.projAnnual}`, bar.x, labelY);
+          if (clippedAbove) ctx.textBaseline = 'bottom';
         });
         ctx.restore();
       }
