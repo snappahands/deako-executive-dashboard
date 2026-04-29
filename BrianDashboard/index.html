@@ -298,7 +298,7 @@ body.light .shimmer-gs{background:linear-gradient(90deg,#8b8b8b 0%,#b8860b 20%,#
   <div id="content"></div>
 </div>
 
-<div id="version-badge">v12.3</div>
+<div id="version-badge">v12.4</div>
 
 <script>
 // Theme toggle — CSS handles colors; body.light class drives the swap
@@ -1292,25 +1292,20 @@ function renderOverview(){
         {label:'spec',       data:DPUP_MONTHLY.spec,      backgroundColor:'#f0a500', stack:'packs', borderRadius:2, datalabels:segLabel},
         {label:'incentive',  data:DPUP_MONTHLY.incentive, backgroundColor:'#3fb950', stack:'packs', borderRadius:2, datalabels:segLabel},
         {label:'model',      data:DPUP_MONTHLY.model,     backgroundColor:'#79c0ff', stack:'packs', borderRadius:2, datalabels:segLabel},
-        {label:'HST Direct', data:DPUP_MONTHLY.hstDirect, backgroundColor:'#f778ba', stack:'packs', borderRadius:2,
-         datalabels:[
-           segLabel,
-           { anchor:'end', align:'end', color:'#e6edf3', font:{size:9,weight:'700'},
-             display: ctx => ctx.chart.data.datasets.reduce((s,ds)=>s+(ds.data[ctx.dataIndex]||0),0) > 0,
-             formatter:(v,ctx) => ctx.chart.data.datasets.reduce((s,ds)=>s+(ds.data[ctx.dataIndex]||0),0) }
-         ]}
+        {label:'HST Direct', data:DPUP_MONTHLY.hstDirect, backgroundColor:'#f778ba', stack:'packs', borderRadius:2, datalabels:segLabel}
       ]
     },
     options:{
       responsive:true, maintainAspectRatio:false,
-      layout:{padding:{top:18}},
+      layout:{padding:{top:22}},
       interaction:{mode:'index',intersect:false},
       plugins:{
         legend:{labels:{color:'#8b949e',font:{size:11}}},
         tooltip:{
           callbacks:{
             label(ctx){
-              const total = ctx.chart.data.datasets.reduce((s,ds)=>s+(ds.data[ctx.dataIndex]||0),0);
+              // Visible-only total — hidden datasets don't count toward the %.
+              const total = ctx.chart.data.datasets.reduce((s,ds,i)=>s+(ctx.chart.isDatasetVisible(i)?(ds.data[ctx.dataIndex]||0):0),0);
               const pct = total>0 ? (ctx.parsed.y/total*100).toFixed(1) : 0;
               return ` ${ctx.dataset.label}: ${ctx.parsed.y}  (${pct}%)`;
             },
@@ -1323,7 +1318,37 @@ function renderOverview(){
         y:{ticks:{color:'#8b949e',font:{size:11}},grid:{color:'#21262d'},beginAtZero:true,stacked:true}
       }
     },
-    plugins:[ChartDataLabels]
+    plugins:[ChartDataLabels, {
+      id:'monthlyStackTotals',
+      afterDatasetsDraw(chart){
+        const datasets = chart.data.datasets;
+        const labels = chart.data.labels;
+        const ctx = chart.ctx;
+        ctx.save();
+        ctx.font = 'bold 10px sans-serif';
+        ctx.fillStyle = '#e6edf3';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'bottom';
+        labels.forEach((_, i) => {
+          let total = 0;
+          let topY = null, topX = null;
+          // Sum across visible datasets and find the topmost visible bar element
+          // for this index so the label sits at the correct height.
+          for (let di = 0; di < datasets.length; di++){
+            if (!chart.isDatasetVisible(di)) continue;
+            const v = datasets[di].data[i] || 0;
+            total += v;
+            if (v > 0){
+              const meta = chart.getDatasetMeta(di);
+              const bar = meta.data[i];
+              if (bar && (topY == null || bar.y < topY)){ topY = bar.y; topX = bar.x; }
+            }
+          }
+          if (total > 0 && topY != null) ctx.fillText(total, topX, topY - 3);
+        });
+        ctx.restore();
+      }
+    }]
   });
 
   /* Before/After per-division chart with days-since-training + pace vs prior */
