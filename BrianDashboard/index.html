@@ -298,7 +298,7 @@ body.light .shimmer-gs{background:linear-gradient(90deg,#8b8b8b 0%,#b8860b 20%,#
   <div id="content"></div>
 </div>
 
-<div id="version-badge">v12.7</div>
+<div id="version-badge">v12.8</div>
 
 <script>
 // Theme toggle — CSS handles colors; body.light class drives the swap
@@ -1184,23 +1184,53 @@ function _hstByDivForTab(tab){
 
 function renderDivTable(tab){
   const hstByDiv = _hstByDivForTab(tab);
-  const data = DIV_PERF[tab].map(d => {
+  const staying = (typeof STAYING_DIVISIONS !== 'undefined') ? STAYING_DIVISIONS : [];
+  const stayingByKey = Object.fromEntries(staying.map(s => [s.key, s]));
+  const stayingByName = Object.fromEntries(staying.map(s => [s.name.toLowerCase(), s]));
+  const divPerfTab = DIV_PERF[tab] || [];
+
+  // Build one row per staying/undecided division. Pull ITM data from DIV_PERF
+  // if it matches; otherwise use zeros. Divisions in DIV_PERF that aren't
+  // staying/undecided per Holly's sheet are excluded.
+  const seen = new Set();
+  const rows = [];
+  divPerfTab.forEach(d => {
     const key = findDivKey(d.div);
-    const hst = key ? (hstByDiv[key]||0) : 0;
-    return Object.assign({}, d, { hst, total: (d.packs||0) + hst });
-  }).sort((a,b) => (b[_divSortCol]||0) - (a[_divSortCol]||0));
-  const maxPacks = data.length ? Math.max(...data.map(r=>r.packs||0), 1) : 1;
+    const s = (key && stayingByKey[key]) || stayingByName[d.div.toLowerCase()] || null;
+    if (!s) return;
+    seen.add(s.key);
+    const hst = hstByDiv[s.key] || 0;
+    rows.push({
+      div: s.name,
+      starts: s.homes || 0,
+      packs: d.packs || 0,
+      hst,
+      total: (d.packs||0) + hst,
+      rev: d.rev || 0,
+      profit: d.profit || 0
+    });
+  });
+  staying.forEach(s => {
+    if (seen.has(s.key)) return;
+    const hst = hstByDiv[s.key] || 0;
+    rows.push({ div: s.name, starts: s.homes || 0, packs: 0, hst, total: hst, rev: 0, profit: 0 });
+  });
+  rows.sort((a,b) => (b[_divSortCol]||0) - (a[_divSortCol]||0));
+
+  const maxPacks = rows.length ? Math.max(...rows.map(r=>r.packs||0), 1) : 1;
   const hdr = (label,key) => `<th style="cursor:pointer;user-select:none${_divSortCol===key?';color:#58a6ff':''}" onclick="_divSortCol='${key}';switchDivTab('${tab}')">${label}${_divSortCol===key?' ▼':''}</th>`;
+  const fmtMoney = v => v > 0 ? fmtK(v) : '—';
   return `<table class="summary-table">
-    <tr><th>#</th><th>Division</th>${hdr('ITM Packs Sold','packs')}${hdr('HST Direct','hst')}${hdr('Total Packs Sold','total')}${hdr('ITM Revenue','rev')}${hdr('ITM Profit','profit')}</tr>
-    ${data.map((d,i)=>`<tr>
+    <tr><th>#</th><th>Division</th>${hdr("Proj. '26 Starts",'starts')}${hdr('ITM Packs Sold','packs')}${hdr('HST Direct','hst')}${hdr('Total Packs Sold','total')}${hdr('ITM Revenue','rev')}${hdr('ITM Profit','profit')}</tr>
+    ${rows.map((d,i)=>`<tr>
       <td style="color:#484f58;font-weight:700">#${i+1}</td>
       <td><strong>${d.div}</strong></td>
+      <td style="color:#d2a8ff;font-weight:700">${d.starts ? d.starts.toLocaleString() : '—'}</td>
       <td>${d.packs}<span class="rm-bar-wrap"><span class="rm-bar-fill" style="width:${Math.round((d.packs||0)/maxPacks*100)}%"></span></span></td>
       <td style="color:#f778ba;font-weight:700">${d.hst||'—'}</td>
-      <td style="color:#e6edf3;font-weight:700">${d.total}</td>
-      <td style="color:#3fb950">${fmtK(d.rev)}</td>
-      <td style="color:#8b949e">${fmtK(d.profit)}</td>
+      <td style="color:#e6edf3;font-weight:700">${d.total||'—'}</td>
+      <td style="color:#3fb950">${fmtMoney(d.rev)}</td>
+      <td style="color:#8b949e">${fmtMoney(d.profit)}</td>
     </tr>`).join('')}
   </table>`;
 }
@@ -1241,7 +1271,7 @@ function renderOverview(){
 
     <!-- DIVISION LEADERBOARD -->
     <div class="full-chart-card">
-      <h3 style="margin-bottom:12px">Division ITM Profitability <span style="font-size:10px;font-weight:400;color:#484f58;margin-left:8px">Source: HEX</span></h3>
+      <h3 style="margin-bottom:12px">Division ITM Profitability <span style="font-size:10px;font-weight:400;color:#484f58;margin-left:8px">Staying / undecided divisions only · Proj. starts from Holly's sheet · ITM packs/revenue/profit from HEX</span></h3>
       <div style="display:flex;gap:6px;margin-bottom:12px">
         <button onclick="switchDivTab('last3')"   id="tab-last3"   style="background:#1f6feb;border:none;border-radius:6px;padding:5px 12px;color:#fff;font-size:11px;font-weight:600;cursor:pointer">Last 3 Months</button>
         <button onclick="switchDivTab('y2025')"   id="tab-y2025"   style="background:#21262d;border:1px solid #30363d;border-radius:6px;padding:5px 12px;color:#8b949e;font-size:11px;font-weight:600;cursor:pointer">2025</button>
