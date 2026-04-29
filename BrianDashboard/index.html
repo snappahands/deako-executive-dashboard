@@ -26,8 +26,8 @@ body{display:flex;flex-direction:column;height:100vh}
 html.light{--bg:#ffffff;--bg-card:#ffffff;--bg-hover:#f0f2f5;--border:#d0d7de;--text:#1f2328;--text-h:#1f2328;--text-m:#656d76;--text-d:#8b949e}
 
 /* HEADER */
-#header{background:var(--bg-card);border-bottom:1px solid var(--border);padding:10px 20px;flex-shrink:0;display:flex;align-items:center;gap:0}
-#header-title{width:160px;flex-shrink:0;padding-right:12px}
+#header{background:var(--bg-card);border-bottom:1px solid var(--border);padding:10px 20px;flex-shrink:0;display:flex;align-items:center;gap:14px}
+#header-title{flex-shrink:0;padding-right:12px}
 #header h1{font-size:17px;font-weight:700;color:var(--text-h);letter-spacing:.02em;white-space:nowrap}
 .header-sub{font-size:11px;color:var(--text-m);background:var(--bg);padding:2px 8px;border-radius:10px;font-weight:600}
 
@@ -298,7 +298,7 @@ body.light .shimmer-gs{background:linear-gradient(90deg,#8b8b8b 0%,#b8860b 20%,#
   <div id="content"></div>
 </div>
 
-<div id="version-badge">v11.9</div>
+<div id="version-badge">v12.0</div>
 
 <script>
 // Theme toggle — CSS handles colors; body.light class drives the swap
