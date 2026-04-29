@@ -516,7 +516,7 @@
   <div class="header-right">
     <div class="header-date" id="headerDate"></div>
     <div class="header-period" id="headerPeriod"></div>
-    <div style="font-size:11px;color:var(--teal);margin-top:4px;letter-spacing:.04em;font-weight:700">v5.3</div>
+    <div style="font-size:11px;color:var(--teal);margin-top:4px;letter-spacing:.04em;font-weight:700">v5.4</div>
   </div>
 </header>
 
@@ -934,14 +934,14 @@ const BUILDERS = [
 
 // __DATA_START__
 const DEFAULTS = {
-  dataVersion: 12,  // bump this whenever monthly/goals data changes to bust localStorage cache
+  dataVersion: 13,  // bump this whenever monthly/goals data changes to bust localStorage cache
   monthly: {
-    // Bookings: full-year actuals from Justin Bookings Table row 58 (Actuals) — CSV (9) 2026-04-20
-    bookings2026: [218.709, 206.701, 215.918, 150.812, 0, 0, 0, 0, 0, 0, 0, 0],
-    bookings2025: [88.104, 117.484, 148.386, 187.128, 211.244, 227.504, 239.954, 243.231, 186.878, 223.011, 160.818, 158.176],
+    // Bookings: full-year actuals from Justin Bookings Table row 58 (Actuals) — CSV (11) 2026-04-29
+    bookings2026: [218.568, 206.701, 215.918, 226.954, 0, 0, 0, 0, 0, 0, 0, 0],
+    bookings2025: [88.104, 117.465, 148.386, 186.640, 211.142, 227.498, 241.069, 242.333, 188.309, 222.466, 159.890, 157.911],
     // Revenue: full-year actuals from Justin Bookings Table row 58 (Actuals)
-    revenue2026:  [218.709, 206.701, 215.918, 150.812, 0, 0, 0, 0, 0, 0, 0, 0],
-    revenue2025:  [88.104, 117.484, 148.386, 187.128, 211.244, 227.504, 239.954, 243.231, 186.878, 223.011, 160.818, 158.176],
+    revenue2026:  [218.568, 206.701, 215.918, 226.954, 0, 0, 0, 0, 0, 0, 0, 0],
+    revenue2025:  [88.104, 117.465, 148.386, 186.640, 211.142, 227.498, 241.069, 242.333, 188.309, 222.466, 159.890, 157.911],
   },
   goals: {
     aopBookings:       2616.548,  // 2026 AOP — BM row 59
