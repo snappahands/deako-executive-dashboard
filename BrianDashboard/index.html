@@ -326,7 +326,7 @@ body.light .shimmer-gs{background:linear-gradient(90deg,#8b8b8b 0%,#b8860b 20%,#
   <div id="content"></div>
 </div>
 
-<div id="version-badge">v14.1</div>
+<div id="version-badge">v14.2</div>
 
 <script>
 // Theme toggle — CSS handles colors; body.light class drives the swap
@@ -1226,7 +1226,7 @@ function renderDivTable(tab){
   // Backlog cell — color escalates as the count rises (high backlog = ITM/SPEC opportunity).
   const backlogCell = (n) => {
     if (n == null) return '<td style="text-align:right;color:#484f58">—</td>';
-    let color = '#8b949e';
+    let color = '#c9d1d9';
     if (n >= 100) color = '#f85149';
     else if (n >= 50) color = '#f0a500';
     return `<td style="text-align:right;color:${color};font-weight:700" title="${n} unsold homes — promote ITM/SPEC packs to help move them">${n}</td>`;
@@ -2172,7 +2172,7 @@ function renderConvRates(period, value){
           const preclose=(d.pk||0)+hstN;
           const preconv=(d.e>0)?(preclose/d.e*100):0;
           const bl = (typeof BACKLOG_HOMES !== 'undefined' && BACKLOG_HOMES[d.div] != null) ? BACKLOG_HOMES[d.div] : null;
-          const blColor = bl == null ? '#484f58' : bl >= 100 ? '#f85149' : bl >= 50 ? '#f0a500' : '#8b949e';
+          const blColor = bl == null ? '#484f58' : bl >= 100 ? '#f85149' : bl >= 50 ? '#f0a500' : '#c9d1d9';
           const blCell = bl == null ? '—' : `<span title="${bl} unsold homes — promote ITM/SPEC packs to help move them">${bl}</span>`;
           return `<tr style="cursor:pointer" onclick="renderConvRates('monthly','${d.div}')">
             <td style="color:#484f58;font-weight:700">#${i+1}</td>

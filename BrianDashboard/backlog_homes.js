@@ -9,7 +9,8 @@ const BACKLOG_HOMES = {
   'greenville':         123,
   'baldwin':             37,
   'atlanta_west':       167,
-  'charlotte_north':    133,  // User said "Charlotte: 133" — attributed here (the larger Charlotte; reassign to charlotte_south if intended)
+  'charlotte_north':     80,  // User's "Charlotte: 133" split proportionally by FY26 starts (1173/1955 = 60%)
+  'charlotte_south':     53,  // 782/1955 = 40% of the 133 backlog
   'delaware':            30,
   'indianapolis':        69,
   'cincinnati':          28,
