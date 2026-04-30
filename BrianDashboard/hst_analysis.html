@@ -232,10 +232,10 @@
   <div class="stat-card">
     <div class="lbl">2026 Q1 (Post-Contraction)</div>
     <div class="metric-row">
-      <div><div class="num itm-blue">48</div><div class="tag">ITM /mo</div></div>
+      <div><div class="num itm-blue">47</div><div class="tag">ITM /mo</div></div>
       <div><div class="num hst-pink">114</div><div class="tag">HST /mo</div></div>
     </div>
-    <div class="sub red">0.81% conv · 27 divisions only</div>
+    <div class="sub red">0.81% conv · Q1 totals: 141 ITM + 343 HST = 484 packs · 27 divisions</div>
   </div>
   <div class="stat-card">
     <div class="lbl">ITM Conv Rate Trend</div>
@@ -466,8 +466,8 @@
       </tr>
       <tr>
         <td>2023</td>
-        <td>1,272</td>
-        <td>106</td>
+        <td>1,003</td>
+        <td>84</td>
         <td class="muted">—  Baseline</td>
         <td class="muted">—</td>
         <td class="muted">Not launched</td>
@@ -476,43 +476,53 @@
       </tr>
       <tr>
         <td>2024</td>
-        <td class="red">873</td>
-        <td class="red">73</td>
-        <td class="red">↓ 31.4%</td>
-        <td class="blue">1,464</td>
-        <td class="blue">122</td>
-        <td class="blue">62.6%</td>
-        <td class="amber">2.1%</td>
+        <td class="amber">1,093</td>
+        <td class="amber">91</td>
+        <td class="amber">↑ 9.0%</td>
+        <td class="blue">1,256</td>
+        <td class="blue">105</td>
+        <td class="blue">53.5%</td>
+        <td class="amber">1.6%</td>
       </tr>
       <tr>
         <td>2025</td>
-        <td class="red">827</td>
-        <td class="red">69</td>
-        <td class="red">↓ 5.3% (↓ 35.0% vs 2023)</td>
-        <td class="blue">1,602</td>
-        <td class="blue">134</td>
-        <td class="blue">65.9%</td>
-        <td class="red">1.5%</td>
+        <td class="red">891</td>
+        <td class="red">74</td>
+        <td class="red">↓ 18.5% (↓ 11.2% vs 2023)</td>
+        <td class="blue">1,495</td>
+        <td class="blue">125</td>
+        <td class="blue">62.7%</td>
+        <td class="red">1.3%</td>
       </tr>
       <tr>
         <td>2025 Q4 (Oct–Dec)</td>
-        <td class="amber">161</td>
-        <td class="amber">54</td>
+        <td class="amber">139</td>
+        <td class="amber">46</td>
         <td class="amber">↓ ~10 divs departed early</td>
-        <td class="blue">338</td>
-        <td class="blue">113</td>
-        <td class="blue">67.7%</td>
+        <td class="blue">307</td>
+        <td class="blue">102</td>
+        <td class="blue">68.8%</td>
         <td class="amber">1.0%</td>
       </tr>
       <tr style="background:#1a180088">
-        <td><strong>2026 (Jan–Feb)</strong><br><span class="muted" style="font-size:10px">27 divisions only</span></td>
-        <td class="amber">58</td>
-        <td class="amber">29 *</td>
+        <td><strong>2026 Q1 (Jan–Mar)</strong><br><span class="muted" style="font-size:10px">27 divisions only</span></td>
+        <td class="amber">141</td>
+        <td class="amber">47</td>
+        <td class="amber" style="font-size:11px">First full quarter post-contraction</td>
+        <td class="blue">343</td>
+        <td class="blue">114</td>
+        <td class="blue">70.9%</td>
+        <td class="amber">0.81%</td>
+      </tr>
+      <tr style="background:#1a180088">
+        <td><strong>2026 (Jan–Apr)</strong><br><span class="muted" style="font-size:10px">27 divisions only</span></td>
+        <td class="amber">182</td>
+        <td class="amber">46</td>
         <td class="amber" style="font-size:11px">78% fewer divisions — not comparable to prior years</td>
-        <td class="blue">235</td>
-        <td class="blue">118</td>
-        <td class="blue">80.2%</td>
-        <td class="amber">0.75%</td>
+        <td class="blue">377</td>
+        <td class="blue">94</td>
+        <td class="blue">67.4%</td>
+        <td class="amber">0.79%</td>
       </tr>
     </table>
     <p class="footnote" style="color:#e3b341">2026 volumes reflect 27 divisions (~22K homes) vs 125 divisions (~86K homes) in 2023–2025. Per-division ITM in Q1 2026 has held above 2024–2025 per-division rates — the remaining divisions are converting at a higher rate per division.</p>
@@ -690,18 +700,18 @@ const CHART_DEFAULTS = {
   new Chart(ctx, {
     type: 'bar',
     data: {
-      labels: ['2023', '2024', '2025', '2026\n(Jan–Feb)'],
+      labels: ['2023', '2024', '2025', '2026\n(Jan–Apr)'],
       datasets: [
         {
           label: 'ITM Packs',
-          data: [1272, 873, 827, 58],
+          data: [1003, 1093, 891, 182],
           backgroundColor: ['#1f6feb99','#1f6feb99','#1f6feb99','#1f6feb99'],
           borderColor: ['#1f6feb','#1f6feb','#1f6feb','#1f6feb'],
           borderWidth: 1
         },
         {
           label: 'HST Direct Packs',
-          data: [null, 1464, 1602, 235],
+          data: [null, 1256, 1495, 377],
           backgroundColor: '#f778ba88',
           borderColor: '#f778ba',
           borderWidth: 1
@@ -725,7 +735,7 @@ const CHART_DEFAULTS = {
               const hst = items.find(i=>i.datasetIndex===1)?.parsed.y||0;
               if (!hst) return ['', `  ITM-only year (no HST)`];
               const tot = itm + hst;
-              const itmChg = itm===1272 ? '' : ` (${itm>1272?'+':''}${Math.round((itm/1272-1)*100)}% vs 2023 baseline)`;
+              const itmChg = itm===1003 ? '' : ` (${itm>1003?'+':''}${Math.round((itm/1003-1)*100)}% vs 2023 baseline)`;
               return ['', `  Combined: ${tot.toLocaleString()} packs`, `  ITM change${itmChg}`, `  HST is ${Math.round(hst/itm*100-100)}% larger than ITM`];
             }
           }
@@ -742,7 +752,7 @@ const CHART_DEFAULTS = {
       afterDraw(chart) {
         const c = chart.ctx;
         const m0 = chart.getDatasetMeta(0), m1 = chart.getDatasetMeta(1);
-        const itmD = [1272, 873, 827, 116], hstD = [null, 1464, 1602, 416];
+        const itmD = [1003, 1093, 891, 182], hstD = [null, 1256, 1495, 377];
         itmD.forEach((itm, i) => {
           const b0 = m0.data[i];
           if (b0) {
