@@ -258,6 +258,33 @@ body.light .shimmer-gs{background:linear-gradient(90deg,#8b8b8b 0%,#b8860b 20%,#
 .contact-tip-row a{color:#7ecfe0;text-decoration:none}
 .contact-tip-row a:hover{text-decoration:underline}
 
+/* TRAINED-DIVISION CARDS (white-on-dashboard cards for ITM Before/After view) */
+.train-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;margin-top:8px}
+.train-card{background:#ffffff;color:#1f2937;border:2px solid #d0d7de;border-radius:10px;padding:14px 16px;font-size:13px;line-height:1.4}
+.train-card--up{border-color:#3fb950}
+.train-card--down{border-color:#da3633}
+.train-card--flat{border-color:#f0a500}
+.train-card-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #e5e7eb}
+.train-card-name{font-size:15px;font-weight:700;color:#0f172a}
+.train-card-meta{font-size:11px;color:#6b7280;white-space:nowrap}
+.train-card-section{margin-bottom:7px}
+.train-card-section--proj{margin-top:8px;padding-top:8px;border-top:1px solid #e5e7eb}
+.train-card-label{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;font-weight:700;margin-bottom:2px}
+.train-card-numbers{font-family:Arial,sans-serif;font-size:14px}
+.train-card-numbers .num-itm{color:#1f6feb;font-weight:700}
+.train-card-numbers .num-hst{color:#f778ba;font-weight:700}
+.train-card-numbers .num-plus,.train-card-numbers .num-eq{color:#9ca3af;padding:0 4px;font-weight:400}
+.train-card-numbers .num-total{color:#0f172a;font-weight:800}
+.train-card-numbers .num-proj{color:#7c3aed;font-weight:800;font-size:18px}
+.train-card-numbers .num-delta{font-weight:700;padding-left:8px;font-size:13px}
+.train-card-numbers .num-delta.up{color:#1f7a3c}
+.train-card-numbers .num-delta.down{color:#b42318}
+.train-card-numbers .num-delta.flat{color:#946a00}
+.train-card-takeaway{margin-top:10px;padding-top:8px;border-top:1px solid #e5e7eb;font-size:12px;color:#374151;font-style:italic;line-height:1.5}
+.train-card-bar{display:flex;height:8px;border-radius:4px;overflow:hidden;margin-top:4px;background:#f3f4f6}
+.train-card-bar-itm{background:#1f6feb}
+.train-card-bar-hst{background:#f778ba}
+
 /* SCROLLBAR */
 ::-webkit-scrollbar{width:5px}
 ::-webkit-scrollbar-track{background:#0d1117}
@@ -298,7 +325,7 @@ body.light .shimmer-gs{background:linear-gradient(90deg,#8b8b8b 0%,#b8860b 20%,#
   <div id="content"></div>
 </div>
 
-<div id="version-badge">v13.6</div>
+<div id="version-badge">v13.7</div>
 
 <script>
 // Theme toggle — CSS handles colors; body.light class drives the swap
@@ -515,17 +542,6 @@ const VISITS = [
     ambassadors:[
       {name:'Tyler', email:'', phone:''},
       {name:'Stephan', email:'', phone:''}
-    ],
-    modelHomes:[],
-    scenes:'', highlights:'', followUp:'', followUpNotes:'', issues:'', notes:'',
-    status:'completed'
-  },
-  {
-    division:'Las Vegas', state:'NV', date:'03/16/2026',
-    preITM:0, postITM:0,
-    type:'Presentation', reps:40, certified:0,
-    ambassadors:[
-      {name:'Tony', email:'tonysaleslv@gmail.com', phone:''}
     ],
     modelHomes:[],
     scenes:'', highlights:'', followUp:'', followUpNotes:'', issues:'', notes:'',
@@ -1248,14 +1264,14 @@ function renderOverview(){
       <div style="position:relative;height:320px"><canvas id="dpupChart"></canvas></div>
     </div>
     <div class="full-chart-card">
-      <h3>ITM Before &amp; After Deako Training <span style="font-size:10px;font-weight:400;color:#484f58;margin-left:8px">Gray + pink = trailing 12mo before training (ITM + HST baseline) · Green + pink = post-training ITM + HST · Dashed purple = projected full-year pace (ITM + HST) · Green/red data-label = % vs prior baseline · Pre/post derived from monthly data, not hand-entered</span></h3>
-      <div class="full-chart-wrap"><canvas id="itmChart"></canvas></div>
+      <h3>ITM Before &amp; After Deako Training <span style="font-size:10px;font-weight:400;color:#484f58;margin-left:8px">Per-division box · Blue = ITM packs · Pink = HST Direct · Pre window = trailing 12mo ending the month before training · Post window = training month → present · Border green/red/amber reflects projected lift vs prior baseline (ITM + HST)</span></h3>
+      <div id="itmTrainGrid" class="train-grid"></div>
       <div id="itmPaceTable" style="margin-top:18px"></div>
     </div>
 
     <!-- CONTROL GROUP — untrained staying divisions, 2025 vs 2026 YTD -->
     <div class="full-chart-card">
-      <h3>Control Group — 2025 vs 2026 YTD (untrained staying/undecided divisions) <span style="font-size:10px;font-weight:400;color:#484f58;margin-left:8px">Gray + pink = 2025 ITM + HST baseline · Green + pink = 2026 YTD ITM + HST · Dashed purple = projected 2026 full-year pace (ITM + HST) · Green/red data-label = % vs 2025 baseline — use this to gauge whether trained divisions are outperforming the untrained baseline</span></h3>
+      <h3>Control Group — 2025 vs 2026 YTD (untrained staying/undecided divisions) <span style="font-size:10px;font-weight:400;color:#484f58;margin-left:8px">Blue = ITM packs (2025 left, 2026 YTD right) · Pink = HST Direct · Dashed purple = projected 2026 full-year pace (ITM + HST) · Green/red data-label = % vs 2025 baseline — use this to gauge whether trained divisions are outperforming the untrained baseline</span></h3>
       <div class="full-chart-wrap"><canvas id="controlChart"></canvas></div>
       <div id="controlPaceTable" style="margin-top:18px"></div>
     </div>
@@ -1442,149 +1458,71 @@ function renderOverview(){
       dp, projAnnual, paceDelta, pacePct
     };
   });
-  const chartLabels = itmRows.map(r => r.dp != null ? `${r.div} (${r.dp}d)` : r.div);
+  // Render per-division cards for the trained group.
+  const _trainStatus = (r) => {
+    if (r.pacePct == null || r.totalPre < 5) return 'flat';
+    if (r.dp != null && r.dp < 60)  return 'flat';
+    if (r.pacePct >= 15) return 'up';
+    if (r.pacePct <= -10) return 'down';
+    return 'flat';
+  };
+  const _trainTakeaway = (r) => {
+    if (r.totalPre < 5) {
+      return `Pre-training baseline of ${r.totalPre} pack${r.totalPre===1?'':'s'} is too thin to assess. Wait for more post-training data, or verify this division has historical activity.`;
+    }
+    if (r.dp != null && r.dp < 60) {
+      return `Only ${r.dp} days of post-training data — too early to draw a conclusion. Check back at the 90-day mark.`;
+    }
+    if (r.pacePct == null) return 'Insufficient data for a projection.';
+    const proj = r.projAnnual, prior = r.totalPre, pct = r.pacePct;
+    if (pct >= 50) return `Strong post-training lift: projected ${proj} packs/yr vs ${prior} prior baseline (+${pct}%). Trainer is moving the needle here.`;
+    if (pct >= 15) return `Modest lift: projected ${proj} vs ${prior} prior (+${pct}%). Training is producing a measurable bump worth reinforcing.`;
+    if (pct >= -10) return `Roughly flat: projected ${proj} vs ${prior} prior (${pct>=0?'+':''}${pct}%). Training impact unclear — expect some variance at this scale.`;
+    if (pct >= -30) return `Below baseline: projected ${proj} vs ${prior} prior (${pct}%). Worth a follow-up visit to understand what's slipping.`;
+    return `Significant decline: projected ${proj} vs ${prior} prior (${pct}%). Either training didn't stick or there's a structural issue (staffing, divestiture). Investigate before re-training.`;
+  };
+  const _maxPair = Math.max(1, ...itmRows.map(r => Math.max(r.totalPre, r.totalPost)));
+  const _trainCard = (r) => {
+    const status = _trainStatus(r);
+    const monthsPost = r.dp != null ? (r.dp/30).toFixed(1) : '—';
+    const deltaCls = status;
+    const pctText = r.pacePct == null ? '—' : (r.pacePct >= 0 ? '+' : '') + r.pacePct + '%';
+    // Mini bar widths (relative to the largest pre/post total across all cards)
+    const preItmW   = Math.round(r.pre    / _maxPair * 100);
+    const preHstW   = Math.round(r.preHST / _maxPair * 100);
+    const postItmW  = Math.round(r.post   / _maxPair * 100);
+    const postHstW  = Math.round(r.hst    / _maxPair * 100);
+    return `<div class="train-card train-card--${status}">
+      <div class="train-card-head">
+        <div class="train-card-name">${r.div}</div>
+        <div class="train-card-meta">Trained ${r.date||'—'}<br>${r.dp!=null?`${r.dp}d (${monthsPost}mo) ago`:''}</div>
+      </div>
+      <div class="train-card-section">
+        <div class="train-card-label">Prior (trailing 12mo)</div>
+        <div class="train-card-numbers"><span class="num-itm">${r.pre} ITM</span><span class="num-plus">+</span><span class="num-hst">${r.preHST} HST</span><span class="num-eq">=</span><span class="num-total">${r.totalPre}</span></div>
+        <div class="train-card-bar"><div class="train-card-bar-itm" style="width:${preItmW}%"></div><div class="train-card-bar-hst" style="width:${preHstW}%"></div></div>
+      </div>
+      <div class="train-card-section">
+        <div class="train-card-label">Since Training (${r.dp||'?'}d)</div>
+        <div class="train-card-numbers"><span class="num-itm">${r.post} ITM</span><span class="num-plus">+</span><span class="num-hst">${r.hst} HST</span><span class="num-eq">=</span><span class="num-total">${r.totalPost}</span></div>
+        <div class="train-card-bar"><div class="train-card-bar-itm" style="width:${postItmW}%"></div><div class="train-card-bar-hst" style="width:${postHstW}%"></div></div>
+      </div>
+      <div class="train-card-section train-card-section--proj">
+        <div class="train-card-label">Projected Full-Year (ITM + HST)</div>
+        <div class="train-card-numbers"><span class="num-proj">${r.projAnnual ?? '—'}</span><span class="num-delta ${deltaCls}">${pctText} vs prior</span></div>
+      </div>
+      <div class="train-card-takeaway">${_trainTakeaway(r)}</div>
+    </div>`;
+  };
+  const _gridEl = document.getElementById('itmTrainGrid');
+  if (_gridEl) {
+    // Sort by Δ% desc so the biggest lifts (and biggest declines, on the other end)
+    // surface visually.
+    const _sortedTrain = [...itmRows].sort((a,b) => (b.pacePct ?? -999) - (a.pacePct ?? -999));
+    _gridEl.innerHTML = _sortedTrain.map(_trainCard).join('');
+  }
 
-  new Chart(document.getElementById('itmChart'), {
-    type:'bar',
-    data:{
-      labels: chartLabels,
-      datasets:[
-        {label:'Prior-Year ITM (trailing 12mo)',   data:itmRows.map(r=>r.pre),    backgroundColor:'#30363d', borderRadius:0, stack:'pre',
-         datalabels:{ display:false }},
-        {label:'Prior-Year HST Direct',            data:itmRows.map(r=>r.preHST), backgroundColor:'#f778ba', borderRadius:4, stack:'pre',
-         datalabels:{ display:false }},
-        {label:'Post-Training ITM',                data:itmRows.map(r=>r.post),   backgroundColor:'#3fb950', borderRadius:0, stack:'post',
-         datalabels:{ display:false }},
-        {label:'Post-Training HST Direct',         data:itmRows.map(r=>r.hst),    backgroundColor:'#f778ba', borderRadius:4, stack:'post',
-         datalabels:{ display:false }}
-      ]
-    },
-    options:{
-      responsive:true, maintainAspectRatio:false,
-      layout:{ padding:{ top:28 } },
-      plugins:{
-        legend:{labels:{color:'#8b949e',font:{size:11}}},
-        tooltip:{
-          callbacks:{
-            afterBody:(items) => {
-              const r = itmRows[items[0].dataIndex];
-              const lines = [];
-              if (r.date) lines.push(`Trained: ${r.date}`);
-              if (r.dp != null) lines.push(`Days since training: ${r.dp}`);
-              lines.push(`Pre packs (trailing 12mo): ${r.pre} ITM + ${r.preHST} HST = ${r.totalPre}`);
-              lines.push(`Post packs: ${r.post} ITM + ${r.hst} HST = ${r.totalPost}`);
-              if (r.projAnnual != null) {
-                lines.push(`Projected full-year pace (ITM + HST): ${r.projAnnual}`);
-                if (r.pacePct != null) {
-                  const sign = r.pacePct >= 0 ? '+' : '';
-                  lines.push(`vs Prior Year baseline (${r.totalPre}): ${sign}${r.pacePct}%`);
-                }
-              }
-              return lines;
-            }
-          }
-        }
-      },
-      scales:{
-        x:{ticks:{color:'#8b949e',font:{size:10}},grid:{color:'#21262d'}},
-        y:{ticks:{color:'#8b949e',font:{size:11}},grid:{color:'#21262d'},beginAtZero:true,
-           // Scale to the larger of pre or post stack heights so both fill the chart.
-           // Projection outlines that exceed this max get clipped to the top of the
-           // plot area in the projectionOverlay plugin below.
-           suggestedMax: Math.max(1, ...itmRows.map(r => Math.max((r.pre||0)+(r.preHST||0), (r.post||0)+(r.hst||0)))) * 1.25
-        }
-      }
-    },
-    plugins:[ChartDataLabels, {
-      id:'projectionOverlay',
-      afterDatasetsDraw(chart){
-        const postMeta = chart.getDatasetMeta(2); // post-ITM is index 2 now
-        if (!postMeta || postMeta.hidden) return;
-        const {ctx, scales:{y}, chartArea} = chart;
-        const baseY = y.getPixelForValue(0);
-        ctx.save();
-        ctx.strokeStyle = '#d2a8ff';
-        ctx.lineWidth = 1.5;
-        ctx.setLineDash([5,4]);
-        ctx.font = 'bold 10px sans-serif';
-        ctx.fillStyle = '#d2a8ff';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'bottom';
-        postMeta.data.forEach((bar, i) => {
-          const r = itmRows[i];
-          if (r.projAnnual == null || r.projAnnual <= 0) return;
-          let projY = y.getPixelForValue(r.projAnnual);
-          let clippedAbove = false;
-          if (projY < chartArea.top){
-            projY = chartArea.top;
-            clippedAbove = true;
-          }
-          const w = bar.width;
-          const left = bar.x - w/2;
-          ctx.strokeRect(left, projY, w, baseY - projY);
-          const labelY = clippedAbove ? projY + 12 : projY - 3;
-          if (clippedAbove) ctx.textBaseline = 'top';
-          ctx.fillText(`proj ${r.projAnnual}`, bar.x, labelY);
-          if (clippedAbove) ctx.textBaseline = 'bottom';
-        });
-        ctx.restore();
-      }
-    }, {
-      id:'postHstStackLabel',
-      afterDatasetsDraw(chart){
-        const postMeta = chart.getDatasetMeta(2); // post ITM
-        const hstMeta  = chart.getDatasetMeta(3); // post HST
-        if (!postMeta) return;
-        const ctx = chart.ctx;
-        ctx.save();
-        ctx.font = 'bold 10px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'bottom';
-        postMeta.data.forEach((bar, i) => {
-          const r = itmRows[i];
-          if (r.paceDelta == null) return;
-          const total = (r.post||0) + (r.hst||0);
-          const sign = r.paceDelta >= 0 ? '+' : '';
-          // Top of stack: HST top if HST > 0 and visible, else post top.
-          let topY = bar.y;
-          if (r.hst > 0 && hstMeta && chart.isDatasetVisible(3)){
-            const hstBar = hstMeta.data[i];
-            if (hstBar) topY = hstBar.y;
-          }
-          ctx.fillStyle = r.paceDelta >= 0 ? '#3fb950' : '#f85149';
-          ctx.fillText(`${total}  (${sign}${r.pacePct}%)`, bar.x, topY - 3);
-        });
-        ctx.restore();
-      }
-    }, {
-      id:'preStackLabel',
-      afterDatasetsDraw(chart){
-        const preMeta    = chart.getDatasetMeta(0); // pre ITM
-        const preHstMeta = chart.getDatasetMeta(1); // pre HST
-        if (!preMeta) return;
-        const ctx = chart.ctx;
-        ctx.save();
-        ctx.font = 'bold 10px sans-serif';
-        ctx.fillStyle = '#8b949e';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'bottom';
-        preMeta.data.forEach((bar, i) => {
-          const r = itmRows[i];
-          const total = (r.pre||0) + (r.preHST||0);
-          if (total <= 0) return;
-          let topY = bar.y;
-          if (r.preHST > 0 && preHstMeta && chart.isDatasetVisible(1)){
-            const hstBar = preHstMeta.data[i];
-            if (hstBar) topY = hstBar.y;
-          }
-          ctx.fillText(total, bar.x, topY - 3);
-        });
-        ctx.restore();
-      }
-    }]
-  });
-
-  // Pace summary table under the chart
+  // Pace summary table under the cards
   const paceEl = document.getElementById('itmPaceTable');
   if (paceEl) {
     const sorted = [...itmRows].sort((a,b) => (b.pacePct ?? -999) - (a.pacePct ?? -999));
@@ -1611,10 +1549,10 @@ function renderOverview(){
             <td><strong>${r.div}</strong></td>
             <td style="color:#8b949e">${r.date||'—'}</td>
             <td style="color:#8b949e">${r.dp!=null?`${r.dp}d (${monthsPost}mo)`:'—'}</td>
-            <td style="text-align:right;color:#8b949e">${r.pre}</td>
+            <td style="text-align:right;color:#1f6feb;font-weight:700">${r.pre}</td>
             <td style="text-align:right;color:#f778ba;font-weight:700">${r.preHST||'—'}</td>
             <td style="text-align:right;color:#c9d1d9;font-weight:700">${r.totalPre}</td>
-            <td style="text-align:right;color:#3fb950;font-weight:700">${r.post}</td>
+            <td style="text-align:right;color:#1f6feb;font-weight:700">${r.post}</td>
             <td style="text-align:right;color:#f778ba;font-weight:700">${r.hst||'—'}</td>
             <td style="text-align:right;color:#e6edf3;font-weight:700">${r.totalPost}</td>
             <td style="text-align:right;color:#d2a8ff;font-weight:700">${proj}</td>
@@ -1672,11 +1610,11 @@ function renderOverview(){
       data:{
         labels: ctrlRows.map(r => r.div),
         datasets:[
-          {label:'2025 ITM (baseline)',     data: ctrlRows.map(r => r.pre),    backgroundColor:'#30363d', borderRadius:0, stack:'pre',
+          {label:'2025 ITM (baseline)',     data: ctrlRows.map(r => r.pre),    backgroundColor:'#1f6feb', borderRadius:0, stack:'pre',
            datalabels:{ display:false }},
           {label:'2025 HST Direct',         data: ctrlRows.map(r => r.preHST), backgroundColor:'#f778ba', borderRadius:4, stack:'pre',
            datalabels:{ display:false }},
-          {label:'2026 YTD ITM',            data: ctrlRows.map(r => r.post),   backgroundColor:'#3fb950', borderRadius:0, stack:'post',
+          {label:'2026 YTD ITM',            data: ctrlRows.map(r => r.post),   backgroundColor:'#1f6feb', borderRadius:0, stack:'post',
            datalabels:{ display:false }},
           {label:'2026 YTD HST Direct',     data: ctrlRows.map(r => r.hst),    backgroundColor:'#f778ba', borderRadius:4, stack:'post',
            datalabels:{ display:false }}
@@ -1825,10 +1763,10 @@ function renderOverview(){
           return `<tr>
             <td><strong>${r.div}</strong></td>
             <td style="color:#8b949e">${r.dp}d (${(r.dp/30).toFixed(1)}mo)</td>
-            <td style="text-align:right;color:#8b949e">${r.pre}</td>
+            <td style="text-align:right;color:#1f6feb;font-weight:700">${r.pre}</td>
             <td style="text-align:right;color:#f778ba;font-weight:700">${r.preHST||'—'}</td>
             <td style="text-align:right;color:#c9d1d9;font-weight:700">${r.totalPre}</td>
-            <td style="text-align:right;color:#3fb950;font-weight:700">${r.post}</td>
+            <td style="text-align:right;color:#1f6feb;font-weight:700">${r.post}</td>
             <td style="text-align:right;color:#f778ba;font-weight:700">${r.hst||'—'}</td>
             <td style="text-align:right;color:#e6edf3;font-weight:700">${r.totalPost}</td>
             <td style="text-align:right;color:#d2a8ff;font-weight:700">${proj}</td>
