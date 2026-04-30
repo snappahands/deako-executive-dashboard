@@ -298,7 +298,7 @@ body.light .shimmer-gs{background:linear-gradient(90deg,#8b8b8b 0%,#b8860b 20%,#
   <div id="content"></div>
 </div>
 
-<div id="version-badge">v13.4</div>
+<div id="version-badge">v13.5</div>
 
 <script>
 // Theme toggle — CSS handles colors; body.light class drives the swap
@@ -1253,6 +1253,13 @@ function renderOverview(){
       <div id="itmPaceTable" style="margin-top:18px"></div>
     </div>
 
+    <!-- CONTROL GROUP — untrained staying divisions, 2025 vs 2026 YTD -->
+    <div class="full-chart-card">
+      <h3>Control Group — 2025 vs 2026 YTD (untrained staying/undecided divisions) <span style="font-size:10px;font-weight:400;color:#484f58;margin-left:8px">Gray = 2025 ITM (baseline) · Green = 2026 YTD ITM · Pink = 2026 YTD HST Direct · Dashed purple = projected 2026 full-year pace (ITM + HST) · Green/red data-label = % vs 2025 — use this to gauge whether trained divisions are outperforming the untrained baseline</span></h3>
+      <div class="full-chart-wrap"><canvas id="controlChart"></canvas></div>
+      <div id="controlPaceTable" style="margin-top:18px"></div>
+    </div>
+
     <!-- DIVISION LEADERBOARD -->
     <div class="full-chart-card">
       <h3 style="margin-bottom:12px">Division ITM Profitability <span style="font-size:10px;font-weight:400;color:#484f58;margin-left:8px">Staying / undecided divisions only · Proj. starts from Holly's sheet · ITM packs/revenue/profit from HEX</span></h3>
@@ -1560,6 +1567,185 @@ function renderOverview(){
       </table>
       <div style="font-size:11px;color:#484f58;margin-top:8px;font-style:italic">
         Projected full-year pace = (Post-Training ITM + HST Direct since training) × (365 / Days Post). Δ vs Prior compares that projection to the Prior-Year baseline (col D of the training log).
+      </div>`;
+  }
+
+  /* ── CONTROL GROUP — staying divisions, 2025 (baseline) vs 2026 YTD ──
+   * Treats Jan 1 2026 as the "training date" for every staying/undecided
+   * division (per Holly's sheet). Projects 2026 YTD packs to a full-year
+   * pace and compares to 2025 actuals — exactly the same math as the
+   * trained chart, so trained-vs-untrained lift is comparable.
+   */
+  const _ctrlToday = new Date();
+  const _ctrlJan1 = new Date(2026, 0, 1);
+  const _ctrlDp = Math.max(1, Math.floor((_ctrlToday - _ctrlJan1) / 86400000));
+  const _ctrlConv = (typeof CONV_DATA !== 'undefined' ? (CONV_DATA.monthly || []) : []);
+  const _ctrlHst  = (typeof SS1_DATA  !== 'undefined' ? (SS1_DATA.monthly  || []) : []);
+  const _ctrlStaying = (typeof STAYING_DIVISIONS !== 'undefined' ? STAYING_DIVISIONS : []);
+  const ctrlRows = _ctrlStaying.map(s => {
+    let pre = 0, post = 0, hstPost = 0;
+    _ctrlConv.forEach(d => {
+      if (d.div !== s.key) return;
+      if ((d.p||'').startsWith('2025')) pre  += d.pk || 0;
+      else if ((d.p||'').startsWith('2026')) post += d.pk || 0;
+    });
+    _ctrlHst.forEach(d => {
+      if (d.div !== s.key) return;
+      if ((d.p||'').startsWith('2026')) hstPost += d.n || 0;
+    });
+    const totalPost = post + hstPost;
+    const projAnnual = (_ctrlDp > 0) ? Math.round(totalPost * 365 / _ctrlDp) : null;
+    const paceDelta  = (projAnnual != null && pre > 0) ? projAnnual - pre : null;
+    const pacePct    = (projAnnual != null && pre > 0) ? Math.round((projAnnual - pre) / pre * 100) : null;
+    return { div: s.name, pre, post, hst: hstPost, totalPost, dp: _ctrlDp, projAnnual, paceDelta, pacePct };
+  })
+  // Show every staying division that has any signal in either year. Sort by
+  // 2025 baseline desc so the largest divisions land on the left.
+  .filter(r => r.pre > 0 || r.totalPost > 0)
+  .sort((a, b) => (b.pre || 0) - (a.pre || 0));
+
+  const ctrlEl = document.getElementById('controlChart');
+  if (ctrlEl) {
+    new Chart(ctrlEl, {
+      type:'bar',
+      data:{
+        labels: ctrlRows.map(r => r.div),
+        datasets:[
+          {label:'2025 ITM (baseline)', data: ctrlRows.map(r => r.pre), backgroundColor:'#30363d', borderRadius:4, stack:'pre',
+           datalabels:{ anchor:'end', align:'end', color:'#8b949e', font:{size:10,weight:'bold'}, formatter:v=>v }},
+          {label:'2026 YTD ITM',         data: ctrlRows.map(r => r.post), backgroundColor:'#3fb950', borderRadius:0, stack:'post',
+           datalabels:{ display:false }},
+          {label:'2026 YTD HST Direct',  data: ctrlRows.map(r => r.hst),  backgroundColor:'#f778ba', borderRadius:4, stack:'post',
+           datalabels:{ display:false }}
+        ]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        layout:{ padding:{ top:28 } },
+        plugins:{
+          legend:{labels:{color:'#8b949e',font:{size:11}}},
+          tooltip:{
+            callbacks:{
+              afterBody:(items) => {
+                const r = ctrlRows[items[0].dataIndex];
+                const lines = [`Days into 2026: ${r.dp}`,
+                               `2026 YTD packs: ${r.post} ITM + ${r.hst} HST = ${r.totalPost}`];
+                if (r.projAnnual != null) {
+                  lines.push(`Projected 2026 full-year pace (ITM + HST): ${r.projAnnual}`);
+                  if (r.pacePct != null) {
+                    const sign = r.pacePct >= 0 ? '+' : '';
+                    lines.push(`vs 2025 baseline (${r.pre}): ${sign}${r.pacePct}%`);
+                  }
+                }
+                return lines;
+              }
+            }
+          }
+        },
+        scales:{
+          x:{ticks:{color:'#8b949e',font:{size:10}},grid:{color:'#21262d'}},
+          y:{ticks:{color:'#8b949e',font:{size:11}},grid:{color:'#21262d'},beginAtZero:true,
+             suggestedMax: Math.max(1, ...ctrlRows.map(r => Math.max(r.pre||0, (r.post||0) + (r.hst||0)))) * 1.25
+          }
+        }
+      },
+      plugins:[ChartDataLabels, {
+        id:'controlProjectionOverlay',
+        afterDatasetsDraw(chart){
+          const postMeta = chart.getDatasetMeta(1);
+          if (!postMeta || postMeta.hidden) return;
+          const {ctx, scales:{y}, chartArea} = chart;
+          const baseY = y.getPixelForValue(0);
+          ctx.save();
+          ctx.strokeStyle = '#d2a8ff'; ctx.lineWidth = 1.5; ctx.setLineDash([5,4]);
+          ctx.font = 'bold 10px sans-serif'; ctx.fillStyle = '#d2a8ff';
+          ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+          postMeta.data.forEach((bar, i) => {
+            const r = ctrlRows[i];
+            if (r.projAnnual == null || r.projAnnual <= 0) return;
+            let projY = y.getPixelForValue(r.projAnnual);
+            let clippedAbove = false;
+            if (projY < chartArea.top){ projY = chartArea.top; clippedAbove = true; }
+            const w = bar.width;
+            const left = bar.x - w/2;
+            ctx.strokeRect(left, projY, w, baseY - projY);
+            const labelY = clippedAbove ? projY + 12 : projY - 3;
+            if (clippedAbove) ctx.textBaseline = 'top';
+            ctx.fillText(`proj ${r.projAnnual}`, bar.x, labelY);
+            if (clippedAbove) ctx.textBaseline = 'bottom';
+          });
+          ctx.restore();
+        }
+      }, {
+        id:'controlPostHstStackLabel',
+        afterDatasetsDraw(chart){
+          const postMeta = chart.getDatasetMeta(1);
+          const hstMeta  = chart.getDatasetMeta(2);
+          if (!postMeta) return;
+          const ctx = chart.ctx;
+          ctx.save();
+          ctx.font = 'bold 10px sans-serif';
+          ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+          postMeta.data.forEach((bar, i) => {
+            const r = ctrlRows[i];
+            if (r.paceDelta == null) return;
+            const total = (r.post||0) + (r.hst||0);
+            const sign = r.paceDelta >= 0 ? '+' : '';
+            let topY = bar.y;
+            if (r.hst > 0 && hstMeta && chart.isDatasetVisible(2)){
+              const hstBar = hstMeta.data[i];
+              if (hstBar) topY = hstBar.y;
+            }
+            ctx.fillStyle = r.paceDelta >= 0 ? '#3fb950' : '#f85149';
+            ctx.fillText(`${total}  (${sign}${r.pacePct}%)`, bar.x, topY - 3);
+          });
+          ctx.restore();
+        }
+      }]
+    });
+  }
+
+  const ctrlPaceEl = document.getElementById('controlPaceTable');
+  if (ctrlPaceEl) {
+    const sortedCtrl = [...ctrlRows].sort((a,b) => (b.pacePct ?? -999) - (a.pacePct ?? -999));
+    const monthsInto = (_ctrlDp/30).toFixed(1);
+    const liftCount = sortedCtrl.filter(r => r.pacePct != null && r.pacePct > 0).length;
+    const totalWith = sortedCtrl.filter(r => r.pacePct != null).length;
+    ctrlPaceEl.innerHTML = `
+      <div style="font-size:12px;color:#8b949e;margin-bottom:8px">
+        ${sortedCtrl.length} staying/undecided divisions · ${_ctrlDp} days into 2026 (${monthsInto}mo) ·
+        ${liftCount}/${totalWith} on pace to exceed 2025 packs ·
+        compare against the trained-divisions table above
+      </div>
+      <table class="summary-table" style="font-size:12px">
+        <tr>
+          <th>Division</th><th>Days Into 2026</th>
+          <th style="text-align:right">2025 ITM (baseline)</th>
+          <th style="text-align:right">2026 YTD ITM</th>
+          <th style="text-align:right;color:#f778ba">2026 YTD HST Direct</th>
+          <th style="text-align:right">Total YTD Packs</th>
+          <th style="text-align:right">Projected 2026 Full-Year Pace</th>
+          <th style="text-align:right">Δ vs 2025</th>
+        </tr>
+        ${sortedCtrl.map(r => {
+          const pctCls = r.pacePct == null ? 'color:#8b949e'
+            : r.pacePct >= 0 ? 'color:#3fb950;font-weight:700' : 'color:#f85149;font-weight:700';
+          const proj = r.projAnnual != null ? r.projAnnual : '—';
+          const pctText = r.pacePct == null ? '—' : (r.pacePct >= 0 ? '+' : '') + r.pacePct + '%';
+          return `<tr>
+            <td><strong>${r.div}</strong></td>
+            <td style="color:#8b949e">${r.dp}d (${(r.dp/30).toFixed(1)}mo)</td>
+            <td style="text-align:right;color:#8b949e">${r.pre}</td>
+            <td style="text-align:right;color:#3fb950;font-weight:700">${r.post}</td>
+            <td style="text-align:right;color:#f778ba;font-weight:700">${r.hst||'—'}</td>
+            <td style="text-align:right;color:#e6edf3;font-weight:700">${r.totalPost}</td>
+            <td style="text-align:right;color:#d2a8ff;font-weight:700">${proj}</td>
+            <td style="text-align:right;${pctCls}">${pctText}</td>
+          </tr>`;
+        }).join('')}
+      </table>
+      <div style="font-size:11px;color:#484f58;margin-top:8px;font-style:italic">
+        Control-group projection = (2026 YTD ITM + 2026 YTD HST Direct) × (365 / days into 2026). Δ vs 2025 compares that projection to each division's full-year 2025 ITM packs. If the trained-division Δ is materially higher than this control group's median Δ, training is producing a real lift.
       </div>`;
   }
 
