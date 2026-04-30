@@ -5,15 +5,16 @@
 //
 // Any division not listed here shows "—" in the UI until you fill it in.
 const BACKLOG_HOMES = {
-  // ── Power Divisions (priority — update first) ──
-  // 'greensboro':      0,
-  // 'greenville':      0,
-  // 'raleigh_north':   0,
-  // 'raleigh_south':   0,
-  // 'indianapolis':    0,
-  // 'delaware':        0,
-  // 'atlanta_west':    0,
-  // 'kansas_city':     0,
-
-  // ── Other STAYING divisions (add as calculated) ──
+  // ── Manually maintained values (user upload 2026-04-30) ──
+  'greenville':         123,
+  'baldwin':             37,
+  'atlanta_west':       167,
+  'charlotte_north':    133,  // User said "Charlotte: 133" — attributed here (the larger Charlotte; reassign to charlotte_south if intended)
+  'delaware':            30,
+  'indianapolis':        69,
+  'cincinnati':          28,
+  'asheville':           66,
+  'northern_colorado':   29,
+  'fort_wayne':          50,
+  'chicago':             58,
 };
