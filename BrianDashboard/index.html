@@ -284,6 +284,7 @@ body.light .shimmer-gs{background:linear-gradient(90deg,#8b8b8b 0%,#b8860b 20%,#
 .train-card-bar{display:flex;height:8px;border-radius:4px;overflow:hidden;margin-top:4px;background:#f3f4f6}
 .train-card-bar-itm{background:#1f6feb}
 .train-card-bar-hst{background:#f778ba}
+.train-card-bar-proj{background:#7c3aed}
 
 /* SCROLLBAR */
 ::-webkit-scrollbar{width:5px}
@@ -325,7 +326,7 @@ body.light .shimmer-gs{background:linear-gradient(90deg,#8b8b8b 0%,#b8860b 20%,#
   <div id="content"></div>
 </div>
 
-<div id="version-badge">v13.7</div>
+<div id="version-badge">v13.8</div>
 
 <script>
 // Theme toggle — CSS handles colors; body.light class drives the swap
@@ -1481,17 +1482,23 @@ function renderOverview(){
     if (pct >= -30) return `Below baseline: projected ${proj} vs ${prior} prior (${pct}%). Worth a follow-up visit to understand what's slipping.`;
     return `Significant decline: projected ${proj} vs ${prior} prior (${pct}%). Either training didn't stick or there's a structural issue (staffing, divestiture). Investigate before re-training.`;
   };
-  const _maxPair = Math.max(1, ...itmRows.map(r => Math.max(r.totalPre, r.totalPost)));
+  // Bar widths are scaled to the largest single value any division reaches —
+  // pre total, post total, OR projected full-year — so the projection extension
+  // on the Since-Training bar fits without clipping.
+  const _maxPair = Math.max(1, ...itmRows.map(r => Math.max(r.totalPre, r.totalPost, r.projAnnual||0)));
   const _trainCard = (r) => {
     const status = _trainStatus(r);
     const monthsPost = r.dp != null ? (r.dp/30).toFixed(1) : '—';
     const deltaCls = status;
     const pctText = r.pacePct == null ? '—' : (r.pacePct >= 0 ? '+' : '') + r.pacePct + '%';
-    // Mini bar widths (relative to the largest pre/post total across all cards)
+    // Mini bar widths (relative to the largest pre/post/projection total across all cards)
     const preItmW   = Math.round(r.pre    / _maxPair * 100);
     const preHstW   = Math.round(r.preHST / _maxPair * 100);
     const postItmW  = Math.round(r.post   / _maxPair * 100);
     const postHstW  = Math.round(r.hst    / _maxPair * 100);
+    // Projection extension = forecast remainder beyond what's already realized.
+    const projExtra = (r.projAnnual != null) ? Math.max(0, r.projAnnual - r.totalPost) : 0;
+    const projW     = Math.round(projExtra / _maxPair * 100);
     return `<div class="train-card train-card--${status}">
       <div class="train-card-head">
         <div class="train-card-name">${r.div}</div>
@@ -1503,9 +1510,9 @@ function renderOverview(){
         <div class="train-card-bar"><div class="train-card-bar-itm" style="width:${preItmW}%"></div><div class="train-card-bar-hst" style="width:${preHstW}%"></div></div>
       </div>
       <div class="train-card-section">
-        <div class="train-card-label">Since Training (${r.dp||'?'}d)</div>
-        <div class="train-card-numbers"><span class="num-itm">${r.post} ITM</span><span class="num-plus">+</span><span class="num-hst">${r.hst} HST</span><span class="num-eq">=</span><span class="num-total">${r.totalPost}</span></div>
-        <div class="train-card-bar"><div class="train-card-bar-itm" style="width:${postItmW}%"></div><div class="train-card-bar-hst" style="width:${postHstW}%"></div></div>
+        <div class="train-card-label">Since Training (${r.dp||'?'}d) → 2026 Projection</div>
+        <div class="train-card-numbers"><span class="num-itm">${r.post} ITM</span><span class="num-plus">+</span><span class="num-hst">${r.hst} HST</span><span class="num-eq">=</span><span class="num-total">${r.totalPost}</span>${r.projAnnual!=null?` <span class="num-eq">→</span> <span class="num-proj" style="font-size:14px">proj ${r.projAnnual}</span>`:''}</div>
+        <div class="train-card-bar"><div class="train-card-bar-itm" style="width:${postItmW}%"></div><div class="train-card-bar-hst" style="width:${postHstW}%"></div><div class="train-card-bar-proj" style="width:${projW}%" title="Projection extension at current pace"></div></div>
       </div>
       <div class="train-card-section train-card-section--proj">
         <div class="train-card-label">Projected Full-Year (ITM + HST)</div>
@@ -1516,9 +1523,8 @@ function renderOverview(){
   };
   const _gridEl = document.getElementById('itmTrainGrid');
   if (_gridEl) {
-    // Sort by Δ% desc so the biggest lifts (and biggest declines, on the other end)
-    // surface visually.
-    const _sortedTrain = [...itmRows].sort((a,b) => (b.pacePct ?? -999) - (a.pacePct ?? -999));
+    // Sort by highest projected 2026 packs desc — biggest divisions surface first.
+    const _sortedTrain = [...itmRows].sort((a,b) => (b.projAnnual ?? -1) - (a.projAnnual ?? -1));
     _gridEl.innerHTML = _sortedTrain.map(_trainCard).join('');
   }
 
