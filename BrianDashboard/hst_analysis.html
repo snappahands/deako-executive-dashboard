@@ -271,7 +271,7 @@
     The <span style="color:#d2a8ff;font-weight:700">purple line</span> tracks the <strong>combined ITM + HST</strong> conversion rate against the same eligible-home denominator — the truer picture of total Deako attach to closes.
   </p>
   <canvas id="monthlyChart" height="110"></canvas>
-  <p class="footnote">* Feb 2026 ITM = 5 packs — likely incomplete/partial-month data; treat as an outlier.</p>
+  <p class="footnote">Source: HEX export 2026-04-30. ITM packs by month, all active divisions.</p>
 </div>
 
 <!-- ── Chart: Quarterly averages ── -->
@@ -515,15 +515,14 @@
         <td class="amber">0.75%</td>
       </tr>
     </table>
-    <p class="footnote">* Feb 2026 ITM = 5 packs is likely a partial or incomplete month of data. The Jan 2026 figure of 53 is more representative.</p>
-    <p class="footnote" style="color:#e3b341">2026 volumes reflect 27 divisions (~22K homes) vs 125 divisions (~86K homes) in 2023–2025. Per-division ITM in Jan 2026 ≈ 2.0/div/mo vs 0.6/div/mo in 2024 — the remaining divisions are actually converting at a higher rate per division.</p>
+    <p class="footnote" style="color:#e3b341">2026 volumes reflect 27 divisions (~22K homes) vs 125 divisions (~86K homes) in 2023–2025. Per-division ITM in Q1 2026 has held above 2024–2025 per-division rates — the remaining divisions are converting at a higher rate per division.</p>
   </div>
 </div>
 
 <script>
 // ── Raw data (Jan 2024 – Apr 2026) — refreshed from export CSVs 2026-04-20 ──
 const labels26 = ["Jan '24","Feb '24","Mar '24","Apr '24","May '24","Jun '24","Jul '24","Aug '24","Sep '24","Oct '24","Nov '24","Dec '24","Jan '25","Feb '25","Mar '25","Apr '25","May '25","Jun '25","Jul '25","Aug '25","Sep '25","Oct '25","Nov '25","Dec '25","Jan '26","Feb '26","Mar '26","Apr '26*"];
-const ITM  = [118,115,134,88,119,51,75,85,75,101,65,67, 59,93,78,96,85,76,95,106,65,54,48,38, 51,44,48,23];
+const ITM  = [118,115,134,88,119,51,75,85,75,101,65,67, 59,93,78,96,85,76,95,106,64,54,48,37, 51,43,47,41];
 const HST  = [98,111,127,74,106,128,85,96,107,118,116,90, 112,119,148,142,145,168,88,124,142,119,112,76, 103,102,138,34];
 const conv = [1.75,1.80,1.96,1.39,2.08,0.90,1.40,1.64,1.68,2.00,1.37,1.52, 1.03,1.76,1.16,1.44,1.45,1.36,1.59,1.85,1.40,1.10,0.97,0.81, 0.87,0.80,0.75,0.73];
 // Combined ITM+HST conv rate, derived from `conv`: eligible_homes ≈ ITM / conv × 100, so combined = (ITM+HST)/eligible × 100 = (ITM+HST) × conv / ITM
