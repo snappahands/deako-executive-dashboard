@@ -326,7 +326,7 @@ body.light .shimmer-gs{background:linear-gradient(90deg,#8b8b8b 0%,#b8860b 20%,#
   <div id="content"></div>
 </div>
 
-<div id="version-badge">v14.5</div>
+<div id="version-badge">v14.6</div>
 
 <script>
 // Theme toggle — CSS handles colors; body.light class drives the swap
@@ -1031,25 +1031,82 @@ const HORTON_UPGRADES = [
 ];
 // Totals: 275,638 closes, 3,896 packs, $6,281,404 rev, $1,609,115 margin, avg 29% simple (1 in 3), 13% smart (1 in 8), $96 unrealized/home
 
-/* ── DIVISION PROFITABILITY (exact from HEX PDF) ── */
+/* ── DIVISION PROFITABILITY ── */
 const DIV_PERF = {
+  // allTime — refreshed from CSV "ITM Rev since launch_2026-05-01T1426.csv".
+  // Spans 2022→2026 YTD; 71 divisions with non-zero packs.
   allTime:[
-    {div:'Greensboro',packs:329,rev:696100,profit:177700},
-    {div:'Fort Worth South',packs:173,rev:227500,profit:59100},
-    {div:'Fort Worth North',packs:128,rev:181300,profit:46900},
-    {div:'Greenville',packs:125,rev:236400,profit:60600},
-    {div:'Chicago',packs:120,rev:244600,profit:62500},
-    {div:'Charlotte North',packs:104,rev:231900,profit:59100},
-    {div:'Indianapolis',packs:110,rev:242800,profit:61900},
-    {div:'Maryland',packs:97,rev:214400,profit:54700},
-    {div:'Baldwin',packs:135,rev:126100,profit:33500},
-    {div:'Columbus',packs:79,rev:118300,profit:30500},
-    {div:'Atlanta West',packs:76,rev:162200,profit:41400},
-    {div:'Charlotte South',packs:69,rev:151900,profit:38800},
-    {div:'Eastern NC',packs:65,rev:114400,profit:29400},
-    {div:'Raleigh',packs:74,rev:144500,profit:37000},
-    {div:'Southern Virginia',packs:61,rev:122200,profit:31200},
-    {div:'SW Florida',packs:55,rev:108700,profit:27800}
+    {div:'Greensboro',packs:332,rev:702819,profit:179416},
+    {div:'Indianapolis',packs:113,rev:246201,profit:62809},
+    {div:'Chicago',packs:120,rev:244581,profit:62489},
+    {div:'Greenville',packs:129,rev:240201,profit:61607},
+    {div:'Charlotte North',packs:104,rev:231870,profit:59127},
+    {div:'Fort Worth South',packs:173,rev:227526,profit:59104},
+    {div:'Maryland',packs:100,rev:222807,profit:56790},
+    {div:'Fort Worth North',packs:128,rev:181272,profit:46881},
+    {div:'Atlanta West',packs:77,rev:163347,profit:41725},
+    {div:'Charlotte South',packs:70,rev:153072,profit:39080},
+    {div:'Raleigh',packs:74,rev:144462,profit:36959},
+    {div:'Baldwin',packs:136,rev:128688,profit:34101},
+    {div:'Southern Virginia',packs:61,rev:122193,profit:31234},
+    {div:'Columbus',packs:79,rev:118281,profit:30517},
+    {div:'Eastern NC',packs:66,rev:114783,profit:29495},
+    {div:'SW Florida',packs:55,rev:108747,profit:27807},
+    {div:'Bay Area',packs:43,rev:103617,profit:26365},
+    {div:'Delaware',packs:56,rev:93798,profit:24144},
+    {div:'South Colorado',packs:45,rev:90801,profit:23205},
+    {div:'Nashville',packs:52,rev:88632,profit:22763},
+    {div:'Austin',packs:65,rev:88515,profit:23038},
+    {div:'Eastern Pennsylvania',packs:40,rev:82776,profit:21147},
+    {div:'New Jersey',packs:40,rev:81102,profit:20731},
+    {div:'Omaha',packs:47,rev:80430,profit:20654},
+    {div:'Louisville',packs:37,rev:80127,profit:20440},
+    {div:'Des Moines',packs:60,rev:75456,profit:19631},
+    {div:'San Antonio West',packs:36,rev:73980,profit:18897},
+    {div:'Northern Colorado',packs:37,rev:71757,profit:18358},
+    {div:'Cincinnati',packs:37,rev:67623,profit:17386},
+    {div:'Asheville',packs:42,rev:66708,profit:17061},
+    {div:'Fort Wayne',packs:30,rev:65556,profit:16719},
+    {div:'Northern Virginia',packs:33,rev:62784,profit:16057},
+    {div:'Atlanta East City',packs:46,rev:61230,profit:15934},
+    {div:'Huntsville',packs:41,rev:61191,profit:15786},
+    {div:'DFW Central',packs:102,rev:61188,profit:17204},
+    {div:'Minnesota',packs:29,rev:59409,profit:15177},
+    {div:'Phoenix West',packs:22,rev:56556,profit:14370},
+    {div:'Reno',packs:51,rev:55521,profit:14659},
+    {div:'Houston Southeast',packs:26,rev:54360,profit:13879},
+    {div:'Houston Southwest',packs:46,rev:50625,profit:13213},
+    {div:'San Marcos',packs:25,rev:49383,profit:12649},
+    {div:'Columbia',packs:30,rev:48816,profit:12556},
+    {div:'Phoenix Central',packs:24,rev:44184,profit:11349},
+    {div:'Mobile',packs:22,rev:43164,profit:11039},
+    {div:'Birmingham',packs:40,rev:41625,profit:10864},
+    {div:'San Antonio East',packs:16,rev:39762,profit:10110},
+    {div:'Augusta',packs:28,rev:37692,profit:9782},
+    {div:'Oregon',packs:48,rev:34782,profit:9578},
+    {div:'Mississippi',packs:23,rev:32289,profit:8383},
+    {div:'Oklahoma City',packs:16,rev:31392,profit:8029},
+    {div:'Eastern Iowa',packs:22,rev:30438,profit:7916},
+    {div:'Tallahassee',packs:20,rev:25848,profit:6705},
+    {div:'Western Pennsylvania',packs:11,rev:25767,profit:6561},
+    {div:'Tulsa',packs:15,rev:25245,profit:6486},
+    {div:'Midland-Odessa',packs:11,rev:21693,profit:5554},
+    {div:'Lubbock',packs:12,rev:20196,profit:5189},
+    {div:'Panama City East',packs:9,rev:20169,profit:5141},
+    {div:'Kansas City',packs:5,rev:13995,profit:3550},
+    {div:'Houston Central',packs:7,rev:11223,profit:2888},
+    {div:'Phoenix South',packs:5,rev:10647,profit:2717},
+    {div:'Panama City West',packs:7,rev:9549,profit:2472},
+    {div:'NW Arkansas',packs:4,rev:9522,profit:2424},
+    {div:'Dallas North',packs:8,rev:9000,profit:2349},
+    {div:'Chattanooga',packs:4,rev:6174,profit:1591},
+    {div:'NW Indiana',packs:4,rev:5448,profit:1417},
+    {div:'Tucson',packs:3,rev:5049,profit:1297},
+    {div:'Dallas South',packs:2,rev:2250,profit:587},
+    {div:'Louisiana East',packs:2,rev:2250,profit:587},
+    {div:'Beaumont',packs:1,rev:1125,profit:294},
+    {div:'Brazos Valley',packs:1,rev:1125,profit:294},
+    {div:'Pensacola West',packs:1,rev:1125,profit:294}
   ],
   // y2025 — refreshed from CSV "2025 Rev by Division_2026-05-01T1421.csv"
   y2025:[
@@ -1239,6 +1296,82 @@ const REV_2026 = {
   'northern_virginia':{packs:1,rev:1125,profit:294},
   'portland':{packs:2,rev:798,profit:240},
   'asheville':{packs:4,rev:0,profit:0}
+};
+
+// All-time ITM revenue + profit (since launch, 2022→2026 YTD).
+// Source: "ITM Rev since launch_2026-05-01T1426.csv". 71 divisions with non-zero packs.
+const REV_ALLTIME = {
+  'greensboro':{packs:332,rev:702819,profit:179416},
+  'indianapolis':{packs:113,rev:246201,profit:62809},
+  'chicago':{packs:120,rev:244581,profit:62489},
+  'greenville':{packs:129,rev:240201,profit:61607},
+  'charlotte_north':{packs:104,rev:231870,profit:59127},
+  'fort_worth_south':{packs:173,rev:227526,profit:59104},
+  'maryland':{packs:100,rev:222807,profit:56790},
+  'fort_worth_north':{packs:128,rev:181272,profit:46881},
+  'atlanta_west':{packs:77,rev:163347,profit:41725},
+  'charlotte_south':{packs:70,rev:153072,profit:39080},
+  'raleigh':{packs:74,rev:144462,profit:36959},
+  'raleigh_south':{packs:74,rev:144462,profit:36959},  // alias for findDivKey resolution
+  'baldwin':{packs:136,rev:128688,profit:34101},
+  'southern_virginia':{packs:61,rev:122193,profit:31234},
+  'columbus':{packs:79,rev:118281,profit:30517},
+  'eastern_nc':{packs:66,rev:114783,profit:29495},
+  'southwest_florida':{packs:55,rev:108747,profit:27807},
+  'bay_area':{packs:43,rev:103617,profit:26365},
+  'delaware':{packs:56,rev:93798,profit:24144},
+  'south_colorado':{packs:45,rev:90801,profit:23205},
+  'nashville':{packs:52,rev:88632,profit:22763},
+  'austin':{packs:65,rev:88515,profit:23038},
+  'eastern_pennsylvania':{packs:40,rev:82776,profit:21147},
+  'new_jersey':{packs:40,rev:81102,profit:20731},
+  'omaha':{packs:47,rev:80430,profit:20654},
+  'louisville':{packs:37,rev:80127,profit:20440},
+  'des_moines':{packs:60,rev:75456,profit:19631},
+  'san_antonio_west':{packs:36,rev:73980,profit:18897},
+  'northern_colorado':{packs:37,rev:71757,profit:18358},
+  'cincinnati':{packs:37,rev:67623,profit:17386},
+  'asheville':{packs:42,rev:66708,profit:17061},
+  'fort_wayne':{packs:30,rev:65556,profit:16719},
+  'northern_virginia':{packs:33,rev:62784,profit:16057},
+  'atlanta_east_city':{packs:46,rev:61230,profit:15934},
+  'huntsville':{packs:41,rev:61191,profit:15786},
+  'dfw_central':{packs:102,rev:61188,profit:17204},
+  'minnesota':{packs:29,rev:59409,profit:15177},
+  'phoenix_west':{packs:22,rev:56556,profit:14370},
+  'reno':{packs:51,rev:55521,profit:14659},
+  'houston_southeast':{packs:26,rev:54360,profit:13879},
+  'houston_southwest':{packs:46,rev:50625,profit:13213},
+  'san_marcos':{packs:25,rev:49383,profit:12649},
+  'columbia':{packs:30,rev:48816,profit:12556},
+  'phoenix_central':{packs:24,rev:44184,profit:11349},
+  'mobile':{packs:22,rev:43164,profit:11039},
+  'birmingham':{packs:40,rev:41625,profit:10864},
+  'san_antonio_east':{packs:16,rev:39762,profit:10110},
+  'augusta':{packs:28,rev:37692,profit:9782},
+  'oregon':{packs:48,rev:34782,profit:9578},
+  'mississippi':{packs:23,rev:32289,profit:8383},
+  'oklahoma_city':{packs:16,rev:31392,profit:8029},
+  'eastern_iowa':{packs:22,rev:30438,profit:7916},
+  'tallahassee':{packs:20,rev:25848,profit:6705},
+  'western_pennsylvania':{packs:11,rev:25767,profit:6561},
+  'tulsa':{packs:15,rev:25245,profit:6486},
+  'lubbock':{packs:12,rev:20196,profit:5189},
+  'panama_city_east':{packs:9,rev:20169,profit:5141},
+  'kansas_city':{packs:5,rev:13995,profit:3550},
+  'houston_central':{packs:7,rev:11223,profit:2888},
+  'phoenix_south':{packs:5,rev:10647,profit:2717},
+  'panama_city_west':{packs:7,rev:9549,profit:2472},
+  'nw_arkansas':{packs:4,rev:9522,profit:2424},
+  'dallas_north':{packs:8,rev:9000,profit:2349},
+  'chattanooga':{packs:4,rev:6174,profit:1591},
+  'nw_indiana':{packs:4,rev:5448,profit:1417},
+  'tucson':{packs:3,rev:5049,profit:1297},
+  'dallas_south':{packs:2,rev:2250,profit:587},
+  'louisiana_east':{packs:2,rev:2250,profit:587},
+  'beaumont':{packs:1,rev:1125,profit:294},
+  'brazos_valley':{packs:1,rev:1125,profit:294},
+  'pensacola_west':{packs:1,rev:1125,profit:294}
 };
 
 function fmtK(v){ return v>=1000000?'$'+(v/1000000).toFixed(1)+'M':v>=1000?'$'+(v/1000).toFixed(v>=100000?0:1)+'K':'$'+v; }
@@ -1550,6 +1683,7 @@ function renderOverview(){
     const backlog = (_key && typeof BACKLOG_HOMES !== 'undefined' && BACKLOG_HOMES[_key] != null) ? BACKLOG_HOMES[_key] : null;
     const rev2025 = (_key && typeof REV_2025 !== 'undefined') ? (REV_2025[_key]?.rev || 0) : 0;
     const rev2026YTD = (_key && typeof REV_2026 !== 'undefined') ? (REV_2026[_key]?.rev || 0) : 0;
+    const revAllTime = (_key && typeof REV_ALLTIME !== 'undefined') ? (REV_ALLTIME[_key]?.rev || 0) : 0;
     // Days into 2026 — for projecting YTD revenue to a full-year figure.
     const _today26 = new Date();
     const _jan1_26 = new Date(2026, 0, 1);
@@ -1562,7 +1696,7 @@ function renderOverview(){
       post: p.postITM, hst: p.postHST, totalPost,
       dp, projAnnual, paceDelta, pacePct,
       backlog,
-      rev2025, rev2026YTD, rev2026Proj, revYoYPct
+      rev2025, rev2026YTD, rev2026Proj, revYoYPct, revAllTime
     };
   });
   // Render per-division cards for the trained group.
@@ -1638,14 +1772,15 @@ function renderOverview(){
         <div class="train-card-label">Projected Full-Year (ITM + HST)</div>
         <div class="train-card-numbers"><span class="num-proj">${r.projAnnual ?? '—'}</span><span class="num-delta ${deltaCls}">${pctText} vs prior</span></div>
       </div>
-      ${(r.rev2025 > 0 || r.rev2026YTD > 0) ? `
+      ${(r.rev2025 > 0 || r.rev2026YTD > 0 || r.revAllTime > 0) ? `
       <div class="train-card-section">
-        <div class="train-card-label">Revenue YoY (DHI)</div>
+        <div class="train-card-label">Revenue (DHI)</div>
         <div class="train-card-numbers" style="font-size:13px">
           <span style="color:#0f172a;font-weight:700">2025: ${r.rev2025>0?'$'+r.rev2025.toLocaleString():'—'}</span>
           <span class="num-eq">→</span>
           <span style="color:#0f172a;font-weight:700">2026 YTD: ${r.rev2026YTD>0?'$'+r.rev2026YTD.toLocaleString():'—'}</span>
           ${r.rev2026Proj>0?`<div style="margin-top:3px;font-size:11px;color:#6b7280">Projected 2026 full-year: <strong>$${r.rev2026Proj.toLocaleString()}</strong>${r.revYoYPct!=null?` <span class="num-delta ${r.revYoYPct>=15?'up':r.revYoYPct<=-10?'down':'flat'}">${(r.revYoYPct>=0?'+':'')+r.revYoYPct}% YoY</span>`:''}</div>`:''}
+          ${r.revAllTime>0?`<div style="margin-top:3px;font-size:11px;color:#6b7280">All-time (since launch): <strong>$${r.revAllTime.toLocaleString()}</strong></div>`:''}
         </div>
       </div>` : ''}
       <div class="train-card-takeaway">${_trainTakeaway(r)}</div>
