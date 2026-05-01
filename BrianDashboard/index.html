@@ -326,7 +326,7 @@ body.light .shimmer-gs{background:linear-gradient(90deg,#8b8b8b 0%,#b8860b 20%,#
   <div id="content"></div>
 </div>
 
-<div id="version-badge">v14.4</div>
+<div id="version-badge">v14.5</div>
 
 <script>
 // Theme toggle — CSS handles colors; body.light class drives the swap
@@ -1051,23 +1051,39 @@ const DIV_PERF = {
     {div:'Southern Virginia',packs:61,rev:122200,profit:31200},
     {div:'SW Florida',packs:55,rev:108700,profit:27800}
   ],
+  // y2025 — refreshed from CSV "2025 Rev by Division_2026-05-01T1421.csv"
   y2025:[
-    {div:'Greensboro',packs:53,rev:96170,profit:24690},
-    {div:'Greenville',packs:44,rev:72370,profit:18680},
-    {div:'Baldwin',packs:81,rev:67610,profit:18190},
-    {div:'Chicago',packs:27,rev:52360,profit:13410},
-    {div:'Maryland',packs:21,rev:45210,profit:11530},
-    {div:'Charlotte South',packs:17,rev:37760,profit:9640},
-    {div:'Charlotte North',packs:21,rev:36160,profit:9290},
-    {div:'Portland',packs:45,rev:31190,profit:8630},
-    {div:'Atlanta West',packs:20,rev:32040,profit:8270},
-    {div:'Eastern NC',packs:24,rev:31210,profit:8110},
-    {div:'Reno',packs:29,rev:29160,profit:7750},
-    {div:'Eastern Pennsylvania',packs:12,rev:30240,profit:7690},
-    {div:'Central Colorado',packs:16,rev:29720,profit:7610},
-    {div:'Northern Colorado',packs:13,rev:28020,profit:7150},
-    {div:'Birmingham',packs:27,rev:27000,profit:7050},
-    {div:'Omaha',packs:12,rev:24490,profit:6260}
+    {div:'Greensboro',packs:56,rev:102894,profit:26400},
+    {div:'Greenville',packs:48,rev:76146,profit:19678},
+    {div:'Baldwin',packs:82,rev:70188,profit:18833},
+    {div:'Maryland',packs:24,rev:53607,profit:13658},
+    {div:'Chicago',packs:27,rev:52359,profit:13409},
+    {div:'Charlotte South',packs:18,rev:38886,profit:9934},
+    {div:'Charlotte North',packs:21,rev:36159,profit:9291},
+    {div:'Atlanta West',packs:21,rev:33165,profit:8560},
+    {div:'Reno',packs:30,rev:31956,profit:8460},
+    {div:'Eastern NC',packs:25,rev:31608,profit:8228},
+    {div:'Eastern Pennsylvania',packs:13,rev:31365,profit:7981},
+    {div:'Portland',packs:45,rev:31185,profit:8628},
+    {div:'Central Colorado',packs:16,rev:29718,profit:7612},
+    {div:'Northern Colorado',packs:13,rev:28017,profit:7148},
+    {div:'Birmingham',packs:27,rev:27000,profit:7047},
+    {div:'Delaware',packs:16,rev:26814,profit:6918},
+    {div:'Omaha',packs:12,rev:24492,profit:6264},
+    {div:'Raleigh South',packs:12,rev:21870,profit:5605},
+    {div:'New Jersey',packs:12,rev:21144,profit:5432},
+    {div:'Fort Wayne',packs:11,rev:20745,profit:5312},
+    {div:'Indianapolis',packs:15,rev:20445,profit:5306},
+    {div:'Asheville',packs:17,rev:20169,profit:5141},
+    {div:'Cincinnati',packs:14,rev:14964,profit:3971},
+    {div:'Northern Virginia',packs:7,rev:11223,profit:2888},
+    {div:'Bay Area',packs:4,rev:11196,profit:2840},
+    {div:'Kansas City',packs:4,rev:11196,profit:2840},
+    {div:'NW Arkansas',packs:4,rev:9522,profit:2424},
+    {div:'Phoenix West',packs:4,rev:7848,profit:2007},
+    {div:'Oklahoma City',packs:2,rev:3924,profit:1004},
+    {div:'Phoenix South',packs:2,rev:3924,profit:1004},
+    {div:'NW Indiana',packs:3,rev:2649,profit:707}
   ],
   last3:[
     {div:'Baldwin',packs:31,rev:26890,profit:7190},
@@ -1158,6 +1174,71 @@ const ITM_MONTHLY = {
               40,56,61,41,50,22,32,21,31,31,22,24,
               14,34,32,29,35,31,42,35,18,19,20,11,
               25,34,37,30]
+};
+
+// 2025 revenue + profit per division (keyed) — paired data structure for the
+// y2025 table and the trained-division cards. Source: "2025 Rev by Division
+// 2026-05-01T1421.csv" — to be paired with 2026 once that arrives.
+const REV_2025 = {
+  'greensboro':{packs:56,rev:102894,profit:26400},
+  'greenville':{packs:48,rev:76146,profit:19678},
+  'baldwin':{packs:82,rev:70188,profit:18833},
+  'maryland':{packs:24,rev:53607,profit:13658},
+  'chicago':{packs:27,rev:52359,profit:13409},
+  'charlotte_south':{packs:18,rev:38886,profit:9934},
+  'charlotte_north':{packs:21,rev:36159,profit:9291},
+  'atlanta_west':{packs:21,rev:33165,profit:8560},
+  'reno':{packs:30,rev:31956,profit:8460},
+  'eastern_nc':{packs:25,rev:31608,profit:8228},
+  'eastern_pennsylvania':{packs:13,rev:31365,profit:7981},
+  'portland':{packs:45,rev:31185,profit:8628},
+  'central_colorado':{packs:16,rev:29718,profit:7612},
+  'northern_colorado':{packs:13,rev:28017,profit:7148},
+  'birmingham':{packs:27,rev:27000,profit:7047},
+  'delaware':{packs:16,rev:26814,profit:6918},
+  'omaha':{packs:12,rev:24492,profit:6264},
+  'raleigh_south':{packs:12,rev:21870,profit:5605},
+  'new_jersey':{packs:12,rev:21144,profit:5432},
+  'fort_wayne':{packs:11,rev:20745,profit:5312},
+  'indianapolis':{packs:15,rev:20445,profit:5306},
+  'asheville':{packs:17,rev:20169,profit:5141},
+  'cincinnati':{packs:14,rev:14964,profit:3971},
+  'northern_virginia':{packs:7,rev:11223,profit:2888},
+  'bay_area':{packs:4,rev:11196,profit:2840},
+  'kansas_city':{packs:4,rev:11196,profit:2840},
+  'nw_arkansas':{packs:4,rev:9522,profit:2424},
+  'phoenix_west':{packs:4,rev:7848,profit:2007},
+  'oklahoma_city':{packs:2,rev:3924,profit:1004},
+  'phoenix_south':{packs:2,rev:3924,profit:1004},
+  'nw_indiana':{packs:3,rev:2649,profit:707}
+};
+
+// 2026 YTD revenue + profit per division. Source: "2026 Rev by Division
+// 2026-05-01T1424.csv". Used alongside REV_2025 for YoY comparison on the
+// trained-division cards and the y2025 leaderboard's "2026 YTD" companion.
+const REV_2026 = {
+  'greensboro':{packs:12,rev:24492,profit:6264},
+  'baldwin':{packs:22,rev:21120,profit:5592},
+  'greenville':{packs:12,rev:16344,profit:4252},
+  'maryland':{packs:6,rev:13446,profit:3427},
+  'atlanta_west':{packs:10,rev:11472,profit:3005},
+  'fort_wayne':{packs:4,rev:9522,profit:2424},
+  'charlotte_south':{packs:4,rev:7122,profit:1834},
+  'charlotte_north':{packs:4,rev:7122,profit:1834},
+  'chicago':{packs:3,rev:6723,profit:1714},
+  'delaware':{packs:4,rev:6396,profit:1660},
+  'eastern_nc':{packs:3,rev:5997,profit:1540},
+  'cincinnati':{packs:6,rev:4794,profit:1310},
+  'raleigh_south':{packs:2,rev:3924,profit:1004},
+  'eastern_pennsylvania':{packs:2,rev:3924,profit:1004},
+  'reno':{packs:2,rev:3924,profit:1004},
+  'central_colorado':{packs:2,rev:3924,profit:1004},
+  'indianapolis':{packs:3,rev:3375,profit:881},
+  'omaha':{packs:1,rev:2799,profit:710},
+  'northern_colorado':{packs:2,rev:2250,profit:587},
+  'northern_virginia':{packs:1,rev:1125,profit:294},
+  'portland':{packs:2,rev:798,profit:240},
+  'asheville':{packs:4,rev:0,profit:0}
 };
 
 function fmtK(v){ return v>=1000000?'$'+(v/1000000).toFixed(1)+'M':v>=1000?'$'+(v/1000).toFixed(v>=100000?0:1)+'K':'$'+v; }
@@ -1467,12 +1548,21 @@ function renderOverview(){
     const pacePct    = (projAnnual != null && totalPre > 0) ? Math.round((projAnnual - totalPre) / totalPre * 100) : null;
     const _key = (typeof findDivKey === 'function') ? findDivKey(v.division) : null;
     const backlog = (_key && typeof BACKLOG_HOMES !== 'undefined' && BACKLOG_HOMES[_key] != null) ? BACKLOG_HOMES[_key] : null;
+    const rev2025 = (_key && typeof REV_2025 !== 'undefined') ? (REV_2025[_key]?.rev || 0) : 0;
+    const rev2026YTD = (_key && typeof REV_2026 !== 'undefined') ? (REV_2026[_key]?.rev || 0) : 0;
+    // Days into 2026 — for projecting YTD revenue to a full-year figure.
+    const _today26 = new Date();
+    const _jan1_26 = new Date(2026, 0, 1);
+    const _dp26 = Math.max(1, Math.floor((_today26 - _jan1_26) / 86400000));
+    const rev2026Proj = rev2026YTD > 0 ? Math.round(rev2026YTD * 365 / _dp26) : 0;
+    const revYoYPct = (rev2025 > 0 && rev2026Proj > 0) ? Math.round((rev2026Proj - rev2025) / rev2025 * 100) : null;
     return {
       div: v.division, date: v.date,
       pre: p.preITM, preHST: p.preHST, totalPre,
       post: p.postITM, hst: p.postHST, totalPost,
       dp, projAnnual, paceDelta, pacePct,
-      backlog
+      backlog,
+      rev2025, rev2026YTD, rev2026Proj, revYoYPct
     };
   });
   // Render per-division cards for the trained group.
@@ -1548,6 +1638,16 @@ function renderOverview(){
         <div class="train-card-label">Projected Full-Year (ITM + HST)</div>
         <div class="train-card-numbers"><span class="num-proj">${r.projAnnual ?? '—'}</span><span class="num-delta ${deltaCls}">${pctText} vs prior</span></div>
       </div>
+      ${(r.rev2025 > 0 || r.rev2026YTD > 0) ? `
+      <div class="train-card-section">
+        <div class="train-card-label">Revenue YoY (DHI)</div>
+        <div class="train-card-numbers" style="font-size:13px">
+          <span style="color:#0f172a;font-weight:700">2025: ${r.rev2025>0?'$'+r.rev2025.toLocaleString():'—'}</span>
+          <span class="num-eq">→</span>
+          <span style="color:#0f172a;font-weight:700">2026 YTD: ${r.rev2026YTD>0?'$'+r.rev2026YTD.toLocaleString():'—'}</span>
+          ${r.rev2026Proj>0?`<div style="margin-top:3px;font-size:11px;color:#6b7280">Projected 2026 full-year: <strong>$${r.rev2026Proj.toLocaleString()}</strong>${r.revYoYPct!=null?` <span class="num-delta ${r.revYoYPct>=15?'up':r.revYoYPct<=-10?'down':'flat'}">${(r.revYoYPct>=0?'+':'')+r.revYoYPct}% YoY</span>`:''}</div>`:''}
+        </div>
+      </div>` : ''}
       <div class="train-card-takeaway">${_trainTakeaway(r)}</div>
     </div>`;
   };
